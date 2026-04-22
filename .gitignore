@@ -1,0 +1,15 @@
+# Garry Tan gstack clone lives here for local use — do not commit (large; optional).
+# If git ever records it as a submodule without .gitmodules, remove with:
+#   git rm --cached -f gstack
+gstack/
+
+# Secrets and local env (do not use `.env.*` — that would ignore `.env.example` in subprojects)
+.env
+.env.local
+.env.development
+.env.production
+
+node_modules/
+.next/
+cache/
+artifacts/

@@ -1,0 +1,14 @@
+{
+  "name": "skill-reputation-skill",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "scan": "node scripts/scanner.js",
+    "attest": "node scripts/attest.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "viem": "^2.21.54"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "skill-reputation",
+  "version": "1.0.0",
+  "private": true,
+  "description": "OpenClaw skill extension: local skill inventory, behavior log, Base Sepolia attestations, demo UI.",
+  "workspaces": [
+    "contracts",
+    "skill",
+    "demo-ui"
+  ],
+  "scripts": {
+    "test": "npm run test --workspaces --if-present",
+    "build:ui": "npm run build -w skill-reputation-demo-ui"
+  }
+}

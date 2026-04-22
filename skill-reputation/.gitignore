@@ -1,0 +1,21 @@
+node_modules/
+.env
+.env.local
+.next/
+out/
+cache/
+artifacts/
+typechain-types/
+coverage/
+*.log
+test-log.jsonl
+.DS_Store
+
+# Extra env variants
+.env.development
+.env.production
+.env.*.local
+
+# Keys and certs
+**/*.pem
+**/*.key
