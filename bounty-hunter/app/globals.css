@@ -1,0 +1,20 @@
+:root { color-scheme: dark; }
+body { margin: 0; font-family: Inter, Arial, sans-serif; background: #0f1117; color: #e5e7eb; }
+main { max-width: 1000px; margin: 0 auto; padding: 24px; }
+.panel { border: 1px solid #293042; border-radius: 12px; padding: 16px; background: #151a26; margin-bottom: 16px; }
+form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+label { display: flex; flex-direction: column; font-size: 13px; gap: 6px; }
+input, select, textarea { border: 1px solid #364056; border-radius: 8px; background: #0e1320; color: #fff; padding: 8px 10px; }
+textarea { min-height: 90px; resize: vertical; }
+button { margin-top: 8px; width: 160px; border: none; border-radius: 8px; padding: 10px 12px; background: #4169e1; color: white; cursor: pointer; }
+pre { white-space: pre-wrap; background: #0b0f19; border: 1px solid #25304a; border-radius: 8px; padding: 10px; overflow-x: auto; }
+.small { font-size: 12px; opacity: 0.8; }
+.error { color: #ff8b8b; }
+a { color: #7fa8ff; }
+.metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.metrics h3 { margin: 0 0 6px; font-size: 14px; font-weight: 500; opacity: 0.9; }
+.metrics p { margin: 0; font-size: 24px; font-weight: 700; }
+.timeline, .list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.timeline li, .list li { border: 1px solid #25304a; border-radius: 8px; padding: 10px; background: #0f1523; }
+.badge { padding: 2px 8px; border-radius: 999px; border: 1px solid #3a4a6f; font-size: 12px; margin-left: 6px; }
+.full { grid-column: 1 / -1; }
