@@ -1,0 +1,35 @@
+{
+  "name": "Sentiment Divergence",
+  "version": "1.0.0",
+  "risk_profile": "moderate",
+  "track": "BNB Hackathon Track 2 — Strategy Skills",
+  "data_source": "CoinMarketCap Data API only",
+  "live_trading": false,
+  "simulation_only": true,
+  "params": {
+    "maxDrawdownPct": 18,
+    "positionSizePct": 100
+  },
+  "backtest_performance": {
+    "totalReturnPct": -2.1337,
+    "sharpeRatio": 0,
+    "maxDrawdownPct": 2.6067,
+    "winRatePct": 0,
+    "trades": 1
+  },
+  "rules_plain_english": [
+    "Entry (bearish divergence): price rising while CMC social sentiment decreases.",
+    "Entry (bullish divergence): price falling while CMC social sentiment increases.",
+    "Exit: divergence resolves when sentiment and price realign.",
+    "Uses CMC social volume and KOL mention endpoints (simulation only)."
+  ],
+  "cmc_requirements": {
+    "indicators": [
+      "SocialSentiment",
+      "SocialVolume",
+      "KOLMentions"
+    ],
+    "data_frequency": "daily",
+    "min_history_days": 60
+  }
+}

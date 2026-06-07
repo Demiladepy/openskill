@@ -1,52 +1,58 @@
 ---
-name: skill-reputation
-description: Inventory local OpenClaw skills, append a behavior log, and attest scores on Base Sepolia.
-version: 1.0.0
+name: cmc-strategy-forge
+description: Generate backtestable CoinMarketCap trading strategy specs from CMC Data API market data. Track 2 — simulation only, no live trading.
+version: 2.0.0
 metadata:
-  openclaw:
+  cmc:
+    track: strategy-skills
+    marketplace: coinmarketcap-agent-hub
     requires:
       env:
-        - BASE_SEPOLIA_RPC_URL
-        - SKILL_REPUTATION_CONTRACT
-        - ATTESTOR_PRIVATE_KEY
+        - CMC_API_KEY
       bins:
         - node
-    primaryEnv: ATTESTOR_PRIVATE_KEY
+    simulation_only: true
+    live_trading: false
 ---
 
-# SkillReputation
+# CMC Strategy Forge
 
-This folder is an **OpenClaw skill extension** (a small **agent plugin**): it teaches the model how to **scan installed skills**, **inspect the local reputation log**, and **post an on-chain attestation** on Base Sepolia when the user explicitly asks. The **SkillReputation** monorepo’s top-level `README.md` has the full operator’s guide, trust model, and install paths (if you copied only this folder, open the README from the full checkout).
+**CoinMarketCap Strategy Skill** for BNB Hackathon **Track 2 (Strategy Skills)**.
 
-## Paths
+This skill generates **backtestable strategy specs** powered exclusively by the **CoinMarketCap Data API**. Judges run scripts locally to produce JSON specs and replay reports — **no live trading agent** and **no execution layer**.
 
-Scripts live under `{baseDir}/scripts/`. Run them with `node` from the skill root `{baseDir}` (or use `npm run scan` / `npm run attest` after `npm install`).
+## What this skill does
 
-## Workflow
+1. Pull CMC market data (spot, social, derivatives, Fear & Greed)
+2. Run one of three strategy templates (momentum, sentiment, regime)
+3. Output backtest metrics + `replay_data.json` + optional `.cmcskill` package
 
-1. **Configure once**: Copy `{baseDir}/.env.example` to `{baseDir}/.env`. Set `BASE_SEPOLIA_RPC_URL`, `SKILL_REPUTATION_CONTRACT`, and `ATTESTOR_PRIVATE_KEY`. Never commit `.env` or paste keys into chat.
-2. **Scan**: After installs or when the user asks for an inventory, run:
+## Quick commands
 
-   `node {baseDir}/scripts/scanner.js`
+From repo root (`skill-reputation/`):
 
-   Optional: `node {baseDir}/scripts/scanner.js --roots "C:\\path\\to\\skills;~/.openclaw/skills"`  
-   Optional log path: `SKILL_REPUTATION_LOG` or `--out path/to/behavior-log.jsonl`
+```bash
+cp skill/.env.example skill/.env   # add CMC_API_KEY
+npm install
+npm run registry                   # scan strategies + strategyKey fingerprints
+npm run strategy -- momentum -- --from 2026-06-01 --to 2026-06-21
+npm run backtest
+npm run replay
+npm run export -- momentum
+npm run validate
+```
 
-3. **Attest** (only when the user explicitly asks to record a score on-chain): Run:
+## Strategy fingerprint (version control)
 
-   `node {baseDir}/scripts/attest.js --skill <normalized-or-display-name> --score <0-100>`
+Each strategy manifest is hashed into a **strategyKey** (same algorithm as the original skillKey digest system). This fingerprint ties a spec to exact strategy bytes for marketplace submission.
 
-   If the skill was never scanned, use a file path:
+## Track 2 compliance
 
-   `node {baseDir}/scripts/attest.js --skill @{absolutePath}/SKILL.md --score <0-100>`
-
-   The latest **scan** line in the log supplies the `digest` commitment sent with the transaction.
-
-## Optional manual events
-
-Agents may append JSONL lines to the same log file (e.g. `{"type":"invocation","skillName":"foo","note":"...","ts":"..."}`) for future digest upgrades. The MVP `digest` is still derived from the last `scan` snapshot.
+- Data source: **CoinMarketCap Data API only**
+- Output: **backtestable spec** (JSON + SKILL.md)
+- No live trading, no wallet integration, no on-chain requirement
 
 ## Security
 
-- Treat `ATTESTOR_PRIVATE_KEY` as a hot wallet with minimal Sepolia ETH.
-- Do not embed private keys or RPC secrets in `SKILL.md`.
+- Never commit `CMC_API_KEY`
+- Set `CMC_USE_MOCK=1` for offline demo (mock data warning included in output)

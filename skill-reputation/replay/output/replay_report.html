@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CMC Strategy Forge — Live PnL Replay</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Inter, sans-serif; background: #0b1020; color: #e8ecf5; padding: 24px; }
+    .card { background: #151d33; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { border-bottom: 1px solid #2a3555; padding: 8px; text-align: left; }
+  </style>
+</head>
+<body>
+  <h1>CMC Strategy PnL Replay</h1>
+  <p>Track 2 judging window: 2026-06-01 → 2026-06-28 (simulated replay from behavior-log.jsonl)</p>
+  <div class="card"><canvas id="chart"></canvas></div>
+  <div class="card">
+    <h2>Step-by-step decisions</h2>
+    <table>
+      <thead><tr><th>Time</th><th>Signal</th><th>Price</th><th>CMC state</th><th>Cumulative PnL %</th><th>Equity</th></tr></thead>
+      <tbody>
+        
+      </tbody>
+    </table>
+  </div>
+  <script>
+    new Chart(document.getElementById('chart'), {
+      type: 'line',
+      data: {
+        labels: ["2026-06-07T13:49:02.857Z"],
+        datasets: [
+          { label: 'Equity', data: [0], borderColor: '#60a5fa' },
+          { label: 'Cumulative PnL %', data: [0], borderColor: '#34d399' }
+        ]
+      }
+    });
+  </script>
+</body>
+</html>

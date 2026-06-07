@@ -1,0 +1,64 @@
+{
+  "project": "CMC Strategy Forge",
+  "track": "BNB Hackathon Track 2 — Strategy Skills",
+  "replay_window": {
+    "from": "2026-06-01",
+    "to": "2026-06-28"
+  },
+  "strategy_fingerprints": [
+    {
+      "name": "Momentum Merger",
+      "strategyKey": "0x3cdcd256828be6ba2af4d9b7f9e560d1d01eacd36d916c9c621d29bac2e11db6",
+      "path": "C:\\Users\\User\\Desktop\\nothing\\skill\\skill-reputation\\strategies\\momentumMerger.js"
+    },
+    {
+      "name": "Sentiment Divergence",
+      "strategyKey": "0x5d311912c507649fb5ab4b58533922f547a2f541f4b9e08f821a05c24a8ac801",
+      "path": "C:\\Users\\User\\Desktop\\nothing\\skill\\skill-reputation\\strategies\\sentiment-divergence\\STRATEGY.md"
+    },
+    {
+      "name": "Momentum Merger",
+      "strategyKey": "0x6a3265854032b8382c16f5ba66a6fe03f7f244d753add045b2f40ff2a3de89b4",
+      "path": "C:\\Users\\User\\Desktop\\nothing\\skill\\skill-reputation\\strategies\\momentum-merger\\STRATEGY.md"
+    },
+    {
+      "name": "Regime Detector",
+      "strategyKey": "0x8b258acb8197743b86052903a45ff957376cff6a147cf189cf8a31ba10ba3bea",
+      "path": "C:\\Users\\User\\Desktop\\nothing\\skill\\skill-reputation\\strategies\\regimeDetector.js"
+    },
+    {
+      "name": "Regime Detector",
+      "strategyKey": "0x8cb8f436c843319fb6e143dcf15bee9c659a7700f59e7b377c173c9be85b3918",
+      "path": "C:\\Users\\User\\Desktop\\nothing\\skill\\skill-reputation\\strategies\\regime-detector\\STRATEGY.md"
+    },
+    {
+      "name": "Sentiment Divergence",
+      "strategyKey": "0xb0bba5c035baf5136dfc2e88bcad8a5844afc0830a30bceb27057f6ae7b281f2",
+      "path": "C:\\Users\\User\\Desktop\\nothing\\skill\\skill-reputation\\strategies\\sentimentDivergence.js"
+    }
+  ],
+  "attestation_tx_hashes": [
+    {
+      "txHash": "0xe02522702b0225e58948259678f13712761274a090309387c249fa2ea88b8859",
+      "mode": "simulate",
+      "strategyKey": "0x3cdcd256828be6ba2af4d9b7f9e560d1d01eacd36d916c9c621d29bac2e11db6",
+      "digest": "0x2302ec63fe6077834dd7d80cf3b9f4cc422de2d7406679ab69c5fca375cc3d4c"
+    }
+  ],
+  "cmc_data_api_endpoints": [
+    "/v1/cryptocurrency/quotes/latest",
+    "/v1/cryptocurrency/ohlcv/historical",
+    "/v1/social/coin/latest",
+    "/v1/derivatives/open-interest/latest",
+    "/v3/fear-and-greed/historical"
+  ],
+  "twak_config_fingerprint": null,
+  "bnb_chain_transactions": [],
+  "backtest_parameters": {
+    "slippage": "0.1%",
+    "fee": "0.05%",
+    "venue": "PancakeSwap reference / BSC perps simulation"
+  },
+  "performance_summary": {},
+  "generated_at": "2026-06-07T13:49:08.231Z"
+}

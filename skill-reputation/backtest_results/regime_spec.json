@@ -1,0 +1,35 @@
+{
+  "name": "Regime Detector",
+  "version": "1.0.0",
+  "risk_profile": "conservative",
+  "track": "BNB Hackathon Track 2 — Strategy Skills",
+  "data_source": "CoinMarketCap Data API only",
+  "live_trading": false,
+  "simulation_only": true,
+  "params": {
+    "maxDrawdownPct": 15,
+    "positionSizePct": 100,
+    "dailyLossLimitPct": 5
+  },
+  "backtest_performance": {
+    "totalReturnPct": 0.3488,
+    "sharpeRatio": 0,
+    "maxDrawdownPct": 3.4635,
+    "winRatePct": 0,
+    "trades": 0
+  },
+  "rules_plain_english": [
+    "Regime risk-on: positive funding + rising open interest → momentum buys.",
+    "Regime risk-off: negative funding + falling OI → mean-reversion buys.",
+    "Regime neutral: stay in cash (hold).",
+    "Drawdown protection: liquidate if daily loss exceeds 5%."
+  ],
+  "cmc_requirements": {
+    "indicators": [
+      "FundingRate",
+      "OpenInterest"
+    ],
+    "data_frequency": "daily",
+    "min_history_days": 90
+  }
+}

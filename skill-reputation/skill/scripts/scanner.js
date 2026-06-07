@@ -2,9 +2,13 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { keccak256, stringToBytes } from "viem";
+import { validateCmcApiKey } from "../../backtest/cmcDataFetcher.js";
+import { loadProjectEnv } from "../../backtest/lib/loadEnv.js";
 import { parseFrontmatter } from "./lib/parseFrontmatter.js";
 import { computeSkillKey, normalizeName } from "./lib/skillKey.js";
 import { resolveRoots } from "./lib/defaultRoots.js";
+
+loadProjectEnv();
 
 function parseArgs(argv) {
   const roots = [];
@@ -42,25 +46,43 @@ async function walkSkillFiles(rootDir) {
   return results;
 }
 
-function defaultLogPath() {
+export function defaultLogPath() {
+  if (process.env.CMC_STRATEGY_VAULT_LOG) return process.env.CMC_STRATEGY_VAULT_LOG;
   if (process.env.SKILL_REPUTATION_LOG) return process.env.SKILL_REPUTATION_LOG;
   const base =
     process.env.XDG_CONFIG_HOME ||
     (process.platform === "win32"
-      ? path.join(process.env.APPDATA || path.join(path.homedir(), "AppData", "Roaming"), "skill-reputation")
-      : path.join(path.homedir(), ".config", "skill-reputation"));
+      ? path.join(process.env.APPDATA || path.join(path.homedir(), "AppData", "Roaming"), "cmc-strategy-vault")
+      : path.join(path.homedir(), ".config", "cmc-strategy-vault"));
   return path.join(base, "behavior-log.jsonl");
 }
 
 async function main() {
-  const { roots: cliRoots, out: cliOut } = parseArgs(process.argv);
+  await runScan(process.argv);
+}
+
+/**
+ * @param {string[]} argv
+ * @param {{ skipCmcValidation?: boolean }} [opts]
+ */
+export async function runScan(argv, opts = {}) {
+  const { roots: cliRoots, out: cliOut } = parseArgs(argv);
   const roots =
-    cliRoots.length > 0 ? cliRoots.map((p) => path.resolve(p)) : resolveRoots(process.env.SKILL_REPUTATION_ROOTS);
+    cliRoots.length > 0 ? cliRoots.map((p) => path.resolve(p)) : resolveRoots(
+      process.env.CMC_STRATEGY_ROOTS || process.env.SKILL_REPUTATION_ROOTS
+    );
   const logPath = cliOut || defaultLogPath();
 
+  if (!opts.skipCmcValidation && process.env.CMC_API_KEY) {
+    const validation = await validateCmcApiKey({ required: false });
+    console.log(JSON.stringify({ cmcValidation: validation }, null, 2));
+    if (!validation.ok && !validation.skipped) {
+      throw new Error("CMC_API_KEY validation failed");
+    }
+  }
+
   if (roots.length === 0) {
-    console.error("No skill roots found. Set SKILL_REPUTATION_ROOTS or create ~/.openclaw/skills etc.");
-    process.exit(1);
+    throw new Error("No skill roots found. Set CMC_STRATEGY_ROOTS / SKILL_REPUTATION_ROOTS or create ~/.openclaw/skills etc.");
   }
 
   const skills = [];
@@ -115,6 +137,7 @@ async function main() {
   await fs.appendFile(logPath, line + "\n", "utf8");
 
   console.log(JSON.stringify({ roots, skillsFound: skills.length, digest, logPath }, null, 2));
+  return { roots, skillsFound: skills.length, digest, logPath };
 }
 
 main().catch((e) => {

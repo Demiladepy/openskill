@@ -1,0 +1,63 @@
+{
+  "checklist": [
+    {
+      "name": "unit_tests",
+      "ok": true,
+      "detail": "backtest tests passed"
+    },
+    {
+      "name": "env_cmc_api_key",
+      "ok": true,
+      "detail": "present or mock mode"
+    },
+    {
+      "name": "env_bnb_rpc_url",
+      "ok": true,
+      "detail": "optional — not set"
+    },
+    {
+      "name": "env_twak_unlock_passphrase",
+      "ok": true,
+      "detail": "optional — not set"
+    },
+    {
+      "name": "env_cmc_strategy_vault_contract",
+      "ok": true,
+      "detail": "optional — not set"
+    },
+    {
+      "name": "cmc_api",
+      "ok": true,
+      "detail": "mock/skipped"
+    },
+    {
+      "name": "twak_session",
+      "ok": true,
+      "detail": "run twakSetup.js (or use ATTEST_MODE=simulate)"
+    },
+    {
+      "name": "on_chain_attestation",
+      "ok": true,
+      "detail": "1 simulated attestations (demo mode)"
+    },
+    {
+      "name": "replay_report",
+      "ok": true,
+      "detail": "C:\\Users\\User\\Desktop\\nothing\\skill\\skill-reputation\\replay\\output\\replay_report.html"
+    },
+    {
+      "name": "cmcskill_package",
+      "ok": true,
+      "detail": "momentum.cmcskill.zip"
+    }
+  ],
+  "twak_fingerprint": null,
+  "submission_manifest": "C:\\Users\\User\\Desktop\\nothing\\skill\\skill-reputation\\replay\\output\\submission_manifest.json",
+  "doraHacks_upload": [
+    "GitHub repo URL",
+    "Demo video (strategy → replay → export)",
+    "examples/*.cmcskill.zip",
+    "replay/output/submission_manifest.json"
+  ],
+  "generated_at": "2026-06-07T13:49:08.278Z"
+}

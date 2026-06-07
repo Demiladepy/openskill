@@ -1,0 +1,10 @@
+{
+  "replay": [],
+  "metrics": {
+    "totalReturnPct": 0,
+    "sharpeRatio": 0,
+    "maxDrawdownPct": 0,
+    "winRatePct": 0,
+    "trades": 0
+  }
+}

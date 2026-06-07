@@ -84,3 +84,49 @@ a:hover {
 .muted {
   color: var(--muted);
 }
+
+.panel {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  background: var(--panel);
+}
+
+.panel label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.875rem;
+  margin-top: 8px;
+}
+
+.panel select,
+.panel button {
+  margin-top: 4px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #0c0d10;
+  color: var(--text);
+}
+
+.panel button {
+  background: var(--accent);
+  border: none;
+  cursor: pointer;
+}
+
+.panel button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.panel pre {
+  margin-top: 12px;
+  padding: 12px;
+  background: #0c0d10;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 12px;
+}

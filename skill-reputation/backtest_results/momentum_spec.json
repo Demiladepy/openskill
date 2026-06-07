@@ -1,0 +1,45 @@
+{
+  "name": "Momentum Merger",
+  "version": "1.0.0",
+  "risk_profile": "moderate",
+  "track": "BNB Hackathon Track 2 — Strategy Skills",
+  "data_source": "CoinMarketCap Data API only",
+  "live_trading": false,
+  "simulation_only": true,
+  "params": {
+    "maxDrawdownPct": 20,
+    "positionSizePct": 100,
+    "rsiPeriod": 14
+  },
+  "backtest_performance": {
+    "totalReturnPct": 0,
+    "sharpeRatio": 0,
+    "maxDrawdownPct": 0,
+    "winRatePct": 0,
+    "trades": 0
+  },
+  "rules_plain_english": [
+    "Entry: RSI(14) < 30 AND MACD bullish crossover AND CMC Fear & Greed < 25 (Extreme Fear).",
+    "Exit: RSI(14) > 70 OR MACD bearish crossover.",
+    "Position sizing: 100% capital on signal, full exit on opposite signal.",
+    "Simulation only — no live trading (Track 2)."
+  ],
+  "cmc_requirements": {
+    "indicators": [
+      "RSI",
+      "MACD",
+      "FearGreed"
+    ],
+    "data_frequency": "daily",
+    "min_history_days": 90
+  },
+  "entry_rules": [
+    "RSI < 30",
+    "MACD bullish cross",
+    "Fear & Greed < 25"
+  ],
+  "exit_rules": [
+    "RSI > 70",
+    "MACD bearish cross"
+  ]
+}

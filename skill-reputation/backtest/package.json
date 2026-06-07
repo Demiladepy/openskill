@@ -1,0 +1,12 @@
+{
+  "name": "cmc-strategy-backtest",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "fetch": "node cmcDataFetcher.js",
+    "ma": "node maCrossover.js --all",
+    "ma:one": "node maCrossover.js --symbol BNB --convert USDT",
+    "test": "node --test test/maCrossover.test.js"
+  }
+}

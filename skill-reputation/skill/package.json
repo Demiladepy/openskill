@@ -1,14 +1,19 @@
 {
-  "name": "skill-reputation-skill",
+  "name": "cmc-strategy-validator-skill",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "scan": "node scripts/scanner.js",
+    "scan:cmc": "node scripts/scan.js",
     "attest": "node scripts/attest.js",
+    "twak:setup": "node scripts/twakSetup.js",
     "test": "node --test"
   },
   "dependencies": {
     "viem": "^2.21.54"
+  },
+  "optionalDependencies": {
+    "@trustwallet/agent-kit": "*"
   }
 }

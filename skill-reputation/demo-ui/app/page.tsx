@@ -1,12 +1,14 @@
 import { Dashboard } from "./ui/Dashboard";
+import { ExportPanel } from "./ui/ExportPanel";
 
 export default function Page() {
   return (
     <main>
-      <h1>SkillReputation</h1>
+      <h1>CMC Strategy Verification Dashboard</h1>
       <p className="lead">
-        Recent <span className="mono">Attested</span> events on Base Sepolia (read-only).
+        CoinMarketCap Track 2 — strategy attestation audit and marketplace export.
       </p>
+      <ExportPanel />
       <Dashboard />
     </main>
   );
