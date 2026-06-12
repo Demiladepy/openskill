@@ -16,14 +16,14 @@ function parseDotEnv(raw) {
   return out;
 }
 
-export function loadProjectEnv() {
+/** Load bnbagent + skill env files without overwriting existing process.env. */
+export function loadAgentEnv() {
   const here = path.dirname(fileURLToPath(import.meta.url));
+  const root = path.join(here, "..", "..");
   const candidates = [
-    path.join(process.cwd(), ".env"),
-    path.join(process.cwd(), "skill", ".env"),
-    path.join(process.cwd(), "..", "skill", ".env"),
-    path.join(here, "..", "..", ".env"),
-    path.join(here, "..", "..", "skill", ".env"),
+    path.join(root, "bnbagent", ".env.agent"),
+    path.join(root, "skill", ".env"),
+    path.join(root, ".env"),
   ];
   for (const file of candidates) {
     try {
@@ -32,5 +32,18 @@ export function loadProjectEnv() {
     } catch {
       /* skip */
     }
+  }
+}
+
+export function getAgentStatePath() {
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  return path.join(here, "..", "agent_state.json");
+}
+
+export function readAgentStateSync() {
+  try {
+    return JSON.parse(fs.readFileSync(getAgentStatePath(), "utf8"));
+  } catch {
+    return null;
   }
 }

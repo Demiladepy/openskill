@@ -1,53 +1,61 @@
 import { BaseStrategy } from "./baseStrategy.js";
+import { sma, atr } from "./lib/indicators.js";
 
 export default class RegimeDetector extends BaseStrategy {
   constructor() {
     super({
       name: "Regime Detector",
-      version: "1.0.0",
+      version: "1.1.0",
       riskProfile: "conservative",
-      params: { maxDrawdownPct: 15, positionSizePct: 100, dailyLossLimitPct: 5 },
+      params: {
+        maxDrawdownPct: 15,
+        positionSizePct: 25,
+        smaPeriod: 50,
+        atrPeriod: 14,
+        atrRangeThreshold: 0.015,
+        smaSlopeThreshold: 0.0005,
+      },
     });
   }
 
-  detectRegime(derivatives) {
-    const funding = derivatives?.fundingRate ?? 0;
-    const oiChange = derivatives?.openInterestChange24h ?? 0;
-    if (funding > 0 && oiChange > 0) return "risk-on";
-    if (funding < 0 && oiChange < 0) return "risk-off";
+  detectRegime(bars, i, sma50, atr14) {
+    const price = bars[i].close;
+    const smaVal = sma50[i];
+    const atrVal = atr14[i];
+    if (smaVal == null || atrVal == null) return "unknown";
+
+    const slope =
+      sma50[i] != null && sma50[i - 5] != null && sma50[i - 5] !== 0
+        ? (sma50[i] - sma50[i - 5]) / sma50[i - 5]
+        : 0;
+    const atrRatio = price > 0 ? atrVal / price : 0;
+
+    if (atrRatio < this.params.atrRangeThreshold && Math.abs(slope) < this.params.smaSlopeThreshold) {
+      return "ranging";
+    }
+    if (price > smaVal && slope > this.params.smaSlopeThreshold) return "trending-up";
+    if (price < smaVal && slope < -this.params.smaSlopeThreshold) return "trending-down";
     return "neutral";
   }
 
   generateSignals(marketData) {
     const bars = marketData.ohlcv || [];
-    const derivatives = marketData.derivatives || {};
-    const regime = this.detectRegime(derivatives);
+    const closes = bars.map((b) => b.close);
+    const sma50 = sma(closes, this.params.smaPeriod);
+    const atr14 = atr(bars, this.params.atrPeriod);
     const signals = [];
-    let dailyStart = bars[0]?.close ?? 0;
-    let dayAnchor = 0;
 
-    for (let i = 1; i < bars.length; i++) {
-      if (i - dayAnchor >= 1) {
-        dailyStart = bars[dayAnchor].close;
-        dayAnchor = i;
-      }
-      const dailyLossPct = dailyStart > 0 ? ((bars[i].close - dailyStart) / dailyStart) * 100 : 0;
-
+    for (let i = this.params.smaPeriod; i < bars.length; i++) {
+      const regime = this.detectRegime(bars, i, sma50, atr14);
       let sig = "hold";
       let confidence = 0.5;
 
-      if (dailyLossPct <= -this.params.dailyLossLimitPct) {
+      if (regime === "trending-up") {
+        sig = "buy";
+        confidence = 0.75;
+      } else if (regime === "trending-down") {
         sig = "sell";
-        confidence = 0.9;
-      } else if (regime === "risk-on" && bars[i].close > bars[i - 1].close) {
-        sig = "buy";
-        confidence = 0.7;
-      } else if (regime === "risk-off" && bars[i].close < bars[i - 1].close) {
-        sig = "buy";
-        confidence = 0.65;
-      } else if (regime === "neutral") {
-        sig = "hold";
-        confidence = 0.4;
+        confidence = 0.72;
       }
 
       signals.push({
@@ -63,17 +71,17 @@ export default class RegimeDetector extends BaseStrategy {
 
   backtest(historicalData, startDate, endDate) {
     this.validateParams();
-    const bars = filterRange(historicalData.ohlcv || [], startDate, endDate);
-    const signals = this.generateSignals({ ...historicalData, ohlcv: bars });
+    const signals = filterSignalsByDate(this.generateSignals(historicalData), startDate, endDate);
     return {
       signals,
       rulesPlainEnglish: [
-        "Regime risk-on: positive funding + rising open interest → momentum buys.",
-        "Regime risk-off: negative funding + falling OI → mean-reversion buys.",
-        "Regime neutral: stay in cash (hold).",
-        "Drawdown protection: liquidate if daily loss exceeds 5%.",
+        "TRENDING UP: price > 50-SMA and positive SMA slope → long.",
+        "TRENDING DOWN: price < 50-SMA and negative SMA slope → exit/flat.",
+        "RANGING: ATR/price below threshold and flat SMA → no position.",
+        "Trend-following: capture big moves, sit out chop.",
+        "Simulation only — no live trading.",
       ],
-      cmcEndpointsUsed: ["/v1/derivatives/open-interest/latest"],
+      cmcEndpointsUsed: ["/v2/cryptocurrency/ohlcv/historical"],
     };
   }
 
@@ -81,7 +89,7 @@ export default class RegimeDetector extends BaseStrategy {
     return {
       ...this.baseSpec(),
       cmc_requirements: {
-        indicators: ["FundingRate", "OpenInterest"],
+        indicators: ["SMA50", "ATR14"],
         data_frequency: "daily",
         min_history_days: 90,
       },
@@ -89,11 +97,11 @@ export default class RegimeDetector extends BaseStrategy {
   }
 }
 
-function filterRange(bars, start, end) {
+function filterSignalsByDate(signals, start, end) {
   const s = new Date(start).getTime();
   const e = new Date(end).getTime();
-  return bars.filter((b) => {
-    const t = new Date(b.timestamp).getTime();
+  return signals.filter((sig) => {
+    const t = new Date(sig.timestamp).getTime();
     return t >= s && t <= e;
   });
 }

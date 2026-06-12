@@ -8,14 +8,15 @@
     "contracts",
     "skill",
     "demo-ui",
-    "backtest"
+    "backtest",
+    "cli-skill"
   ],
   "scripts": {
     "test": "npm run test --workspaces --if-present && node --test strategies/lib/indicators.test.js 2>/dev/null || true",
     "registry": "node src/skillRegistry.js",
     "strategy": "node strategies/index.js",
     "strategy:all": "node strategies/index.js all --all",
-    "backtest": "node strategies/index.js momentum --from 2026-06-01 --to 2026-06-21",
+    "backtest": "node strategies/index.js momentum --from 2026-03-01 --to 2026-06-01",
     "replay": "node replay/pnlReplay.js",
     "export": "node marketplace/exporter.js",
     "export:scan": "node marketplace/exporter.js --from-scan",
@@ -23,7 +24,14 @@
     "hackathon:verify": "node scripts/hackathonVerify.js",
     "twak:setup": "node skill/scripts/twakSetup.js",
     "build:ui": "npm run build -w skill-reputation-demo-ui",
-    "scan:cmc": "node skill/scripts/scan.js"
+    "scan:cmc": "node skill/scripts/scan.js",
+    "cli-skill": "npm run run -w cmc-quant-strategy-pack",
+    "cli-skill:metrics": "npm run metrics -w cmc-quant-strategy-pack",
+    "agent:register": "node bnbagent/register.js",
+    "agent:run": "python bnbagent/agent_server.py",
+    "agent:deploy": "node bnbagent/contracts/deploy.js",
+    "marketplace:post": "python bnbagent/marketplace_client.py",
+    "marketplace:verify": "node bnbagent/verify_job.js"
   },
   "dependencies": {
     "archiver": "^7.0.1",

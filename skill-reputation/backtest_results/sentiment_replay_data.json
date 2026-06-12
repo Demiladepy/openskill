@@ -1,28 +1,29 @@
 {
   "replay": [
     {
-      "timestamp": "2026-06-06T00:00:00.000Z",
+      "timestamp": "2026-03-24T00:00:00.000Z",
       "action": "entry",
-      "price": 615.5967590559048,
+      "price": 725.7249999999999,
       "signal": "buy",
-      "confidence": 0.76,
-      "equity": 9985.014985014986
+      "confidence": 0.78,
+      "equity": 9998.001998001999
     },
     {
-      "timestamp": "2026-06-16T00:00:00.000Z",
+      "timestamp": "2026-06-01T00:00:00.000Z",
       "action": "exit",
-      "price": 603.6682173796735,
-      "signal": "sell",
-      "confidence": 0.6,
-      "pnlPct": -2.1337220320620873,
-      "equity": 9786.627796793791
+      "price": 909.2701197164865,
+      "signal": "end_of_period",
+      "pnlPct": 24.915778877457182,
+      "equity": 10249.157788774572
     }
   ],
   "metrics": {
-    "totalReturnPct": -2.1337,
+    "totalReturnPct": 2.5166,
     "sharpeRatio": 0,
-    "maxDrawdownPct": 2.6067,
-    "winRatePct": 0,
-    "trades": 1
+    "maxDrawdownPct": 0.2992,
+    "winRatePct": 100,
+    "trades": 1,
+    "profitFactor": 999,
+    "avgTradeDurationDays": 69
   }
 }

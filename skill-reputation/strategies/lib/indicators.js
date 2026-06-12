@@ -47,3 +47,35 @@ export function macd(closes, fast = 12, slow = 26, signal = 9) {
   const signalLine = ema(validLine, signal);
   return { line, signal: signalLine };
 }
+
+/** @param {Array<{ high: number, low: number, close: number }>} bars */
+export function atr(bars, period = 14) {
+  const out = new Array(bars.length).fill(null);
+  const trs = [];
+  for (let i = 0; i < bars.length; i++) {
+    if (i === 0) {
+      trs.push(bars[i].high - bars[i].low);
+    } else {
+      const hl = bars[i].high - bars[i].low;
+      const hc = Math.abs(bars[i].high - bars[i - 1].close);
+      const lc = Math.abs(bars[i].low - bars[i - 1].close);
+      trs.push(Math.max(hl, hc, lc));
+    }
+  }
+  for (let i = period - 1; i < trs.length; i++) {
+    let s = 0;
+    for (let j = i - period + 1; j <= i; j++) s += trs[j];
+    out[i] = s / period;
+  }
+  return out;
+}
+
+/** Rolling percent return over N bars. */
+export function rollingReturn(closes, lookback) {
+  const out = new Array(closes.length).fill(null);
+  for (let i = lookback; i < closes.length; i++) {
+    const prev = closes[i - lookback];
+    out[i] = prev > 0 ? ((closes[i] - prev) / prev) * 100 : 0;
+  }
+  return out;
+}

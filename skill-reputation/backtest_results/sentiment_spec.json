@@ -1,6 +1,6 @@
 {
   "name": "Sentiment Divergence",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "risk_profile": "moderate",
   "track": "BNB Hackathon Track 2 — Strategy Skills",
   "data_source": "CoinMarketCap Data API only",
@@ -8,26 +8,34 @@
   "simulation_only": true,
   "params": {
     "maxDrawdownPct": 18,
-    "positionSizePct": 100
+    "positionSizePct": 10,
+    "lookbackShort": 7,
+    "lookbackLong": 30,
+    "buyShortThreshold": -9.5,
+    "buyLongMin": 0,
+    "sellShortThreshold": 15,
+    "sellLongThreshold": -15
   },
   "backtest_performance": {
-    "totalReturnPct": -2.1337,
+    "totalReturnPct": 2.5166,
     "sharpeRatio": 0,
-    "maxDrawdownPct": 2.6067,
-    "winRatePct": 0,
-    "trades": 1
+    "maxDrawdownPct": 0.2992,
+    "winRatePct": 100,
+    "trades": 1,
+    "profitFactor": 999,
+    "avgTradeDurationDays": 69
   },
   "rules_plain_english": [
-    "Entry (bearish divergence): price rising while CMC social sentiment decreases.",
-    "Entry (bullish divergence): price falling while CMC social sentiment increases.",
-    "Exit: divergence resolves when sentiment and price realign.",
-    "Uses CMC social volume and KOL mention endpoints (simulation only)."
+    "Mean-reversion thesis: short-term weakness vs positive longer-term trend.",
+    "Entry (buy): 7-day return < -9.5% AND 30-day return > 0%.",
+    "Exit (sell): 7-day return > +15% OR 30-day return < -15%.",
+    "Uses CMC quotes (7d/30d % change) and OHLCV-derived returns.",
+    "Simulation only — no live trading."
   ],
   "cmc_requirements": {
     "indicators": [
-      "SocialSentiment",
-      "SocialVolume",
-      "KOLMentions"
+      "PriceMomentum7d",
+      "PriceMomentum30d"
     ],
     "data_frequency": "daily",
     "min_history_days": 60

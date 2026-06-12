@@ -1,0 +1,21 @@
+{
+  "name": "cmc-quant-strategy-pack",
+  "version": "1.0.0",
+  "description": "CMC CLI quant strategy pack — momentum, sentiment, regime backtests with Sharpe and drawdown metrics",
+  "type": "module",
+  "bin": {
+    "cmc-quant-strategy-pack": "./scripts/run.js"
+  },
+  "scripts": {
+    "start": "node scripts/run.js",
+    "run": "node scripts/run.js run",
+    "metrics": "node scripts/run.js metrics",
+    "test": "node --test test/cli.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "commander": "^11.1.0"
+  }
+}

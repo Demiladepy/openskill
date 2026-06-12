@@ -1,6 +1,6 @@
 {
   "name": "Momentum Merger",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "risk_profile": "moderate",
   "track": "BNB Hackathon Track 2 — Strategy Skills",
   "data_source": "CoinMarketCap Data API only",
@@ -8,20 +8,28 @@
   "simulation_only": true,
   "params": {
     "maxDrawdownPct": 20,
-    "positionSizePct": 100,
-    "rsiPeriod": 14
+    "positionSizePct": 2,
+    "trailingStopPct": 5,
+    "rsiPeriod": 14,
+    "rsiBuy": 35,
+    "rsiSell": 65,
+    "fearBuy": 30,
+    "fearSell": 70
   },
   "backtest_performance": {
-    "totalReturnPct": 0,
-    "sharpeRatio": 0,
-    "maxDrawdownPct": 0,
-    "winRatePct": 0,
-    "trades": 0
+    "totalReturnPct": 0.063,
+    "sharpeRatio": 9.8183,
+    "maxDrawdownPct": 0.0071,
+    "winRatePct": 50,
+    "trades": 2,
+    "profitFactor": 6.3202,
+    "avgTradeDurationDays": 4.5
   },
   "rules_plain_english": [
-    "Entry: RSI(14) < 30 AND MACD bullish crossover AND CMC Fear & Greed < 25 (Extreme Fear).",
-    "Exit: RSI(14) > 70 OR MACD bearish crossover.",
-    "Position sizing: 100% capital on signal, full exit on opposite signal.",
+    "Entry (buy): RSI(14) < 35 OR (MACD bullish crossover AND CMC Fear & Greed < 30).",
+    "Exit (sell): RSI(14) > 65 OR (MACD bearish crossover AND Fear & Greed > 70) OR MACD bearish cross.",
+    "Position sizing: 2% of equity per trade.",
+    "Trailing stop: 5% from high water mark (simulation engine).",
     "Simulation only — no live trading (Track 2)."
   ],
   "cmc_requirements": {
@@ -34,12 +42,12 @@
     "min_history_days": 90
   },
   "entry_rules": [
-    "RSI < 30",
-    "MACD bullish cross",
-    "Fear & Greed < 25"
+    "RSI < 35",
+    "MACD bullish cross + Fear < 30"
   ],
   "exit_rules": [
-    "RSI > 70",
-    "MACD bearish cross"
+    "RSI > 65",
+    "MACD bearish cross",
+    "5% trailing stop"
   ]
 }

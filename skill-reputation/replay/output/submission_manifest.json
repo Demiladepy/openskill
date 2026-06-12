@@ -45,6 +45,27 @@
       "digest": "0x2302ec63fe6077834dd7d80cf3b9f4cc422de2d7406679ab69c5fca375cc3d4c"
     }
   ],
+  "bnb_ai_agent": {
+    "agent_id": 9001,
+    "registration_tx": "0x0c989596165e740fb667bb942e2e038a22766ac20f16291dd8869c2465569bd3",
+    "erc8004_registry": "0x8004A818BFB912233c491871b3d84c89A494BD9e",
+    "erc8183_commerce": "0xa206c0517b6371c6638cd9e4a42cc9f02a33b0de",
+    "job_transactions": [
+      {
+        "jobId": "0x6d065f775fe241498467491f251ab860",
+        "status": "COMPLETED",
+        "mode": "http",
+        "strategy": "momentum"
+      },
+      {
+        "jobId": "0x6d065f775fe241498467491f251ab860",
+        "status": "completed",
+        "mode": "http",
+        "strategy": "momentum"
+      }
+    ],
+    "endpoint": "http://localhost:8000/erc8183/status"
+  },
   "cmc_data_api_endpoints": [
     "/v1/cryptocurrency/quotes/latest",
     "/v1/cryptocurrency/ohlcv/historical",
@@ -60,5 +81,5 @@
     "venue": "PancakeSwap reference / BSC perps simulation"
   },
   "performance_summary": {},
-  "generated_at": "2026-06-07T13:49:08.231Z"
+  "generated_at": "2026-06-07T17:19:16.910Z"
 }

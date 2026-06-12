@@ -19,3 +19,9 @@ test-log.jsonl
 # Keys and certs
 **/*.pem
 **/*.key
+
+# BNB Agent local state (may contain job IDs / tx refs)
+bnbagent/.env.agent
+bnbagent/agent_state.json
+bnbagent/.agent-data/
+cli-skill/result.json

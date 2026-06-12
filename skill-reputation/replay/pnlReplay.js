@@ -11,6 +11,7 @@ import {
 import { getBehaviorLogPath } from "../src/lib/logPath.js";
 import { loadProjectEnv } from "../src/lib/loadEnv.js";
 import { twakConfigFingerprint, loadTwakSession } from "../skill/scripts/lib/twakClient.js";
+import { readAgentStateSync } from "../bnbagent/lib/loadAgentEnv.js";
 
 loadProjectEnv();
 
@@ -145,6 +146,7 @@ export async function generateReplayReport(opts = {}) {
   const attestations = await readAttestations(logPath);
   const fingerprints = await readStrategyFingerprints(logPath);
   const { session } = await loadTwakSession();
+  const agentState = readAgentStateSync();
 
   const manifest = {
     project: "CMC Strategy Forge",
@@ -157,6 +159,21 @@ export async function generateReplayReport(opts = {}) {
       strategyKey: a.strategyKey,
       digest: a.digest,
     })),
+    bnb_ai_agent: {
+      agent_id: agentState?.agentId ?? agentState?.agent_id ?? null,
+      registration_tx: agentState?.transactionHash ?? null,
+      erc8004_registry:
+        agentState?.registry || process.env.ERC8004_REGISTRY_ADDRESS || "0x8004A818BFB912233c491871b3d84c89A494BD9e",
+      erc8183_commerce: process.env.ERC8183_COMMERCE_ADDRESS || "0xa206c0517b6371c6638cd9e4a42cc9f02a33b0de",
+      job_transactions: (agentState?.jobs || []).map((j) => ({
+        jobId: j.jobId,
+        status: j.status,
+        mode: j.mode,
+        fund_tx: j.fund_tx,
+        strategy: j.strategy,
+      })),
+      endpoint: agentState?.endpoint || process.env.AGENT_SERVER_URL || null,
+    },
     cmc_data_api_endpoints: CMC_ENDPOINTS,
     twak_config_fingerprint: twakConfigFingerprint(session),
     bnb_chain_transactions: attestations

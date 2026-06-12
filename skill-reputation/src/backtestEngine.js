@@ -1,140 +1,511 @@
 /**
+
  * Track 2 backtest engine — simulation only, no live execution.
+
  */
-const SLIPPAGE = 0.001; // 0.1%
-const FEE = 0.0005; // 0.05%
+
+import { sharpeFromReturns, round } from "../cli-skill/scripts/quant/sharpe.js";
+
+import { maxDrawdownFromEquity } from "../cli-skill/scripts/quant/maxdd.js";
+
+import { fetchMarketBundle } from "./cmcDataClient.js";
+
+
+
+const SLIPPAGE = 0.001; // 0.1% per leg
+
+const FEE = 0.001; // 0.1% per leg (0.2% round-trip)
+
+const CRYPTO_PERIODS_PER_YEAR = 365;
+
+
 
 /**
- * @param {Array<{ timestamp: string, close: number }>} bars
+
+ * @param {Array<{ timestamp: string, close: number, high?: number }>} bars
+
  * @param {Array<{ timestamp: string, signal: string, confidence?: number, strength?: number }>} signals
- * @param {{ initialCapital?: number, positionSizePct?: number }} opts
+
+ * @param {{ initialCapital?: number, positionSizePct?: number, trailingStopPct?: number }} opts
+
  */
+
 export function runBacktestSimulation(bars, signals, opts = {}) {
+
   const capital0 = opts.initialCapital ?? 10000;
+
   const positionSizePct = (opts.positionSizePct ?? 100) / 100;
-  const signalByTs = new Map(signals.map((s) => [s.timestamp, s]));
+
+  const trailingStopPct = opts.trailingStopPct ?? 0;
+
+  const signalByTs = new Map(signals.map((s) => [normalizeTs(s.timestamp), s]));
+
+
 
   let cash = capital0;
+
   let position = null;
+
   /** @type {Array<Record<string, unknown>>} */
+
   const replay = [];
+
   /** @type {number[]} */
+
   const tradeReturns = [];
-  /** @type {number[]} */
-  const equity = [capital0];
-  let peak = capital0;
-  let maxDrawdownPct = 0;
 
-  for (const bar of bars) {
-    const sig = signalByTs.get(bar.timestamp);
-    const px = bar.close * (1 + SLIPPAGE);
+  /** @type {{ date: string, equity: number, position: string }[]} */
 
-    if (sig?.signal === "buy" && !position) {
-      const spend = cash * positionSizePct;
-      const fee = spend * FEE;
-      const units = (spend - fee) / px;
-      position = { entryTs: bar.timestamp, entryPrice: px, units, spend };
-      cash -= spend;
-      replay.push({
-        timestamp: bar.timestamp,
-        action: "entry",
-        price: px,
-        signal: sig.signal,
-        confidence: sig.confidence ?? sig.strength ?? null,
-        equity: cash + units * bar.close,
-      });
-    }
+  const equityCurve = [];
 
-    if (sig?.signal === "sell" && position) {
-      const gross = position.units * (bar.close * (1 - SLIPPAGE));
-      const fee = gross * FEE;
-      const proceeds = gross - fee;
-      cash += proceeds;
-      const ret = (proceeds - position.spend) / position.spend;
-      tradeReturns.push(ret);
-      replay.push({
-        timestamp: bar.timestamp,
-        action: "exit",
-        price: bar.close,
-        signal: sig.signal,
-        confidence: sig.confidence ?? sig.strength ?? null,
-        pnlPct: ret * 100,
-        equity: cash,
-      });
-      position = null;
-    }
+  /** @type {{ entryTs: string, exitTs: string, days: number }[]} */
 
-    const mark = cash + (position ? position.units * bar.close : 0);
-    equity.push(mark);
-    peak = Math.max(peak, mark);
-    const dd = peak > 0 ? ((peak - mark) / peak) * 100 : 0;
-    maxDrawdownPct = Math.max(maxDrawdownPct, dd);
+  const tradeDurations = [];
+
+
+
+  function closePosition(bar, reason) {
+
+    if (!position) return;
+
+    const gross = position.units * (bar.close * (1 - SLIPPAGE));
+
+    const fee = gross * FEE;
+
+    const proceeds = gross - fee;
+
+    cash += proceeds;
+
+    const ret = (proceeds - position.spend) / position.spend;
+
+    tradeReturns.push(ret);
+
+    const entryMs = new Date(position.entryTs).getTime();
+
+    const exitMs = new Date(bar.timestamp).getTime();
+
+    tradeDurations.push({
+
+      entryTs: position.entryTs,
+
+      exitTs: bar.timestamp,
+
+      days: Math.max(1, Math.round((exitMs - entryMs) / 86400000)),
+
+    });
+
+    replay.push({
+
+      timestamp: bar.timestamp,
+
+      action: "exit",
+
+      price: bar.close,
+
+      signal: reason,
+
+      pnlPct: ret * 100,
+
+      equity: cash,
+
+    });
+
+    position = null;
+
   }
 
-  const totalReturnPct = ((equity.at(-1) - capital0) / capital0) * 100;
-  const sharpe = sharpeAnnualized(tradeReturns);
+
+
+  for (const bar of bars) {
+
+    const sig = signalByTs.get(normalizeTs(bar.timestamp));
+
+    const px = bar.close * (1 + SLIPPAGE);
+
+
+
+    if (position && trailingStopPct > 0) {
+
+      position.highWaterMark = Math.max(position.highWaterMark ?? position.entryPrice, bar.high ?? bar.close);
+
+      const stopPx = position.highWaterMark * (1 - trailingStopPct / 100);
+
+      if (bar.close <= stopPx) {
+
+        closePosition(bar, "trailing_stop");
+
+      }
+
+    }
+
+
+
+    if (sig?.signal === "buy" && !position) {
+
+      const spend = cash * positionSizePct;
+
+      const fee = spend * FEE;
+
+      const units = (spend - fee) / px;
+
+      position = {
+
+        entryTs: bar.timestamp,
+
+        entryPrice: px,
+
+        units,
+
+        spend,
+
+        highWaterMark: bar.close,
+
+      };
+
+      cash -= spend;
+
+      replay.push({
+
+        timestamp: bar.timestamp,
+
+        action: "entry",
+
+        price: px,
+
+        signal: sig.signal,
+
+        confidence: sig.confidence ?? sig.strength ?? null,
+
+        equity: cash + units * bar.close,
+
+      });
+
+    }
+
+
+
+    if (sig?.signal === "sell" && position) {
+
+      closePosition(bar, sig.signal);
+
+    }
+
+
+
+    const mark = cash + (position ? position.units * bar.close : 0);
+
+    equityCurve.push({
+
+      date: bar.timestamp,
+
+      equity: round(mark, 2),
+
+      position: position ? "long" : "flat",
+
+    });
+
+  }
+
+
+
+  if (position && bars.length) {
+
+    closePosition(bars.at(-1), "end_of_period");
+
+  }
+
+
+
+  const finalEquity = equityCurve.at(-1)?.equity ?? capital0;
+
+  const totalReturnPct = ((finalEquity - capital0) / capital0) * 100;
+
+  const sharpe = sharpeFromReturns(tradeReturns, CRYPTO_PERIODS_PER_YEAR);
+
   const winRatePct =
+
     tradeReturns.length === 0 ? 0 : (tradeReturns.filter((r) => r > 0).length / tradeReturns.length) * 100;
 
+
+
+  const grossProfit = tradeReturns.filter((r) => r > 0).reduce((a, r) => a + r, 0);
+
+  const grossLoss = Math.abs(tradeReturns.filter((r) => r < 0).reduce((a, r) => a + r, 0));
+
+  const profitFactor = grossLoss === 0 ? (grossProfit > 0 ? 999 : 0) : round(grossProfit / grossLoss);
+
+  const avgTradeDurationDays =
+
+    tradeDurations.length === 0
+
+      ? 0
+
+      : round(tradeDurations.reduce((a, t) => a + t.days, 0) / tradeDurations.length, 1);
+
+
+
+  const equityValues = equityCurve.map((e) => e.equity);
+
+
+
   return {
+
     metrics: {
+
       totalReturnPct: round(totalReturnPct),
+
       sharpeRatio: sharpe,
-      maxDrawdownPct: round(maxDrawdownPct),
+
+      maxDrawdownPct: maxDrawdownFromEquity(equityValues.length ? equityValues : [capital0]),
+
       winRatePct: round(winRatePct),
+
       trades: tradeReturns.length,
+
+      profitFactor,
+
+      avgTradeDurationDays,
+
     },
+
     replay,
-    equity,
+
+    equity: equityValues,
+
+    equityCurve,
+
+    tradeReturns,
+
   };
+
 }
 
-function sharpeAnnualized(returns) {
-  if (returns.length < 2) return 0;
-  const mean = returns.reduce((a, b) => a + b, 0) / returns.length;
-  const variance = returns.reduce((a, r) => a + (r - mean) ** 2, 0) / (returns.length - 1);
-  const std = Math.sqrt(variance);
-  if (std === 0) return 0;
-  return round((mean / std) * Math.sqrt(252));
-}
 
-function round(n) {
-  return Number(n.toFixed(4));
-}
 
 /**
+
  * @param {import('../strategies/baseStrategy.js').BaseStrategy} strategy
+
  * @param {unknown} marketBundle
+
  * @param {{ startDate: string, endDate: string }} range
+
  */
+
 export async function runStrategyBacktest(strategy, marketBundle, range) {
+
   const result = strategy.backtest(marketBundle, range.startDate, range.endDate);
+
   const bars = filterBarsByDate(marketBundle.ohlcv || [], range.startDate, range.endDate);
+
   const sim = runBacktestSimulation(bars, result.signals || [], {
+
     positionSizePct: strategy.params?.positionSizePct ?? 100,
+
+    trailingStopPct: strategy.params?.trailingStopPct ?? 0,
+
   });
+
+
 
   const payload = {
+
     strategy: strategy.name,
-    range,
+
+    symbol: marketBundle.meta?.symbol,
+
+    range: { startDate: range.startDate, endDate: range.endDate },
+
     metrics: sim.metrics,
+
     replay: sim.replay,
+
+    equityCurve: sim.equityCurve,
+
+    trades: sim.replay,
+
     rulesPlainEnglish: result.rulesPlainEnglish || [],
+
     cmcEndpointsUsed: result.cmcEndpointsUsed || [],
+
+    dataSource: marketBundle.meta?.dataSource,
+
   };
 
+
+
   strategy.lastBacktest = payload;
+
   return payload;
+
 }
 
-/** @param {Array<{ timestamp: string }>} bars */
-function filterBarsByDate(bars, startDate, endDate) {
-  const start = new Date(startDate).getTime();
-  const end = new Date(endDate).getTime();
-  return bars.filter((b) => {
-    const t = new Date(b.timestamp).getTime();
-    return t >= start && t <= end;
+
+
+/**
+
+ * High-level backtest entry for CLI skills and agents.
+
+ */
+
+export async function runBacktest(strategy, fromDate, toDate, options = {}) {
+
+  const market =
+
+    options.marketBundle ??
+
+    (await fetchMarketBundle({
+
+      symbol: options.symbol ?? "BNB",
+
+      convert: options.convert ?? "USDT",
+
+      barCount: options.barCount ?? 120,
+
+    }));
+
+
+
+  const payload = await runStrategyBacktest(strategy, market, {
+
+    startDate: fromDate,
+
+    endDate: toDate,
+
   });
+
+
+
+  return {
+
+    strategy: payload.strategy,
+
+    symbol: payload.symbol,
+
+    range: payload.range,
+
+    metrics: payload.metrics,
+
+    trades: payload.trades,
+
+    equityCurve: payload.equityCurve,
+
+    replay: payload.replay,
+
+    rulesPlainEnglish: payload.rulesPlainEnglish,
+
+    cmcEndpointsUsed: payload.cmcEndpointsUsed,
+
+  };
+
 }
+
+
+
+export function toJobResult(backtestOutput, extras = {}) {
+
+  const metrics = /** @type {Record<string, number>} */ (backtestOutput.metrics || {});
+
+  const range = /** @type {{ startDate?: string, endDate?: string }} */ (backtestOutput.range || {});
+
+  return {
+
+    version: "1.0",
+
+    strategy: backtestOutput.strategy,
+
+    period: { from: range.startDate, to: range.endDate },
+
+    metrics: {
+
+      sharpe_ratio: metrics.sharpeRatio ?? 0,
+
+      max_drawdown_pct: metrics.maxDrawdownPct ?? 0,
+
+      total_return_pct: metrics.totalReturnPct ?? 0,
+
+      win_rate_pct: metrics.winRatePct ?? 0,
+
+      trade_count: metrics.trades ?? 0,
+
+      profit_factor: metrics.profitFactor ?? 0,
+
+    },
+
+    fingerprint: extras.digest ?? extras.fingerprint ?? null,
+
+    full_log_uri: extras.full_log_uri ?? null,
+
+    simulation_only: true,
+
+    cmc_endpoints: backtestOutput.cmcEndpointsUsed || [],
+
+  };
+
+}
+
+
+
+const STRATEGY_MODULES = {
+
+  momentum: () => import("../strategies/momentumMerger.js"),
+
+  sentiment: () => import("../strategies/sentimentDivergence.js"),
+
+  regime: () => import("../strategies/regimeDetector.js"),
+
+};
+
+
+
+export async function runBacktestJob(strategyName, fromDate, toDate, options = {}) {
+
+  const loader = STRATEGY_MODULES[strategyName];
+
+  if (!loader) {
+
+    throw new Error(`Unknown strategy "${strategyName}". Use: ${Object.keys(STRATEGY_MODULES).join(", ")}`);
+
+  }
+
+  const mod = await loader();
+
+  const StrategyClass = mod.default;
+
+  const strategy = new StrategyClass();
+
+  const result = await runBacktest(strategy, fromDate, toDate, { symbol: options.symbol ?? "BNB" });
+
+  const jobResult = toJobResult(result, { digest: options.digest });
+
+  return { ...result, jobResult };
+
+}
+
+
+
+function normalizeTs(ts) {
+  return new Date(ts).toISOString();
+}
+
+function filterBarsByDate(bars, startDate, endDate) {
+
+  const start = new Date(startDate).getTime();
+
+  const end = new Date(endDate).getTime();
+
+  return bars.filter((b) => {
+
+    const t = new Date(b.timestamp).getTime();
+
+    return t >= start && t <= end;
+
+  });
+
+}
+
+
 
 export { SLIPPAGE, FEE };
+
+

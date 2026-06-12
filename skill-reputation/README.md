@@ -26,6 +26,7 @@ skill-reputation/
 ├── backtest/              # Legacy MA crossover module
 ├── replay/                # PnL replay HTML generator
 ├── marketplace/           # .cmcskill export + validator
+├── cli-skill/             # CMC CLI Skill (cmc skills install)
 ├── backtest_results/      # Generated specs + replay JSON
 └── examples/              # Exported .cmcskill packages
 ```
@@ -88,6 +89,34 @@ TWAK session events are appended to `behavior-log.jsonl`.
 | `npm run validate` | Validate package for submission |
 | `npm run hackathon:verify` | Full submission checklist + manifest |
 | `npm run twak:setup` | First-time TWAK wallet setup |
+| `npm run cli-skill -- run --strategy momentum` | Run CMC CLI quant skill |
+| `npm run agent:register` | Register ERC-8004 agent identity |
+| `npm run agent:run` | Start ERC-8183 job server |
+| `npm run marketplace:post` | Post a backtest job to your agent |
+| `npm run marketplace:verify` | Verify job delivery |
+
+## BNB AI Agent SDK (ERC-8004 + ERC-8183)
+
+Turn the validator into an on-chain agent marketplace. See [`bnbagent/README.md`](bnbagent/README.md).
+
+```bash
+pip install -r bnbagent/requirements.txt
+cp bnbagent/.env.agent.example bnbagent/.env.agent
+npm run agent:register
+npm run agent:run
+npm run marketplace:post -- --strategy momentum --from 2026-06-01 --to 2026-06-21
+```
+
+## CMC CLI Skill
+
+The [`cli-skill/`](cli-skill/) package is a **CoinMarketCap Agent Hub CLI Skill** with Sharpe, max drawdown, and volatility scaling utilities.
+
+```bash
+cd cli-skill && npm install
+CMC_USE_MOCK=1 npm run run -- --strategy momentum --from 2026-06-01 --to 2026-06-21 --output json
+```
+
+Install for other developers: `cmc skills install <repo-url>/skill-reputation/cli-skill`
 
 ## Three strategies
 
