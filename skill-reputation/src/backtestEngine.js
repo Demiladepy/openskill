@@ -9,6 +9,7 @@ import { sharpeFromReturns, round } from "../cli-skill/scripts/quant/sharpe.js";
 import { maxDrawdownFromEquity } from "../cli-skill/scripts/quant/maxdd.js";
 
 import { fetchMarketBundle } from "./cmcDataClient.js";
+import { enrichMarketBundle } from "./cmcSignals.js";
 
 
 
@@ -350,11 +351,11 @@ export async function runStrategyBacktest(strategy, marketBundle, range) {
 
 export async function runBacktest(strategy, fromDate, toDate, options = {}) {
 
-  const market =
+  let market = options.marketBundle;
 
-    options.marketBundle ??
+  if (!market) {
 
-    (await fetchMarketBundle({
+    const raw = await fetchMarketBundle({
 
       symbol: options.symbol ?? "BNB",
 
@@ -362,7 +363,15 @@ export async function runBacktest(strategy, fromDate, toDate, options = {}) {
 
       barCount: options.barCount ?? 120,
 
-    }));
+    });
+
+    market = await enrichMarketBundle(raw);
+
+  } else if (!market.cmcSignals) {
+
+    market = await enrichMarketBundle(market);
+
+  }
 
 
 

@@ -6,13 +6,13 @@
     "endDate": "2026-06-01"
   },
   "metrics": {
-    "totalReturnPct": 0.063,
-    "sharpeRatio": 9.8183,
-    "maxDrawdownPct": 0.0071,
-    "winRatePct": 50,
-    "trades": 2,
-    "profitFactor": 6.3202,
-    "avgTradeDurationDays": 4.5
+    "totalReturnPct": 0.4692,
+    "sharpeRatio": 0,
+    "maxDrawdownPct": 0.0604,
+    "winRatePct": 100,
+    "trades": 1,
+    "profitFactor": 999,
+    "avgTradeDurationDays": 71
   },
   "equityCurve": [
     {
@@ -122,399 +122,384 @@
     },
     {
       "date": "2026-03-22T00:00:00.000Z",
-      "equity": 10000,
-      "position": "flat"
-    },
-    {
-      "date": "2026-03-23T00:00:00.000Z",
-      "equity": 10000,
-      "position": "flat"
-    },
-    {
-      "date": "2026-03-24T00:00:00.000Z",
-      "equity": 10000,
-      "position": "flat"
-    },
-    {
-      "date": "2026-03-25T00:00:00.000Z",
-      "equity": 10000,
-      "position": "flat"
-    },
-    {
-      "date": "2026-03-26T00:00:00.000Z",
-      "equity": 10000,
-      "position": "flat"
-    },
-    {
-      "date": "2026-03-27T00:00:00.000Z",
-      "equity": 10000,
-      "position": "flat"
-    },
-    {
-      "date": "2026-03-28T00:00:00.000Z",
       "equity": 9999.6,
       "position": "long"
     },
     {
+      "date": "2026-03-23T00:00:00.000Z",
+      "equity": 9995.89,
+      "position": "long"
+    },
+    {
+      "date": "2026-03-24T00:00:00.000Z",
+      "equity": 9996.88,
+      "position": "long"
+    },
+    {
+      "date": "2026-03-25T00:00:00.000Z",
+      "equity": 9997.86,
+      "position": "long"
+    },
+    {
+      "date": "2026-03-26T00:00:00.000Z",
+      "equity": 9998.85,
+      "position": "long"
+    },
+    {
+      "date": "2026-03-27T00:00:00.000Z",
+      "equity": 9999.83,
+      "position": "long"
+    },
+    {
+      "date": "2026-03-28T00:00:00.000Z",
+      "equity": 10000.82,
+      "position": "long"
+    },
+    {
       "date": "2026-03-29T00:00:00.000Z",
-      "equity": 10000.58,
+      "equity": 10001.8,
       "position": "long"
     },
     {
       "date": "2026-03-30T00:00:00.000Z",
-      "equity": 10001.56,
+      "equity": 10002.79,
       "position": "long"
     },
     {
       "date": "2026-03-31T00:00:00.000Z",
-      "equity": 10002.54,
+      "equity": 10003.77,
       "position": "long"
     },
     {
       "date": "2026-04-01T00:00:00.000Z",
-      "equity": 10003.51,
+      "equity": 10004.75,
       "position": "long"
     },
     {
       "date": "2026-04-02T00:00:00.000Z",
-      "equity": 10004.49,
+      "equity": 10005.74,
       "position": "long"
     },
     {
       "date": "2026-04-03T00:00:00.000Z",
-      "equity": 10005.47,
+      "equity": 10006.72,
       "position": "long"
     },
     {
       "date": "2026-04-04T00:00:00.000Z",
-      "equity": 10006.45,
+      "equity": 10007.71,
       "position": "long"
     },
     {
       "date": "2026-04-05T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10008.69,
+      "position": "long"
     },
     {
       "date": "2026-04-06T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10009.68,
+      "position": "long"
     },
     {
       "date": "2026-04-07T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10010.66,
+      "position": "long"
     },
     {
       "date": "2026-04-08T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10011.65,
+      "position": "long"
     },
     {
       "date": "2026-04-09T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10012.63,
+      "position": "long"
     },
     {
       "date": "2026-04-10T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10013.61,
+      "position": "long"
     },
     {
       "date": "2026-04-11T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10014.6,
+      "position": "long"
     },
     {
       "date": "2026-04-12T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10015.58,
+      "position": "long"
     },
     {
       "date": "2026-04-13T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10016.57,
+      "position": "long"
     },
     {
       "date": "2026-04-14T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10017.55,
+      "position": "long"
     },
     {
       "date": "2026-04-15T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10018.54,
+      "position": "long"
     },
     {
       "date": "2026-04-16T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10019.52,
+      "position": "long"
     },
     {
       "date": "2026-04-17T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10020.51,
+      "position": "long"
     },
     {
       "date": "2026-04-18T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10021.49,
+      "position": "long"
     },
     {
       "date": "2026-04-19T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10022.47,
+      "position": "long"
     },
     {
       "date": "2026-04-20T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10023.46,
+      "position": "long"
     },
     {
       "date": "2026-04-21T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10024.44,
+      "position": "long"
     },
     {
       "date": "2026-04-22T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10025.43,
+      "position": "long"
     },
     {
       "date": "2026-04-23T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10026.41,
+      "position": "long"
     },
     {
       "date": "2026-04-24T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10027.4,
+      "position": "long"
     },
     {
       "date": "2026-04-25T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10028.38,
+      "position": "long"
     },
     {
       "date": "2026-04-26T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10029.36,
+      "position": "long"
     },
     {
       "date": "2026-04-27T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10030.35,
+      "position": "long"
     },
     {
       "date": "2026-04-28T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10031.33,
+      "position": "long"
     },
     {
       "date": "2026-04-29T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10032.32,
+      "position": "long"
     },
     {
       "date": "2026-04-30T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10033.3,
+      "position": "long"
     },
     {
       "date": "2026-05-01T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10034.29,
+      "position": "long"
     },
     {
       "date": "2026-05-02T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10035.27,
+      "position": "long"
     },
     {
       "date": "2026-05-03T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10036.26,
+      "position": "long"
     },
     {
       "date": "2026-05-04T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10037.24,
+      "position": "long"
     },
     {
       "date": "2026-05-05T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10038.22,
+      "position": "long"
     },
     {
       "date": "2026-05-06T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10039.21,
+      "position": "long"
     },
     {
       "date": "2026-05-07T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10040.19,
+      "position": "long"
     },
     {
       "date": "2026-05-08T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10041.18,
+      "position": "long"
     },
     {
       "date": "2026-05-09T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10042.16,
+      "position": "long"
     },
     {
       "date": "2026-05-10T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10043.15,
+      "position": "long"
     },
     {
       "date": "2026-05-11T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10044.13,
+      "position": "long"
     },
     {
       "date": "2026-05-12T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10045.12,
+      "position": "long"
     },
     {
       "date": "2026-05-13T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10046.1,
+      "position": "long"
     },
     {
       "date": "2026-05-14T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10047.08,
+      "position": "long"
     },
     {
       "date": "2026-05-15T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10048.07,
+      "position": "long"
     },
     {
       "date": "2026-05-16T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10049.05,
+      "position": "long"
     },
     {
       "date": "2026-05-17T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10050.04,
+      "position": "long"
     },
     {
       "date": "2026-05-18T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10051.02,
+      "position": "long"
     },
     {
       "date": "2026-05-19T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10052.01,
+      "position": "long"
     },
     {
       "date": "2026-05-20T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10052.99,
+      "position": "long"
     },
     {
       "date": "2026-05-21T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10048.97,
+      "position": "long"
     },
     {
       "date": "2026-05-22T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10049.01,
+      "position": "long"
     },
     {
       "date": "2026-05-23T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10049,
+      "position": "long"
     },
     {
       "date": "2026-05-24T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10048.95,
+      "position": "long"
     },
     {
       "date": "2026-05-25T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10048.85,
+      "position": "long"
     },
     {
       "date": "2026-05-26T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10048.7,
+      "position": "long"
     },
     {
       "date": "2026-05-27T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10048.5,
+      "position": "long"
     },
     {
       "date": "2026-05-28T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10048.26,
+      "position": "long"
     },
     {
       "date": "2026-05-29T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10047.98,
+      "position": "long"
     },
     {
       "date": "2026-05-30T00:00:00.000Z",
-      "equity": 10007.01,
-      "position": "flat"
+      "equity": 10047.66,
+      "position": "long"
     },
     {
       "date": "2026-05-31T00:00:00.000Z",
-      "equity": 10006.61,
+      "equity": 10047.31,
       "position": "long"
     },
     {
       "date": "2026-06-01T00:00:00.000Z",
-      "equity": 10006.3,
+      "equity": 10046.92,
       "position": "long"
     }
   ],
   "replay": [
     {
-      "timestamp": "2026-03-28T00:00:00.000Z",
+      "timestamp": "2026-03-22T00:00:00.000Z",
       "action": "entry",
-      "price": 121246.12499999999,
+      "price": 120511.51612499998,
       "signal": "buy",
-      "confidence": 0.72,
+      "confidence": 0.88,
       "equity": 9999.6003996004
-    },
-    {
-      "timestamp": "2026-04-05T00:00:00.000Z",
-      "action": "exit",
-      "price": 125875,
-      "signal": "sell",
-      "pnlPct": 3.5066089733795853,
-      "equity": 10007.01321794676
-    },
-    {
-      "timestamp": "2026-05-31T00:00:00.000Z",
-      "action": "entry",
-      "price": 149314.26278695196,
-      "signal": "buy",
-      "confidence": 0.72,
-      "equity": 10006.61333729869
     },
     {
       "timestamp": "2026-06-01T00:00:00.000Z",
       "action": "exit",
       "price": 148932.17478114864,
       "signal": "end_of_period",
-      "pnlPct": -0.5548283647468099,
-      "equity": 10005.902782990817
+      "pnlPct": 23.212975555283165,
+      "equity": 10046.425951110567
     }
   ],
   "dataSource": "mock-with-warning",
+  "cmcSignalSource": "mock",
   "mockWarning": "MOCK DATA — set CMC_API_KEY for live CoinMarketCap Data API"
 }

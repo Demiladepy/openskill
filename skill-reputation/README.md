@@ -6,6 +6,25 @@ Generate **backtestable trading strategy specs** from **CoinMarketCap Data API**
 
 > Data source: [CoinMarketCap Data API / Agent Hub](https://coinmarketcap.com/api/agent)
 
+**We use CMC's pre-computed RSI/MACD/Fear & Greed via MCP** when `MCP_ENABLED=1`, with REST pre-computed signals as fallback.
+
+## CMC Agent Hub / MCP integration
+
+| Layer | Module | Purpose |
+|-------|--------|---------|
+| MCP (Option B) | `src/cmcMcpClient.js` | Connects to `https://mcp.coinmarketcap.com/mcp` — RSI, MACD, quotes, global metrics |
+| REST signals (Option A) | `src/cmcSignals.js` | Pre-computed percent changes, Fear & Greed, BTC dominance |
+| Raw OHLCV | `src/cmcDataClient.js` | Historical bars + fallback when endpoints unavailable |
+
+```bash
+# Verify CMC signals (REST)
+npm run cmc:signals -- BTC
+
+# Enable MCP for demo / judges
+# MCP_ENABLED=1 in skill/.env
+npm run cmc:signals -- BTC
+```
+
 ## Track 2 compliance
 
 | Requirement | Status |

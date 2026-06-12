@@ -76,9 +76,14 @@ export async function fetchSpotQuotes(symbol = "BNB", convert = "USDT") {
       convert,
       price: q?.price ?? 0,
       volume24h: q?.volume_24h ?? 0,
+      volumeChange24h: q?.volume_change_24h ?? null,
+      percentChange1h: q?.percent_change_1h ?? null,
       percentChange24h: q?.percent_change_24h ?? 0,
       percentChange7d: q?.percent_change_7d ?? 0,
       percentChange30d: q?.percent_change_30d ?? 0,
+      percentChange90d: q?.percent_change_90d ?? null,
+      marketCap: q?.market_cap ?? null,
+      marketCapDominance: q?.market_cap_dominance ?? null,
       cmcRank: row?.cmc_rank ?? null,
       numMarketPairs: row?.num_market_pairs ?? null,
       lastUpdated: row?.last_updated,
@@ -130,6 +135,10 @@ export async function fetchGlobalMetrics(convert = "USDT") {
       totalVolume24h: q?.total_volume_24h ?? 0,
       btcDominance: json?.data?.btc_dominance ?? 0,
       ethDominance: json?.data?.eth_dominance ?? 0,
+      activeCryptocurrencies: json?.data?.active_cryptocurrencies ?? null,
+      marketCapChange24h: q?.total_market_cap_yesterday
+        ? ((q.total_market_cap - q.total_market_cap_yesterday) / q.total_market_cap_yesterday) * 100
+        : null,
     };
   } catch (err) {
     console.warn("[cmcDataClient] global metrics fallback:", err instanceof Error ? err.message : err);
@@ -182,6 +191,21 @@ export async function fetchDerivatives(symbol = "BNB") {
     };
   } catch {
     return mockDerivatives(symbol, true);
+  }
+}
+
+export async function fetchFearGreedHistorical(limit = 90) {
+  if (useMock()) return mockFearGreedHistorical(limit);
+  try {
+    const json = await cmcFetch("/v3/fear-and-greed/historical", { limit });
+    return (json?.data || []).map((row) => ({
+      source: "cmc",
+      timestamp: row.timestamp || row.time_open,
+      value: row.value ?? 50,
+      classification: row.value_classification ?? "Neutral",
+    }));
+  } catch {
+    return mockFearGreedHistorical(limit, true);
   }
 }
 
@@ -275,10 +299,14 @@ function mockSpotQuotes(symbol, convert, warned = false) {
     convert,
     price: prices[symbol] ?? 100,
     volume24h: 1_200_000_000,
+    volumeChange24h: 2.5,
+    percentChange1h: 0.3,
     percentChange24h: 1.2,
     percentChange7d: -8.5,
     percentChange30d: 12.0,
-    cmcRank: 10,
+    percentChange90d: 25.0,
+    marketCapDominance: symbol === "BTC" ? 52 : 1.2,
+    cmcRank: symbol === "BTC" ? 1 : symbol === "ETH" ? 2 : 10,
     numMarketPairs: 500,
     lastUpdated: new Date().toISOString(),
   };
@@ -321,6 +349,8 @@ function mockGlobalMetrics(convert, warned = false) {
     totalVolume24h: 8e10,
     btcDominance: 52.5,
     ethDominance: 16.2,
+    activeCryptocurrencies: 12000,
+    marketCapChange24h: 1.5,
   };
 }
 
@@ -359,7 +389,23 @@ function mockFearGreed(warned = false) {
     source: warned ? "mock-fallback" : "mock",
     value: 38,
     classification: "Fear",
+    timestamp: new Date().toISOString(),
   };
+}
+
+function mockFearGreedHistorical(limit, warned = false) {
+  const out = [];
+  const start = Date.now() - limit * 86400000;
+  for (let i = 0; i < limit; i++) {
+    const d = new Date(start + i * 86400000);
+    out.push({
+      source: warned ? "mock-fallback" : "mock",
+      timestamp: d.toISOString(),
+      value: 35 + Math.sin(i / 7) * 15,
+      classification: "Neutral",
+    });
+  }
+  return out;
 }
 
 export { CMC_AGENT_DOCS, useMock };

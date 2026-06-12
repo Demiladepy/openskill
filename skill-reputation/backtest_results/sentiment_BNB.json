@@ -487,7 +487,7 @@
       "action": "entry",
       "price": 725.7249999999999,
       "signal": "buy",
-      "confidence": 0.78,
+      "confidence": 0.8,
       "equity": 9998.001998001999
     },
     {
@@ -500,5 +500,6 @@
     }
   ],
   "dataSource": "mock-with-warning",
+  "cmcSignalSource": "mock",
   "mockWarning": "MOCK DATA — set CMC_API_KEY for live CoinMarketCap Data API"
 }

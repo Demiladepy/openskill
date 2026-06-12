@@ -54,6 +54,15 @@ npm run agent:run
 
 Details: [`skill-reputation/bnbagent/README.md`](skill-reputation/bnbagent/README.md)
 
+## CMC Agent Hub / MCP
+
+We use **CMC's pre-computed RSI/MACD/Fear & Greed via MCP** (`MCP_ENABLED=1`) with REST pre-computed signals as fallback:
+
+```bash
+cd skill-reputation
+npm run cmc:signals -- BTC
+```
+
 ## Submission artifacts
 
 After running the pipeline, upload to DoraHacks:

@@ -1,6 +1,6 @@
 {
   "name": "Regime Detector",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "risk_profile": "conservative",
   "track": "BNB Hackathon Track 2 — Strategy Skills",
   "data_source": "CoinMarketCap Data API only",
@@ -9,10 +9,8 @@
   "params": {
     "maxDrawdownPct": 15,
     "positionSizePct": 25,
-    "smaPeriod": 50,
-    "atrPeriod": 14,
-    "atrRangeThreshold": 0.015,
-    "smaSlopeThreshold": 0.0005
+    "btcDominanceTrendThreshold": 0.3,
+    "marketCapChangeThreshold": 0.5
   },
   "backtest_performance": {
     "totalReturnPct": 7.6225,
@@ -24,18 +22,23 @@
     "avgTradeDurationDays": 92
   },
   "rules_plain_english": [
-    "TRENDING UP: price > 50-SMA and positive SMA slope → long.",
-    "TRENDING DOWN: price < 50-SMA and negative SMA slope → exit/flat.",
-    "RANGING: ATR/price below threshold and flat SMA → no position.",
-    "Trend-following: capture big moves, sit out chop.",
+    "Uses CMC global metrics: BTC dominance + total market cap change for regime detection.",
+    "TRENDING UP: positive 7d/30d CMC percent changes + BTC dominance < 55%.",
+    "TRENDING DOWN: negative momentum + elevated BTC dominance (risk-off).",
+    "RANGING: flat market cap change and low asset momentum → no position.",
     "Simulation only — no live trading."
   ],
   "cmc_requirements": {
     "indicators": [
-      "SMA50",
-      "ATR14"
+      "BTCDominance",
+      "TotalMarketCap",
+      "PercentChange7d",
+      "PercentChange30d"
     ],
     "data_frequency": "daily",
-    "min_history_days": 90
+    "min_history_days": 90,
+    "mcp_tools": [
+      "get_global_metrics_latest"
+    ]
   }
 }

@@ -3,6 +3,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { fetchMarketBundle, useMock } from "../src/cmcDataClient.js";
+import { enrichMarketBundle } from "../src/cmcSignals.js";
 import { runStrategyBacktest } from "../src/backtestEngine.js";
 import { loadProjectEnv } from "../src/lib/loadEnv.js";
 import MomentumMerger from "./momentumMerger.js";
@@ -73,11 +74,12 @@ async function runOne(name, opts) {
   if (!StrategyClass) throw new Error(`Unknown strategy: ${name}. Use: ${Object.keys(STRATEGIES).join(", ")}`);
 
   const strategy = new StrategyClass();
-  const market = await fetchMarketBundle({
+  const raw = await fetchMarketBundle({
     symbol: opts.symbol,
     convert: opts.convert,
     barCount: opts.barCount || 180,
   });
+  const market = await enrichMarketBundle(raw);
   const result = await runStrategyBacktest(strategy, market, { startDate: opts.from, endDate: opts.to });
 
   await fs.mkdir(RESULTS_DIR, { recursive: true });
@@ -94,6 +96,7 @@ async function runOne(name, opts) {
     equityCurve: result.equityCurve,
     replay: result.replay,
     dataSource: market.meta?.dataSource,
+    cmcSignalSource: market.cmcSignals?.source,
     mockWarning: market.meta?.mockWarning,
   };
 

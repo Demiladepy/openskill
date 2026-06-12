@@ -1,6 +1,6 @@
 {
   "name": "Momentum Merger",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "risk_profile": "moderate",
   "track": "BNB Hackathon Track 2 — Strategy Skills",
   "data_source": "CoinMarketCap Data API only",
@@ -10,44 +10,47 @@
     "maxDrawdownPct": 20,
     "positionSizePct": 2,
     "trailingStopPct": 5,
-    "rsiPeriod": 14,
     "rsiBuy": 35,
     "rsiSell": 65,
     "fearBuy": 30,
     "fearSell": 70
   },
   "backtest_performance": {
-    "totalReturnPct": 0.063,
-    "sharpeRatio": 9.8183,
-    "maxDrawdownPct": 0.0071,
-    "winRatePct": 50,
-    "trades": 2,
-    "profitFactor": 6.3202,
-    "avgTradeDurationDays": 4.5
+    "totalReturnPct": 0.4692,
+    "sharpeRatio": 0,
+    "maxDrawdownPct": 0.0604,
+    "winRatePct": 100,
+    "trades": 1,
+    "profitFactor": 999,
+    "avgTradeDurationDays": 71
   },
   "rules_plain_english": [
-    "Entry (buy): RSI(14) < 35 OR (MACD bullish crossover AND CMC Fear & Greed < 30).",
-    "Exit (sell): RSI(14) > 65 OR (MACD bearish crossover AND Fear & Greed > 70) OR MACD bearish cross.",
-    "Position sizing: 2% of equity per trade.",
-    "Trailing stop: 5% from high water mark (simulation engine).",
-    "Simulation only — no live trading (Track 2)."
+    "Uses CMC pre-computed RSI/MACD via MCP when MCP_ENABLED=1, else CMC quote momentum + Fear & Greed.",
+    "Entry (buy): CMC RSI < 35 OR (MACD histogram positive AND Fear & Greed < 30).",
+    "Exit (sell): CMC RSI > 65 OR MACD histogram negative OR Fear & Greed > 70.",
+    "Position sizing: 2% of equity. Trailing stop: 5%. Simulation only."
   ],
   "cmc_requirements": {
     "indicators": [
       "RSI",
       "MACD",
-      "FearGreed"
+      "FearGreed",
+      "PercentChange7d"
     ],
     "data_frequency": "daily",
-    "min_history_days": 90
+    "min_history_days": 90,
+    "mcp_tools": [
+      "get_crypto_technical_analysis",
+      "get_crypto_quotes_latest"
+    ]
   },
   "entry_rules": [
-    "RSI < 35",
-    "MACD bullish cross + Fear < 30"
+    "CMC RSI < 35",
+    "CMC MACD bullish + Fear < 30"
   ],
   "exit_rules": [
-    "RSI > 65",
-    "MACD bearish cross",
+    "CMC RSI > 65",
+    "CMC MACD bearish",
     "5% trailing stop"
   ]
 }

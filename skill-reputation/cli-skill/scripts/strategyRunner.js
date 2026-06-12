@@ -1,4 +1,5 @@
 import { fetchMarketBundle } from "../../src/cmcDataClient.js";
+import { enrichMarketBundle } from "../../src/cmcSignals.js";
 import { runBacktest } from "../../src/backtestEngine.js";
 import { loadProjectEnv } from "../../src/lib/loadEnv.js";
 import Momentum from "./strategies/momentum.js";
@@ -26,11 +27,12 @@ export async function runStrategy(name, fromDate, toDate, opts = {}) {
   }
 
   const strategy = new StrategyClass();
-  const market = await fetchMarketBundle({
+  const raw = await fetchMarketBundle({
     symbol: opts.symbol || "BNB",
     convert: opts.convert || "USDT",
     barCount: 120,
   });
+  const market = await enrichMarketBundle(raw);
 
   const result = await runBacktest(strategy, fromDate, toDate, {
     marketBundle: market,

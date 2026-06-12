@@ -1,6 +1,6 @@
 {
   "name": "Sentiment Divergence",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "risk_profile": "moderate",
   "track": "BNB Hackathon Track 2 — Strategy Skills",
   "data_source": "CoinMarketCap Data API only",
@@ -14,7 +14,8 @@
     "buyShortThreshold": -9.5,
     "buyLongMin": 0,
     "sellShortThreshold": 15,
-    "sellLongThreshold": -15
+    "sellLongThreshold": -15,
+    "fearGreedBuyMax": 45
   },
   "backtest_performance": {
     "totalReturnPct": 2.5166,
@@ -26,18 +27,24 @@
     "avgTradeDurationDays": 69
   },
   "rules_plain_english": [
-    "Mean-reversion thesis: short-term weakness vs positive longer-term trend.",
-    "Entry (buy): 7-day return < -9.5% AND 30-day return > 0%.",
-    "Exit (sell): 7-day return > +15% OR 30-day return < -15%.",
-    "Uses CMC quotes (7d/30d % change) and OHLCV-derived returns.",
+    "Uses CMC pre-computed percent_change_7d / percent_change_30d from quotes API.",
+    "Sentiment divergence: Fear & Greed < 45 while 30d return remains positive.",
+    "Entry: 7d return < -9.5% AND 30d return > 0%, OR fear/price divergence.",
+    "Exit: 7d return > +15%, 30d return < -15%, or Fear & Greed > 75.",
     "Simulation only — no live trading."
   ],
   "cmc_requirements": {
     "indicators": [
-      "PriceMomentum7d",
-      "PriceMomentum30d"
+      "PercentChange7d",
+      "PercentChange30d",
+      "FearGreed",
+      "VolumeMarketCapRatio"
     ],
     "data_frequency": "daily",
-    "min_history_days": 60
+    "min_history_days": 60,
+    "mcp_tools": [
+      "get_global_metrics_latest",
+      "get_crypto_quotes_latest"
+    ]
   }
 }

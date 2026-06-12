@@ -1,17 +1,24 @@
+/**
+ * CMC Data Sources Used:
+ * - /v1/cryptocurrency/quotes/latest (pre-computed percent changes, volume)
+ * - /v3/fear-and-greed/latest + historical (market sentiment)
+ * - /v1/global-metrics/quotes/latest (BTC dominance, total market cap)
+ * - CMC MCP: get_crypto_technical_analysis (pre-computed RSI, MACD when MCP_ENABLED=1)
+ */
 import { BaseStrategy } from "./baseStrategy.js";
-import { rsi, macd } from "./lib/indicators.js";
+import { rollingReturn } from "./lib/indicators.js";
+import { fearGreedForBar } from "../src/cmcSignals.js";
 
 export default class MomentumMerger extends BaseStrategy {
   constructor() {
     super({
       name: "Momentum Merger",
-      version: "1.1.0",
+      version: "1.2.0",
       riskProfile: "moderate",
       params: {
         maxDrawdownPct: 20,
         positionSizePct: 2,
         trailingStopPct: 5,
-        rsiPeriod: 14,
         rsiBuy: 35,
         rsiSell: 65,
         fearBuy: 30,
@@ -23,31 +30,49 @@ export default class MomentumMerger extends BaseStrategy {
   generateSignals(marketData) {
     const bars = marketData.ohlcv || [];
     const closes = bars.map((b) => b.close);
-    const r = rsi(closes, this.params.rsiPeriod);
-    const { line, signal } = macd(closes, 12, 26, 9);
-    const fear = marketData.fearGreed?.value ?? 50;
+    const ret7 = rollingReturn(closes, 7);
+    const cmc = marketData.cmcSignals || {};
+    const tech = cmc.technicals || marketData.cmcTechnicals || {};
+    const mcpRsi = tech.rsi;
+    const mcpMacdHist = tech.macd_histogram;
+    const priceSignals = cmc.price || {};
 
     const signals = [];
-    for (let i = 1; i < bars.length; i++) {
-      const bullishCross = line[i - 1] != null && signal[i - 1] != null && line[i - 1] <= signal[i - 1] && line[i] > signal[i];
-      const bearishCross = line[i - 1] != null && signal[i - 1] != null && line[i - 1] >= signal[i - 1] && line[i] < signal[i];
+    for (let i = 8; i < bars.length; i++) {
+      const fear = fearGreedForBar(marketData, bars[i].timestamp);
+      const change7d = ret7[i] ?? priceSignals.change_7d ?? 0;
+      const change24h = priceSignals.change_24h ?? 0;
+
       let sig = "hold";
       let confidence = 0.5;
 
-      const rsiBuy = r[i] != null && r[i] < this.params.rsiBuy;
-      const rsiSell = r[i] != null && r[i] > this.params.rsiSell;
-      const macdFearBuy = bullishCross && fear < this.params.fearBuy;
-      const macdFearSell = bearishCross && fear > this.params.fearSell;
+      // CMC MCP pre-computed RSI / MACD (primary when available)
+      const rsiOversold = mcpRsi != null ? mcpRsi < this.params.rsiBuy : change7d < -5;
+      const rsiOverbought = mcpRsi != null ? mcpRsi > this.params.rsiSell : change7d > 8;
+      const macdBullish = mcpMacdHist != null ? mcpMacdHist > 0 : change24h > 0 && change7d < 0;
+      const macdBearish = mcpMacdHist != null ? mcpMacdHist < 0 : change24h < 0;
 
-      if (rsiBuy || macdFearBuy) {
+      const fearBuy = fear < this.params.fearBuy;
+      const fearSell = fear > this.params.fearSell;
+
+      if (rsiOversold || (macdBullish && fearBuy)) {
         sig = "buy";
-        confidence = rsiBuy && macdFearBuy ? 0.88 : 0.72;
-      } else if (rsiSell || macdFearSell || bearishCross) {
+        confidence = rsiOversold && macdBullish ? 0.88 : 0.74;
+      } else if (rsiOverbought || (macdBearish && fearSell) || macdBearish) {
         sig = "sell";
-        confidence = rsiSell || macdFearSell ? 0.78 : 0.65;
+        confidence = 0.72;
       }
 
-      signals.push({ timestamp: bars[i].timestamp, signal: sig, confidence, strength: confidence });
+      signals.push({
+        timestamp: bars[i].timestamp,
+        signal: sig,
+        confidence,
+        strength: confidence,
+        cmc_rsi: mcpRsi,
+        cmc_macd_histogram: mcpMacdHist,
+        cmc_fear_greed: fear,
+        cmc_change_7d: change7d,
+      });
     }
     return signals;
   }
@@ -55,20 +80,23 @@ export default class MomentumMerger extends BaseStrategy {
   backtest(historicalData, startDate, endDate) {
     this.validateParams();
     const signals = filterSignalsByDate(this.generateSignals(historicalData), startDate, endDate);
+    const endpoints = [
+      "/v1/cryptocurrency/quotes/latest",
+      "/v3/fear-and-greed/latest",
+      "/v1/global-metrics/quotes/latest",
+    ];
+    if (historicalData.cmcSignals?.technicals) {
+      endpoints.push("CMC MCP: get_crypto_technical_analysis");
+    }
     return {
       signals,
       rulesPlainEnglish: [
-        "Entry (buy): RSI(14) < 35 OR (MACD bullish crossover AND CMC Fear & Greed < 30).",
-        "Exit (sell): RSI(14) > 65 OR (MACD bearish crossover AND Fear & Greed > 70) OR MACD bearish cross.",
-        "Position sizing: 2% of equity per trade.",
-        "Trailing stop: 5% from high water mark (simulation engine).",
-        "Simulation only — no live trading (Track 2).",
+        "Uses CMC pre-computed RSI/MACD via MCP when MCP_ENABLED=1, else CMC quote momentum + Fear & Greed.",
+        "Entry (buy): CMC RSI < 35 OR (MACD histogram positive AND Fear & Greed < 30).",
+        "Exit (sell): CMC RSI > 65 OR MACD histogram negative OR Fear & Greed > 70.",
+        "Position sizing: 2% of equity. Trailing stop: 5%. Simulation only.",
       ],
-      cmcEndpointsUsed: [
-        "/v2/cryptocurrency/ohlcv/historical",
-        "/v3/fear-and-greed/latest",
-        "/v1/cryptocurrency/quotes/latest",
-      ],
+      cmcEndpointsUsed: endpoints,
     };
   }
 
@@ -76,23 +104,15 @@ export default class MomentumMerger extends BaseStrategy {
     return {
       ...this.baseSpec(),
       cmc_requirements: {
-        indicators: ["RSI", "MACD", "FearGreed"],
+        indicators: ["RSI", "MACD", "FearGreed", "PercentChange7d"],
         data_frequency: "daily",
         min_history_days: 90,
+        mcp_tools: ["get_crypto_technical_analysis", "get_crypto_quotes_latest"],
       },
-      entry_rules: ["RSI < 35", "MACD bullish cross + Fear < 30"],
-      exit_rules: ["RSI > 65", "MACD bearish cross", "5% trailing stop"],
+      entry_rules: ["CMC RSI < 35", "CMC MACD bullish + Fear < 30"],
+      exit_rules: ["CMC RSI > 65", "CMC MACD bearish", "5% trailing stop"],
     };
   }
-}
-
-function filterRange(bars, start, end) {
-  const s = new Date(start).getTime();
-  const e = new Date(end).getTime();
-  return bars.filter((b) => {
-    const t = new Date(b.timestamp).getTime();
-    return t >= s && t <= e;
-  });
 }
 
 function filterSignalsByDate(signals, start, end) {

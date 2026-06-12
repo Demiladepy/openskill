@@ -31,9 +31,11 @@
     "agent:run": "python bnbagent/agent_server.py",
     "agent:deploy": "node bnbagent/contracts/deploy.js",
     "marketplace:post": "python bnbagent/marketplace_client.py",
-    "marketplace:verify": "node bnbagent/verify_job.js"
+    "marketplace:verify": "node bnbagent/verify_job.js",
+    "cmc:signals": "node scripts/cmcSignalsCli.js"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "archiver": "^7.0.1",
     "viem": "^2.52.2"
   }

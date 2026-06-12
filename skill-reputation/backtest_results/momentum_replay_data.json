@@ -1,45 +1,29 @@
 {
   "replay": [
     {
-      "timestamp": "2026-03-28T00:00:00.000Z",
+      "timestamp": "2026-03-22T00:00:00.000Z",
       "action": "entry",
-      "price": 740.2394999999999,
+      "price": 735.7545194999999,
       "signal": "buy",
-      "confidence": 0.72,
+      "confidence": 0.88,
       "equity": 9999.6003996004
-    },
-    {
-      "timestamp": "2026-04-05T00:00:00.000Z",
-      "action": "exit",
-      "price": 768.5,
-      "signal": "sell",
-      "pnlPct": 3.5066089733795853,
-      "equity": 10007.01321794676
-    },
-    {
-      "timestamp": "2026-05-31T00:00:00.000Z",
-      "action": "entry",
-      "price": 911.6028675413909,
-      "signal": "buy",
-      "confidence": 0.72,
-      "equity": 10006.61333729869
     },
     {
       "timestamp": "2026-06-01T00:00:00.000Z",
       "action": "exit",
       "price": 909.2701197164865,
       "signal": "end_of_period",
-      "pnlPct": -0.5548283647467814,
-      "equity": 10005.902782990817
+      "pnlPct": 23.21297555528318,
+      "equity": 10046.425951110567
     }
   ],
   "metrics": {
-    "totalReturnPct": 0.063,
-    "sharpeRatio": 9.8183,
-    "maxDrawdownPct": 0.0071,
-    "winRatePct": 50,
-    "trades": 2,
-    "profitFactor": 6.3202,
-    "avgTradeDurationDays": 4.5
+    "totalReturnPct": 0.4692,
+    "sharpeRatio": 0,
+    "maxDrawdownPct": 0.0604,
+    "winRatePct": 100,
+    "trades": 1,
+    "profitFactor": 999,
+    "avgTradeDurationDays": 71
   }
 }
