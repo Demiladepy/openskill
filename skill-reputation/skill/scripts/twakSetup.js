@@ -74,9 +74,10 @@ async function main() {
   console.log("Balance (wei):", balance.toString());
 
   console.log("\nNext steps:");
-  console.log("1. Set TWAK_UNLOCK_PASSPHRASE in skill/.env");
-  console.log("2. Set ATTEST_MODE=simulate for backtests or ATTEST_MODE=live for on-chain attestation");
-  console.log("3. Run: npm run attest -w cmc-strategy-validator-skill -- --strategy momentum --score 85");
+  console.log("1. Set AGENT_PRIVATE_KEY (or TWAK_AGENT_PRIVATE_KEY) in skill/.env");
+  console.log("2. Fund this address on BSC testnet: https://testnet.bnbchain.org/faucet-smart");
+  console.log("3. ATTEST_MODE defaults to live when AGENT_PRIVATE_KEY is set");
+  console.log("4. Run: npm run attest -- --strategy momentum --score 85");
 }
 
 main().catch((err) => {

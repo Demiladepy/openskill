@@ -111,7 +111,13 @@ def execute_job(job: dict) -> str:
 
 load_env()
 erc8183_app = None
-if os.getenv("WALLET_PASSWORD") or os.getenv("TWAK_UNLOCK_PASSPHRASE"):
+_has_wallet = bool(
+    os.getenv("AGENT_PRIVATE_KEY")
+    or os.getenv("PRIVATE_KEY")
+    or os.getenv("WALLET_PASSWORD")
+    or os.getenv("TWAK_UNLOCK_PASSPHRASE")
+)
+if _has_wallet and os.getenv("AGENT_SIMULATE", "0") != "1":
     try:
         from bnbagent.erc8183.server import create_erc8183_app
 

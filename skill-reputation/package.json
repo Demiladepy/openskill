@@ -23,6 +23,7 @@
     "validate": "node marketplace/validator.js",
     "hackathon:verify": "node scripts/hackathonVerify.js",
     "twak:setup": "node skill/scripts/twakSetup.js",
+    "attest": "node skill/scripts/attest.js",
     "build:ui": "npm run build -w skill-reputation-demo-ui",
     "scan:cmc": "node skill/scripts/scan.js",
     "cli-skill": "npm run run -w cmc-quant-strategy-pack",

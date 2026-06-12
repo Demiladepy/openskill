@@ -4,6 +4,9 @@ import path from "node:path";
 import { keccak256, stringToBytes } from "viem";
 import { getBehaviorLogPath } from "../../../src/lib/logPath.js";
 
+/** @trustwallet/agent-kit is not published on npm yet (checked 2026-06). */
+export const TWAK_SDK_AVAILABLE = false;
+
 export function getTwakSessionPath() {
   return process.env.TWAK_SESSION_PATH || path.join(os.homedir(), ".twak", "session.json");
 }
@@ -44,52 +47,64 @@ export function twakConfigFingerprint(session) {
   );
 }
 
+export function resolveAttestPrivateKey() {
+  const raw =
+    process.env.TWAK_AGENT_PRIVATE_KEY ||
+    process.env.AGENT_PRIVATE_KEY ||
+    process.env.ATTESTOR_PRIVATE_KEY;
+  if (!raw) return null;
+  return raw.startsWith("0x") ? raw : `0x${raw}`;
+}
+
 export function getAttestMode() {
-  const mode = (process.env.ATTEST_MODE || process.env.TWAK_ATTEST_MODE || "simulate").toLowerCase();
-  return mode === "live" ? "live" : "simulate";
+  const explicit = (process.env.ATTEST_MODE || process.env.TWAK_ATTEST_MODE || "").toLowerCase();
+  if (explicit === "live") return "live";
+  if (explicit === "simulate") return "simulate";
+  return resolveAttestPrivateKey() ? "live" : "simulate";
 }
 
 /**
  * Initialize Trust Wallet Agent Kit in autonomous mode.
- * Tries @trustwallet/agent-kit, falls back to session file + viem.
+ * Tries @trustwallet/agent-kit, falls back to AGENT_PRIVATE_KEY + viem (TWAK self-custody model).
  */
 export async function initTwakAutonomous() {
   const { session, sessionPath } = await loadTwakSession();
   const mode = getAttestMode();
   const unlockPassphrase = process.env.TWAK_UNLOCK_PASSPHRASE || process.env.TWAK_PASSWORD;
 
-  let kit = null;
-  try {
-    kit = await import("@trustwallet/agent-kit");
-  } catch {
-    kit = null;
+  if (TWAK_SDK_AVAILABLE) {
+    try {
+      const kit = await import("@trustwallet/agent-kit");
+      if (kit?.TrustWalletAgentKit || kit?.default) {
+        const AgentKit = kit.TrustWalletAgentKit || kit.default;
+        const instance = new AgentKit({
+          mode: "autonomous",
+          sessionPath,
+          unlockPassphrase,
+        });
+        await instance.unlock?.();
+        return {
+          provider: "twak-agent-kit",
+          mode,
+          sessionPath,
+          signer: instance,
+          address: await instance.getAddress?.(),
+        };
+      }
+    } catch {
+      /* fall through to self-custody bridge */
+    }
   }
 
-  if (kit?.TrustWalletAgentKit || kit?.default) {
-    const AgentKit = kit.TrustWalletAgentKit || kit.default;
-    const instance = new AgentKit({
-      mode: "autonomous",
-      sessionPath,
-      unlockPassphrase,
-    });
-    await instance.unlock?.();
-    return {
-      provider: "twak-agent-kit",
-      mode,
-      sessionPath,
-      signer: instance,
-      address: await instance.getAddress?.(),
-    };
-  }
-
-  const privateKey = process.env.TWAK_AGENT_PRIVATE_KEY || process.env.ATTESTOR_PRIVATE_KEY;
+  const privateKey = resolveAttestPrivateKey();
   const address = session?.address;
+
   if (!privateKey && !address) {
     if (mode === "simulate") {
       await appendTwakLog({
         status: "twak_simulate_stub",
         mode,
-        note: "No TWAK session — simulate-only attestation",
+        note: "No AGENT_PRIVATE_KEY — simulate-only attestation (CI/demo)",
       });
       return {
         provider: "twak-simulate-stub",
@@ -99,16 +114,19 @@ export async function initTwakAutonomous() {
         address: "0x0000000000000000000000000000000000000000",
       };
     }
-    throw new Error("TWAK not configured. Run: node skill/scripts/twakSetup.js");
+    throw new Error(
+      "TWAK live mode requires AGENT_PRIVATE_KEY or TWAK_AGENT_PRIVATE_KEY. Run: npm run twak:setup"
+    );
   }
 
   return {
-    provider: "twak-session-fallback",
+    provider: "twak-self-custody-viem",
     mode,
     sessionPath,
     session,
-    privateKey: privateKey ? (privateKey.startsWith("0x") ? privateKey : `0x${privateKey}`) : undefined,
+    privateKey: privateKey || undefined,
     address,
+    note: "TWAK-compatible local signing via viem until @trustwallet/agent-kit ships",
   };
 }
 

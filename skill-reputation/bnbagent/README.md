@@ -26,20 +26,26 @@ npm run marketplace:post -- --strategy momentum --from 2026-06-01 --to 2026-06-2
 npm run marketplace:verify -- --job-id <jobId from step 3>
 ```
 
-## Live BSC Testnet
+## Live BSC Testnet (special prize)
 
 Set in `bnbagent/.env.agent`:
 
 - `AGENT_SIMULATE=0`
-- `AGENT_PRIVATE_KEY`, `WALLET_PASSWORD`
-- `CLIENT_PRIVATE_KEY` for posting jobs
-- Fund wallet with tBNB + U tokens (testnet faucets)
+- `AGENT_PRIVATE_KEY` (throwaway testnet wallet)
+- `WALLET_PASSWORD=local-dev-only` (or your keystore password)
 
 ```bash
-npm run agent:register          # gas-free ERC-8004 via MegaFuel
-npm run agent:run               # ERC-8183 server at /erc8183
-npm run marketplace:post -- --onchain --strategy momentum --reward 10
+python register_agent.py --live
+# → agent ID + https://testnet.bscscan.com/tx/0x...
+
+npm run agent:run
+python marketplace_client.py --strategy momentum --asset BTC
+node verify_job.js
 ```
+
+One-command demo: `bash demo.sh`
+
+Optional stretch: `--onchain` job posting via ERC-8183Client (requires `CLIENT_PRIVATE_KEY`).
 
 ## Architecture
 

@@ -77,37 +77,31 @@ npm run replay
 npm run export -- momentum
 ```
 
-## Trust Wallet Agent Kit (TWAK) — 3-step flow
+## Trust Wallet Agent Kit (TWAK) — strategy attestation
 
-Track 2 eligibility uses Trust Wallet for autonomous attestation signing.
+We use **TWAK's self-custody signing model** — local key management, autonomous attestation of strategy fingerprints. Bridged via viem on BSC testnet while `@trustwallet/agent-kit` ships; code is structured for drop-in replacement.
 
-### 1) Install
-
-```bash
-npm install
-npm install @trustwallet/agent-kit --save-optional -w cmc-strategy-validator-skill
-# or globally: npm install -g @trustwallet/cli
-```
-
-### 2) Unlock (first-time setup)
+### Setup
 
 ```bash
 npm run twak:setup
-# saves ~/.twak/session.json — never commit this file
-# set TWAK_UNLOCK_PASSPHRASE in skill/.env
+# Set AGENT_PRIVATE_KEY in skill/.env (BSC testnet throwaway wallet)
+# Fund wallet: https://testnet.bnbchain.org/faucet-smart
 ```
 
-### 3) Attest
+### Attest (live on BSC testnet)
 
 ```bash
-# Simulation (default — no on-chain tx, for backtest/demo)
-ATTEST_MODE=simulate npm run attest -w cmc-strategy-validator-skill -- --strategy momentum --score 85
-
-# Live BSC testnet attestation
-ATTEST_MODE=live npm run attest -w cmc-strategy-validator-skill -- --strategy momentum --score 85
+# Defaults to live when AGENT_PRIVATE_KEY is set
+npm run registry
+npm run strategy:all
+npm run attest -- --strategy momentum --score 85
+# Prints tx hash → https://testnet.bscscan.com/tx/0x...
 ```
 
-TWAK session events are appended to `behavior-log.jsonl`.
+For CI/offline demo only: `ATTEST_MODE=simulate npm run attest -- --strategy momentum --score 85`
+
+Backtest JSON files include an `attestation` block with digest, signature, txHash, and explorer link.
 
 ## Scripts
 
@@ -123,6 +117,7 @@ TWAK session events are appended to `behavior-log.jsonl`.
 | `npm run validate` | Validate `skills/` against CMC official SKILL.md format |
 | `npm run hackathon:verify` | Full submission checklist + manifest |
 | `npm run twak:setup` | First-time TWAK wallet setup |
+| `npm run attest -- --strategy momentum --score 85` | TWAK attestation (live when AGENT_PRIVATE_KEY set) |
 | `npm run cli-skill -- run --strategy momentum` | Run CMC CLI quant skill |
 | `npm run agent:register` | Register ERC-8004 agent identity |
 | `npm run agent:run` | Start ERC-8183 job server |
@@ -131,15 +126,20 @@ TWAK session events are appended to `behavior-log.jsonl`.
 
 ## BNB AI Agent SDK (ERC-8004 + ERC-8183)
 
-Turn the validator into an on-chain agent marketplace. See [`bnbagent/README.md`](bnbagent/README.md).
+On-chain agent registration on BSC testnet. Minimum viable proof: **one ERC-8004 registration tx** verifiable on BscScan. See [`bnbagent/README.md`](bnbagent/README.md).
 
 ```bash
 pip install -r bnbagent/requirements.txt
 cp bnbagent/.env.agent.example bnbagent/.env.agent
-npm run agent:register
-npm run agent:run
-npm run marketplace:post -- --strategy momentum --from 2026-06-01 --to 2026-06-21
+# Set AGENT_PRIVATE_KEY + AGENT_SIMULATE=0
+
+python bnbagent/register_agent.py --live   # prints agent ID + tx hash
+npm run agent:run                          # FastAPI + backtest jobs
+python bnbagent/marketplace_client.py --strategy momentum --asset BTC
+node bnbagent/verify_job.js                # verify registration + job txs
 ```
+
+One-command demo (Linux/macOS): `bash bnbagent/demo.sh`
 
 ## CMC CLI Skill
 

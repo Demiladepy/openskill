@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { fetchMarketBundle, useMock } from "../src/cmcDataClient.js";
 import { enrichMarketBundle } from "../src/cmcSignals.js";
 import { runStrategyBacktest } from "../src/backtestEngine.js";
+import { attestStrategyResult } from "../src/strategyAttestation.js";
 import { loadProjectEnv } from "../src/lib/loadEnv.js";
 import MomentumMerger from "./momentumMerger.js";
 import SentimentDivergence from "./sentimentDivergence.js";
@@ -98,7 +99,21 @@ async function runOne(name, opts) {
     dataSource: market.meta?.dataSource,
     cmcSignalSource: market.cmcSignals?.source,
     mockWarning: market.meta?.mockWarning,
+    rulesPlainEnglish: result.rulesPlainEnglish,
   };
+
+  try {
+    payload.attestation = await attestStrategyResult({
+      strategy: name,
+      result: { ...result, cmcSignalSource: market.cmcSignals?.source },
+      strategyInstance: strategy,
+    });
+  } catch (err) {
+    payload.attestation = {
+      mode: "error",
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
 
   await fs.writeFile(outPath, JSON.stringify(payload, null, 2));
   if (opts.symbol === "BNB") {

@@ -1,15 +1,7 @@
 #!/usr/bin/env node
 import fs from "node:fs/promises";
 import path from "node:path";
-import {
-  createPublicClient,
-  createWalletClient,
-  http,
-  keccak256,
-  stringToBytes,
-} from "viem";
-import { privateKeyToAccount } from "viem/accounts";
-import { bscTestnet } from "viem/chains";
+import { fileURLToPath } from "node:url";
 import { loadProjectEnv } from "../../src/lib/loadEnv.js";
 import { getBehaviorLogPath } from "../../src/lib/logPath.js";
 import { parseFrontmatter } from "./lib/parseFrontmatter.js";
@@ -20,43 +12,31 @@ import {
   initTwakAutonomous,
   twakConfigFingerprint,
 } from "./lib/twakClient.js";
+import {
+  attestStrategyDigest,
+  computeStrategyDigest,
+} from "./lib/attestationSigning.js";
+import { keccak256, stringToBytes } from "viem";
 
 loadProjectEnv();
 
-const ABI = [
-  {
-    type: "function",
-    name: "attest",
-    stateMutability: "nonpayable",
-    inputs: [
-      { name: "skillKey", type: "bytes32" },
-      { name: "score", type: "uint8" },
-      { name: "digest", type: "bytes32" },
-    ],
-    outputs: [],
-  },
-];
-
 function parseArgs(argv) {
   let target;
-  let score;
+  let score = 85;
+  let backtestPath;
   for (let i = 2; i < argv.length; i++) {
     if ((argv[i] === "--skill" || argv[i] === "--strategy") && argv[i + 1]) target = argv[++i];
     else if (argv[i] === "--score" && argv[i + 1]) score = Number(argv[++i]);
+    else if (argv[i] === "--backtest" && argv[i + 1]) backtestPath = argv[++i];
   }
-  return { target, score };
-}
-
-function defaultLogPath() {
-  return getBehaviorLogPath();
+  return { target, score, backtestPath };
 }
 
 async function readLastScanDigest(logPath) {
   const raw = await fs.readFile(logPath, "utf8").catch(() => "");
-  const lines = raw.trim().split("\n").filter(Boolean);
-  for (let i = lines.length - 1; i >= 0; i--) {
+  for (const line of raw.trim().split("\n").filter(Boolean).reverse()) {
     try {
-      const row = JSON.parse(lines[i]);
+      const row = JSON.parse(line);
       if (row.type === "scan" && row.digest) return row.digest;
     } catch {
       /* skip */
@@ -68,31 +48,19 @@ async function readLastScanDigest(logPath) {
 function matchesStrategyAlias(targetName, strategyName) {
   const t = normalizeName(targetName);
   const s = normalizeName(strategyName);
-  if (t === s) return true;
-  if (t.includes(s) || s.includes(t)) return true;
-  const aliases = {
-    momentum: "momentum",
-    sentiment: "sentiment",
-    regime: "regime",
-  };
-  for (const [alias, token] of Object.entries(aliases)) {
-    if (t === alias && s.includes(token)) return true;
-  }
-  return false;
+  if (t === s || t.includes(s) || s.includes(t)) return true;
+  return ["momentum", "sentiment", "regime"].some((alias) => t === alias && s.includes(alias));
 }
 
 async function findStrategyKeyByName(logPath, targetName) {
   const raw = await fs.readFile(logPath, "utf8").catch(() => "");
-  const lines = raw.trim().split("\n").filter(Boolean);
-  for (let i = lines.length - 1; i >= 0; i--) {
+  for (const line of raw.trim().split("\n").filter(Boolean).reverse()) {
     try {
-      const row = JSON.parse(lines[i]);
+      const row = JSON.parse(line);
       const list = row.snapshot?.strategies || row.snapshot?.skills || [];
       if (row.type !== "scan" || !list.length) continue;
-
       const matches = list.filter((s) => matchesStrategyAlias(targetName, s.name));
       if (!matches.length) continue;
-
       const preferred =
         matches.find((s) => s.kind === "implementation") ||
         matches.find((s) => s.path?.endsWith(".js")) ||
@@ -108,19 +76,35 @@ async function findStrategyKeyByName(logPath, targetName) {
 async function strategyKeyFromPath(mdPath) {
   const raw = await fs.readFile(mdPath, "utf8");
   const { front } = parseFrontmatter(raw);
-  const name = front.name;
-  if (!name) throw new Error("Manifest missing name in frontmatter");
-  return computeSkillKey(raw, name);
+  if (!front.name) throw new Error("Manifest missing name in frontmatter");
+  return computeSkillKey(raw, front.name);
+}
+
+async function loadBacktestDigest(backtestPath, strategyName) {
+  if (!backtestPath) return null;
+  const raw = await fs.readFile(backtestPath, "utf8");
+  const data = JSON.parse(raw);
+  return computeStrategyDigest({
+    strategy: data.strategy || strategyName,
+    range: data.range,
+    metrics: data.metrics,
+    replay: data.replay ? { tradeCount: data.replay?.trades?.length ?? 0 } : undefined,
+    simulation_only: true,
+  });
 }
 
 /**
- * Attest on-chain via TWAK signing interface.
- * @param {{ strategyKey: `0x${string}`, score: number, digest: `0x${string}` }} params
+ * Attest strategy fingerprint via TWAK self-custody signing + BSC testnet tx.
  */
 export async function attest(params) {
   const mode = getAttestMode();
   const twak = await initTwakAutonomous();
-  const logPath = defaultLogPath();
+  const logPath = getBehaviorLogPath();
+
+  const strategyDigest =
+    params.strategyDigest ||
+    (await loadBacktestDigest(params.backtestPath, params.strategyName)) ||
+    `scan:${params.digest}`;
 
   await appendTwakLog({
     status: "attest_start",
@@ -129,65 +113,48 @@ export async function attest(params) {
     address: twak.address,
     strategyKey: params.strategyKey,
     score: params.score,
-    digest: params.digest,
+    digest: strategyDigest,
     fingerprint: twakConfigFingerprint(twak.session),
   });
 
   if (mode === "simulate") {
-    const fakeTx = keccak256(stringToBytes(`${params.strategyKey}:${params.score}:${params.digest}:simulate`));
+    const fakeTx = keccak256(stringToBytes(`${params.strategyKey}:${params.score}:${strategyDigest}:simulate`));
     const result = {
       mode: "simulate",
+      digest: strategyDigest,
       txHash: fakeTx,
       strategyKey: params.strategyKey,
       score: params.score,
-      digest: params.digest,
-      note: "Simulation only — no on-chain transaction (Track 2 backtest path)",
+      note: "Simulation only — set AGENT_PRIVATE_KEY and ATTEST_MODE=live for BSC testnet tx",
     };
     await fs.appendFile(logPath, JSON.stringify({ type: "attest", ts: new Date().toISOString(), ...result }) + "\n", "utf8");
     await appendTwakLog({ status: "attest_simulated", txHash: fakeTx });
     return result;
   }
 
-  const rpc = process.env.BNB_RPC_URL || process.env.BSC_TESTNET_RPC_URL || "https://bsc-testnet.publicnode.com";
-  const contract =
-    process.env.CMC_STRATEGY_VAULT_CONTRACT || process.env.SKILL_REPUTATION_CONTRACT;
-  if (!contract) throw new Error("Set CMC_STRATEGY_VAULT_CONTRACT or SKILL_REPUTATION_CONTRACT");
-
-  const pk = twak.privateKey;
-  if (!pk) throw new Error("TWAK live mode requires TWAK_AGENT_PRIVATE_KEY or unlocked session");
-
-  const account = privateKeyToAccount(pk);
-  const publicClient = createPublicClient({ chain: bscTestnet, transport: http(rpc) });
-  const walletClient = createWalletClient({ account, chain: bscTestnet, transport: http(rpc) });
-
-  const hash = await walletClient.writeContract({
-    address: contract,
-    abi: ABI,
-    functionName: "attest",
-    args: [params.strategyKey, params.score, params.digest],
+  const attestation = await attestStrategyDigest({
+    strategyDigest,
+    strategyName: params.strategyName || "strategy",
+    score: params.score,
+    strategyKey: params.strategyKey,
   });
 
-  const receipt = await publicClient.waitForTransactionReceipt({ hash });
   const result = {
-    mode: "live",
-    txHash: hash,
-    blockNumber: receipt.blockNumber.toString(),
+    ...attestation,
     strategyKey: params.strategyKey,
     score: params.score,
-    digest: params.digest,
-    explorer: `https://testnet.bscscan.com/tx/${hash}`,
   };
 
   await fs.appendFile(logPath, JSON.stringify({ type: "attest", ts: new Date().toISOString(), ...result }) + "\n", "utf8");
-  await appendTwakLog({ status: "attest_confirmed", txHash: hash, blockNumber: receipt.blockNumber.toString() });
+  await appendTwakLog({ status: "attest_confirmed", txHash: attestation.txHash, explorer: attestation.explorer });
   return result;
 }
 
 async function main() {
-  const { target, score } = parseArgs(process.argv);
-  if (!target || score === undefined || Number.isNaN(score)) {
-    console.error("Usage: node attest.js --strategy <name> --score <0-100>");
-    console.error("  ATTEST_MODE=simulate|live (default simulate)");
+  const { target, score, backtestPath } = parseArgs(process.argv);
+  if (!target || Number.isNaN(score)) {
+    console.error("Usage: node attest.js --strategy <name> [--score 85] [--backtest path/to/result.json]");
+    console.error("  ATTEST_MODE=live when AGENT_PRIVATE_KEY is set (default live with key, simulate without)");
     process.exit(1);
   }
   if (score < 0 || score > 100 || !Number.isInteger(score)) {
@@ -195,18 +162,31 @@ async function main() {
     process.exit(1);
   }
 
-  const logPath = defaultLogPath();
+  const logPath = getBehaviorLogPath();
   const strategyKey = target.startsWith("@")
     ? await strategyKeyFromPath(target.slice(1))
     : await findStrategyKeyByName(logPath, target);
 
   if (!strategyKey) {
-    console.error("Unknown strategy. Run registry scan first or pass --strategy @/path/to/STRATEGY.md");
+    console.error("Unknown strategy. Run npm run registry first or pass --strategy @/path/to/SKILL.md");
     process.exit(1);
   }
 
   const digest = await readLastScanDigest(logPath);
-  const result = await attest({ strategyKey, score, digest });
+  const defaultBacktest = path.join(
+    path.dirname(fileURLToPath(import.meta.url)),
+    "../../backtest_results",
+    `${target.toLowerCase()}_BNB.json`
+  );
+  const btPath = backtestPath || defaultBacktest;
+
+  const result = await attest({
+    strategyKey,
+    score,
+    digest,
+    strategyName: target,
+    backtestPath: await fs.access(btPath).then(() => btPath).catch(() => undefined),
+  });
   console.log(JSON.stringify(result, null, 2));
 }
 

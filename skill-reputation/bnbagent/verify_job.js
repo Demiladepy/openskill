@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 /**
- * Verify ERC-8183 / HTTP job status and print judge-friendly summary.
+ * Verify ERC-8004 registration + job delivery on BSC testnet.
  */
 import fs from "node:fs/promises";
 import { spawnSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { createPublicClient, http } from "viem";
+import { bscTestnet } from "viem/chains";
 import { loadAgentEnv, getAgentStatePath, readAgentStateSync } from "./lib/loadAgentEnv.js";
 
 loadAgentEnv();
@@ -16,6 +18,38 @@ function parseArgs(argv) {
     if (argv[i] === "--job-id" && argv[i + 1]) jobId = argv[++i];
   }
   return { jobId };
+}
+
+async function verifyTx(txHash, label) {
+  if (!txHash || String(txHash).includes("simulate")) {
+    return { ok: false, label, reason: "No live tx hash (simulate mode?)" };
+  }
+  const rpc = process.env.BNB_RPC_URL || process.env.RPC_URL || "https://data-seed-prebsc-1-s1.binance.org:8545/";
+  const client = createPublicClient({ chain: bscTestnet, transport: http(rpc) });
+  try {
+    const receipt = await client.getTransactionReceipt({ hash: txHash });
+    return {
+      ok: receipt.status === "success",
+      label,
+      txHash,
+      blockNumber: receipt.blockNumber.toString(),
+      explorer: `https://testnet.bscscan.com/tx/${txHash}`,
+    };
+  } catch (err) {
+    return { ok: false, label, txHash, error: err instanceof Error ? err.message : String(err) };
+  }
+}
+
+async function verifyRegistration() {
+  const state = readAgentStateSync() || JSON.parse(await fs.readFile(getAgentStatePath(), "utf8").catch(() => "{}"));
+  const txHash = state.registrationTxHash || state.transactionHash;
+  const check = await verifyTx(txHash, "erc8004_registration");
+  return {
+    ...check,
+    agentId: state.agentId || state.agent_id,
+    mode: state.mode,
+    wallet: state.wallet,
+  };
 }
 
 async function verifyOnChain(jobId) {
@@ -62,14 +96,20 @@ async function verifyLocal(jobId) {
     return false;
   }
 
+  const deliveryCheck = row.delivery?.deliveryTxHash
+    ? await verifyTx(row.delivery.deliveryTxHash, "job_delivery_proof")
+    : null;
+
   console.log(
     JSON.stringify(
       {
         jobId: row.jobId,
         status: row.status,
         strategy: row.strategy,
+        asset: row.asset,
         mode: row.mode,
         result: row.result,
+        delivery: deliveryCheck || row.delivery,
         summary: formatSummary(row.result),
       },
       null,
@@ -87,9 +127,29 @@ function formatSummary(result) {
 
 async function main() {
   const { jobId } = parseArgs(process.argv);
-  if (!jobId) {
-    console.error("Usage: node verify_job.js --job-id <id>");
+
+  const registration = await verifyRegistration();
+  console.log(JSON.stringify({ registration }, null, 2));
+
+  if (!registration.ok && registration.mode === "live") {
+    console.error("Registration tx verification failed");
     process.exit(1);
+  }
+
+  if (!jobId) {
+    const state = readAgentStateSync();
+    const lastJob = state?.jobs?.slice(-1)[0];
+    if (lastJob) {
+      console.log(`\nVerifying latest job: ${lastJob.jobId}`);
+      if (lastJob.mode === "onchain") {
+        const ok = await verifyOnChain(lastJob.jobId);
+        process.exit(ok ? 0 : 1);
+      }
+      const ok = await verifyLocal(lastJob.jobId);
+      process.exit(ok ? 0 : 1);
+    }
+    console.log("\nNo --job-id provided; registration check complete.");
+    process.exit(registration.mode === "simulate" ? 0 : registration.ok ? 0 : 1);
   }
 
   const state = readAgentStateSync();

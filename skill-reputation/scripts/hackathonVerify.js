@@ -45,11 +45,20 @@ async function main() {
   check("cmc_api", cmc.ok || cmc.skipped, cmc.ok ? "valid" : "mock/skipped");
 
   const { session } = await loadTwakSession();
-  const twakOk = !!session || process.env.ATTEST_MODE === "simulate" || process.env.CMC_USE_MOCK === "1";
-  check("twak_session", twakOk, session ? session.address : "run twakSetup.js (or use ATTEST_MODE=simulate)");
+  const twakOk =
+    !!session ||
+    !!process.env.AGENT_PRIVATE_KEY ||
+    !!process.env.TWAK_AGENT_PRIVATE_KEY ||
+    process.env.ATTEST_MODE === "simulate" ||
+    process.env.CMC_USE_MOCK === "1";
+  check(
+    "twak_session",
+    twakOk,
+    session?.address || process.env.AGENT_PRIVATE_KEY ? "key configured" : "run twak:setup or set AGENT_PRIVATE_KEY"
+  );
 
   const attestations = await readAttestations();
-  const liveAttest = attestations.filter((a) => a.mode === "live");
+  const liveAttest = attestations.filter((a) => a.mode === "live" && a.explorer);
   const simAttest = attestations.filter((a) => a.mode === "simulate");
   check(
     "on_chain_attestation",
