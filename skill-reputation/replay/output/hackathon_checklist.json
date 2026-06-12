@@ -33,12 +33,12 @@
     {
       "name": "twak_session",
       "ok": true,
-      "detail": "run twakSetup.js (or use ATTEST_MODE=simulate)"
+      "detail": "run twak:setup or set AGENT_PRIVATE_KEY"
     },
     {
       "name": "on_chain_attestation",
       "ok": true,
-      "detail": "1 simulated attestations (demo mode)"
+      "detail": "2 simulated attestations (demo mode)"
     },
     {
       "name": "replay_report",
@@ -46,9 +46,14 @@
       "detail": "C:\\Users\\User\\Desktop\\nothing\\skill\\skill-reputation\\replay\\output\\replay_report.html"
     },
     {
-      "name": "cmcskill_package",
+      "name": "cmc_skills_format",
       "ok": true,
-      "detail": "momentum.cmcskill.zip"
+      "detail": "skills/cmc-strategy-*/SKILL.md"
+    },
+    {
+      "name": "skills_export_zip",
+      "ok": true,
+      "detail": "cmc-strategy-momentum.zip"
     }
   ],
   "twak_fingerprint": null,
@@ -56,8 +61,9 @@
   "doraHacks_upload": [
     "GitHub repo URL",
     "Demo video (strategy → replay → export)",
-    "examples/*.cmcskill.zip",
+    "skills/cmc-strategy-*/SKILL.md",
+    "examples/cmc-strategy-skills.zip",
     "replay/output/submission_manifest.json"
   ],
-  "generated_at": "2026-06-07T13:49:08.278Z"
+  "generated_at": "2026-06-12T22:23:12.701Z"
 }

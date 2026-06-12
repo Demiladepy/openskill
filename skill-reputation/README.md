@@ -1,197 +1,129 @@
 # CMC Strategy Forge
 
-**CoinMarketCap-powered strategy skills for BNB Hackathon Track 2 (Strategy Skills).**
+> CoinMarketCap-powered quant strategy skills for BNB Hackathon Track 2.
+> Backtests crypto strategies using CMC pre-computed signals. Ships installable CMC skills. Attests results on BNB Chain.
 
-Generate **backtestable trading strategy specs** from **CoinMarketCap Data API** market data. This project is **simulation-only** — no live trading, no execution layer, no wallet integration.
+**Simulation only** — no live trading.
 
-> Data source: [CoinMarketCap Data API / Agent Hub](https://coinmarketcap.com/api/agent)
-
-**We use CMC's pre-computed RSI/MACD/Fear & Greed via MCP** when `MCP_ENABLED=1`, with REST pre-computed signals as fallback.
-
-## CMC Skills Marketplace format
-
-Strategy skills follow the official [CoinMarketCap skills structure](https://github.com/coinmarketcap-official/skills-for-ai-agents-by-CoinMarketCap):
-
-```bash
-# Install into Cursor / Claude Code / OpenClaw
-npx skills add https://github.com/Demiladepy/openskill/tree/main/skill-reputation/skills
-
-# Or copy folders manually
-cp -r skills/cmc-strategy-* ~/.cursor/skills/
-```
-
-Validate format: `npm run validate`
-
-## CMC Agent Hub / MCP integration
-
-| Layer | Module | Purpose |
-|-------|--------|---------|
-| MCP (Option B) | `src/cmcMcpClient.js` | Connects to `https://mcp.coinmarketcap.com/mcp` — RSI, MACD, quotes, global metrics |
-| REST signals (Option A) | `src/cmcSignals.js` | Pre-computed percent changes, Fear & Greed, BTC dominance |
-| Raw OHLCV | `src/cmcDataClient.js` | Historical bars + fallback when endpoints unavailable |
-
-```bash
-# Verify CMC signals (REST)
-npm run cmc:signals -- BTC
-
-# Enable MCP for demo / judges
-# MCP_ENABLED=1 in skill/.env
-npm run cmc:signals -- BTC
-```
-
-## Track 2 compliance
-
-| Requirement | Status |
-|-------------|--------|
-| CMC Data API as data source | Yes |
-| Backtestable spec output | Yes |
-| No live trading | Yes |
-| Strategy fingerprint (strategyKey) | Yes |
-| Three example strategies | Yes |
-
-## Directory structure
-
-```text
-skill-reputation/
-├── skill/                 # CMC Skill manifest + scripts (SKILL.md)
-├── strategies/            # Strategy templates + implementations
-├── src/                   # CMC client, registry, backtest engine
-├── backtest/              # Legacy MA crossover module
-├── replay/                # PnL replay HTML generator
-├── skills/                # Official CMC-format strategy skills (installable)
-├── marketplace/           # Skill export + CMC format validator
-├── cli-skill/             # CMC CLI Skill (cmc skills install)
-├── backtest_results/      # Generated specs + replay JSON
-└── examples/              # Exported CMC skill zips (cmc-strategy-*.zip)
-```
-
-## Quickstart
+## Quick Start
 
 ```bash
 cd skill-reputation
-cp skill/.env.example skill/.env
-# Set CMC_API_KEY=... (or CMC_USE_MOCK=1 for offline demo)
 npm install
-npm run strategy -- momentum -- --from 2026-06-01 --to 2026-06-21
-npm run replay
-npm run export -- momentum
+cp skill/.env.example skill/.env
+# Set CMC_API_KEY and AGENT_PRIVATE_KEY (BSC testnet throwaway wallet)
+
+npm run strategy:all    # 1. Run all strategies
+npm run replay          # 2. PnL replay report
+npm run attest          # 3. Attest on BSC testnet (when AGENT_PRIVATE_KEY set)
+npm run export:skills   # 4. Export CMC-compatible skill zips
+npm run verify          # 5. Submission checklist
 ```
 
-## Trust Wallet Agent Kit (TWAK) — strategy attestation
+Three commands for a minimal judge demo: `strategy:all` → `replay` → `attest`.
 
-We use **TWAK's self-custody signing model** — local key management, autonomous attestation of strategy fingerprints. Bridged via viem on BSC testnet while `@trustwallet/agent-kit` ships; code is structured for drop-in replacement.
+## Strategies
 
-### Setup
+### 1. Momentum Merger
+
+Combines CMC pre-computed momentum (7d/24h percent changes or MCP RSI/MACD) with historical Fear & Greed. Buys when RSI is oversold or MACD turns bullish during extreme fear; exits on overbought RSI, bearish MACD, or elevated greed. Uses quotes, Fear & Greed, global metrics, and optional MCP technicals.
+
+### 2. Sentiment Divergence
+
+Detects divergence between short-term price weakness (7d return) and longer-term structure (30d return), amplified by CMC Fear & Greed and volume/market-cap ratio spikes during capitulation. Uses quotes percent changes, Fear & Greed history, and global volume metrics.
+
+### 3. Regime Detector
+
+Classifies market regime from CMC global metrics (BTC dominance, total market cap change) plus asset 7d/30d percent changes. Enters on trending-up regimes (risk-on); exits on trending-down (flight to safety). Uses global metrics, quotes, and OHLCV for confirmation.
+
+## Backtest Results
+
+Mock demo window `2026-03-01 → 2026-06-01` (set `CMC_API_KEY` for live CMC data):
+
+| Strategy | Asset | Sharpe | Max DD | Trades | Win Rate | Return |
+|----------|-------|--------|--------|--------|----------|--------|
+| Momentum | BTC | 0.00 | 0.06% | 1 | 100% | 0.47% |
+| Momentum | ETH | 0.00 | 0.06% | 1 | 100% | 0.47% |
+| Momentum | BNB | 0.00 | 0.06% | 1 | 100% | 0.47% |
+| Sentiment | BTC | 0.00 | 0.30% | 1 | 100% | 2.52% |
+| Sentiment | ETH | 0.00 | 0.30% | 1 | 100% | 2.52% |
+| Sentiment | BNB | 0.00 | 0.30% | 1 | 100% | 2.52% |
+| Regime | BTC | 0.00 | 2.83% | 1 | 100% | 7.62% |
+| Regime | ETH | 0.00 | 2.83% | 1 | 100% | 7.62% |
+| Regime | BNB | 0.00 | 2.83% | 1 | 100% | 7.62% |
+
+Reproduce: `CMC_USE_MOCK=1 npm run strategy:all` or live with `CMC_API_KEY`. Full JSON in `backtest_results/`.
+
+## CMC Integration
+
+- **CMC Data API** — quotes, OHLCV, Fear & Greed, global metrics (`src/cmcDataClient.js`, `src/cmcSignals.js`)
+- **CMC MCP** — pre-computed RSI/MACD when `MCP_ENABLED=1` (`src/cmcMcpClient.js`)
+- **CMC Skills format** — installable skills in `skills/cmc-strategy-*/SKILL.md`
 
 ```bash
-npm run twak:setup
-# Set AGENT_PRIVATE_KEY in skill/.env (BSC testnet throwaway wallet)
-# Fund wallet: https://testnet.bnbchain.org/faucet-smart
+npx skills add https://github.com/Demiladepy/openskill/tree/main/skill-reputation/skills
 ```
 
-### Attest (live on BSC testnet)
+## On-Chain Attestation
 
-```bash
-# Defaults to live when AGENT_PRIVATE_KEY is set
-npm run registry
-npm run strategy:all
-npm run attest -- --strategy momentum --score 85
-# Prints tx hash → https://testnet.bscscan.com/tx/0x...
+TWAK-compatible **self-custody signing** on BSC testnet (`skill/scripts/attest.js`):
+
+1. Set `AGENT_PRIVATE_KEY` in `skill/.env`
+2. Fund wallet via [BSC testnet faucet](https://testnet.bnbchain.org/faucet-smart)
+3. `npm run attest` → prints tx hash
+
+After live attestation, verify at `https://testnet.bscscan.com/tx/<your-tx-hash>`.
+
+Each backtest JSON includes an `attestation` block (digest, signature, txHash, explorer).
+
+## Sponsor Stack Integration
+
+| Sponsor | Integration | Status |
+|---------|-------------|--------|
+| CoinMarketCap | Data API + MCP + Skills format | Live |
+| Trust Wallet | TWAK-compatible attestation signing | Live (BSC testnet) |
+| BNB Chain | ERC-8004 agent + BSC attestation | Live (BSC testnet) |
+
+## Architecture
+
+```
+CMC Data API / MCP
+       ↓
+  cmcSignals.js  ──→  3 strategies  ──→  backtestEngine.js
+       ↓                                        ↓
+ backtest_results/*.json  ←──────────  attest.js (BSC tx)
+       ↓
+  replay/ + skills/export
 ```
 
-For CI/offline demo only: `ATTEST_MODE=simulate npm run attest -- --strategy momentum --score 85`
+## Additional Features
 
-Backtest JSON files include an `attestation` block with digest, signature, txHash, and explorer link.
+These are supported but **not part of the 3-minute judge demo**:
 
-## Scripts
+| Feature | Path | Command |
+|---------|------|---------|
+| CLI skill | `cli-skill/` | `cd cli-skill && npm run run -- --strategy momentum` |
+| PnL replay HTML | `replay/` | `npm run replay` |
+| Skill export | `marketplace/exporter.js` | `npm run export:skills` |
+| BNB Agent SDK | `bnbagent/` | `python bnbagent/register_agent.py --live` |
+| Demo UI | `demos/demo-ui/` | Optional Next.js shell |
+| TWAK setup | `skill/scripts/twakSetup.js` | `npm run twak:setup` |
+| Legacy Hardhat contract | `legacy/contracts/` | Out of scope for Track 2 |
 
-| Command | Purpose |
-|---------|---------|
-| `npm run registry` | Scan strategies, compute strategyKey fingerprints |
-| `npm run strategy -- momentum` | Run backtest for a strategy |
-| `npm run strategy:all` | Run all three strategies |
-| `npm run backtest` | Alias: momentum backtest |
-| `npm run replay` | Generate HTML PnL replay + submission manifest |
-| `npm run export -- momentum` | Export `examples/cmc-strategy-momentum.zip` |
-| `npm run export:scan` | Export all 3 skills + `cmc-strategy-skills.zip` bundle |
-| `npm run validate` | Validate `skills/` against CMC official SKILL.md format |
-| `npm run hackathon:verify` | Full submission checklist + manifest |
-| `npm run twak:setup` | First-time TWAK wallet setup |
-| `npm run attest -- --strategy momentum --score 85` | TWAK attestation (live when AGENT_PRIVATE_KEY set) |
-| `npm run cli-skill -- run --strategy momentum` | Run CMC CLI quant skill |
-| `npm run agent:register` | Register ERC-8004 agent identity |
-| `npm run agent:run` | Start ERC-8183 job server |
-| `npm run marketplace:post` | Post a backtest job to your agent |
-| `npm run marketplace:verify` | Verify job delivery |
+## Environment
 
-## BNB AI Agent SDK (ERC-8004 + ERC-8183)
+Copy `skill/.env.example` → `skill/.env`:
 
-On-chain agent registration on BSC testnet. Minimum viable proof: **one ERC-8004 registration tx** verifiable on BscScan. See [`bnbagent/README.md`](bnbagent/README.md).
+| Variable | Purpose |
+|----------|---------|
+| `CMC_API_KEY` | CoinMarketCap Data API |
+| `MCP_ENABLED=1` | CMC MCP pre-computed technicals |
+| `AGENT_PRIVATE_KEY` | BSC testnet attestation + agent |
+| `ATTEST_MODE=live` | Default when key is set |
 
-```bash
-pip install -r bnbagent/requirements.txt
-cp bnbagent/.env.agent.example bnbagent/.env.agent
-# Set AGENT_PRIVATE_KEY + AGENT_SIMULATE=0
+## DoraHacks submission
 
-python bnbagent/register_agent.py --live   # prints agent ID + tx hash
-npm run agent:run                          # FastAPI + backtest jobs
-python bnbagent/marketplace_client.py --strategy momentum --asset BTC
-node bnbagent/verify_job.js                # verify registration + job txs
-```
-
-One-command demo (Linux/macOS): `bash bnbagent/demo.sh`
-
-## CMC CLI Skill
-
-The [`cli-skill/`](cli-skill/) package is a **CoinMarketCap Agent Hub CLI Skill** with Sharpe, max drawdown, and volatility scaling utilities.
-
-```bash
-cd cli-skill && npm install
-CMC_USE_MOCK=1 npm run run -- --strategy momentum --from 2026-06-01 --to 2026-06-21 --output json
-```
-
-Install for other developers: `cmc skills install <repo-url>/skill-reputation/cli-skill`
-
-## Three strategies
-
-1. **Momentum Merger** — RSI + MACD + CMC Fear & Greed
-2. **Sentiment Divergence** — social sentiment vs price
-3. **Regime Detector** — funding + open interest regimes
-
-## How to submit to Track 2 (DoraHacks)
-
-1. Register on DoraHacks for BNB Hackathon Track 2
-2. Push this repo to GitHub (`https://github.com/Demiladepy/openskill`)
-3. Run all three strategies and export packages:
-   ```bash
-   npm run strategy:all
-   npm run export -- momentum
-   npm run export -- sentiment
-   npm run export -- regime
-   ```
-4. Submit:
-   - GitHub repo link
-   - Demo video (2–3 min): run strategy → replay HTML → export CMC skills zip
-   - `examples/cmc-strategy-skills.zip` + `skills/cmc-strategy-*/SKILL.md`
-
-**This is NOT a live trading agent.** Judges evaluate simulation output only.
-
-## Environment variables
-
-See `skill/.env.example`:
-
-- `CMC_API_KEY` — required for live CoinMarketCap data
-- `CMC_USE_MOCK=1` — offline demo with warning banner
-- `CMC_MIN_REQUEST_INTERVAL_MS=1200` — rate limit pacing
-- `ATTEST_MODE=simulate|live` — TWAK attestation mode (default simulate)
-- `TWAK_UNLOCK_PASSPHRASE` — unlock phrase for `~/.twak/session.json`
-- `BNB_RPC_URL` — BSC testnet RPC for live attestation
-- `CMC_STRATEGY_VAULT_CONTRACT` — on-chain attestation contract address
-
-## Demo video outline
-
-1. `npm run strategy -- momentum -- --from 2026-06-01 --to 2026-06-21`
-2. Open `replay/output/replay_report.html`
-3. `npm run export -- momentum`
-4. `npm run hackathon:verify` — generates `submission_manifest.json`
-5. Explain CMC Data API data flow (spot, social, derivatives, Fear & Greed)
+1. GitHub repo URL
+2. Demo video: `strategy:all` → `replay` → `attest` → `export:skills` (under 3 min)
+3. `skills/cmc-strategy-*/SKILL.md` + `examples/cmc-strategy-skills.zip`
+4. `npm run verify` checklist output

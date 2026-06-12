@@ -43,11 +43,11 @@ From repo root (`skill-reputation/`):
 ```bash
 cp skill/.env.example skill/.env
 npm install
-npm run registry
 npm run strategy:all
 npm run replay
-npm run export -- momentum
-npm run validate
+npm run attest
+npm run export:skills
+npm run verify
 ```
 
 ## Skill locations

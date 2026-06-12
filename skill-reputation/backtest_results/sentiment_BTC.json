@@ -501,5 +501,19 @@
   ],
   "dataSource": "mock-with-warning",
   "cmcSignalSource": "mock",
-  "mockWarning": "MOCK DATA — set CMC_API_KEY for live CoinMarketCap Data API"
+  "mockWarning": "MOCK DATA — set CMC_API_KEY for live CoinMarketCap Data API",
+  "rulesPlainEnglish": [
+    "Uses CMC pre-computed percent_change_7d / percent_change_30d from quotes API.",
+    "Sentiment divergence: Fear & Greed < 45 while 30d return remains positive.",
+    "Entry: 7d return < -9.5% AND 30d return > 0%, OR fear/price divergence.",
+    "Exit: 7d return > +15%, 30d return < -15%, or Fear & Greed > 75.",
+    "Simulation only — no live trading."
+  ],
+  "attestation": {
+    "digest": "sha256:fb88980ff2a339a188bd81915737ed5e5297415a68320e5dcbd7ee9fc15dad15",
+    "txHash": "0x64b91d0bfb51b6dc6964877ccd1587b4a5152c144d6be70f8bfb56243856d6e3",
+    "mode": "simulate",
+    "method": "simulate (set AGENT_PRIVATE_KEY + ATTEST_MODE=live for BSC testnet tx)",
+    "explorer": null
+  }
 }

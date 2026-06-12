@@ -22,7 +22,7 @@ function check(name, ok, detail) {
 }
 
 async function main() {
-  console.log("=== CMC Strategy Forge — Hackathon Verify ===\n");
+  console.log("=== CMC Strategy Forge — Verify ===\n");
 
   try {
     execSync("npm run test -w cmc-strategy-backtest", { cwd: ROOT, stdio: "pipe" });

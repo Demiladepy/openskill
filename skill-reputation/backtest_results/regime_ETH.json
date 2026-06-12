@@ -501,5 +501,19 @@
   ],
   "dataSource": "mock-with-warning",
   "cmcSignalSource": "mock",
-  "mockWarning": "MOCK DATA — set CMC_API_KEY for live CoinMarketCap Data API"
+  "mockWarning": "MOCK DATA — set CMC_API_KEY for live CoinMarketCap Data API",
+  "rulesPlainEnglish": [
+    "Uses CMC global metrics: BTC dominance + total market cap change for regime detection.",
+    "TRENDING UP: positive 7d/30d CMC percent changes + BTC dominance < 55%.",
+    "TRENDING DOWN: negative momentum + elevated BTC dominance (risk-off).",
+    "RANGING: flat market cap change and low asset momentum → no position.",
+    "Simulation only — no live trading."
+  ],
+  "attestation": {
+    "digest": "sha256:f5c6ac5aabe0dd7240981e4140342c8a9207055228fe0f6f00ef8f0f5fced5ad",
+    "txHash": "0xbb5c4a195feaa2940278c15255db19b174627f71659d5e1cbd9f6f4a5929835d",
+    "mode": "simulate",
+    "method": "simulate (set AGENT_PRIVATE_KEY + ATTEST_MODE=live for BSC testnet tx)",
+    "explorer": null
+  }
 }

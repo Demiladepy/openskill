@@ -43,6 +43,12 @@
       "mode": "simulate",
       "strategyKey": "0x3cdcd256828be6ba2af4d9b7f9e560d1d01eacd36d916c9c621d29bac2e11db6",
       "digest": "0x2302ec63fe6077834dd7d80cf3b9f4cc422de2d7406679ab69c5fca375cc3d4c"
+    },
+    {
+      "txHash": "0xac1c0ce0a2077faf31fcbfd5d3067decc24d6e1b8eb6ee99caea47cc58975528",
+      "mode": "simulate",
+      "strategyKey": "0x3cdcd256828be6ba2af4d9b7f9e560d1d01eacd36d916c9c621d29bac2e11db6",
+      "digest": "sha256:2f9ca556750d4512712f9808527725b032ec46f74775870cb545f833c345811e"
     }
   ],
   "bnb_ai_agent": {
@@ -81,5 +87,5 @@
     "venue": "PancakeSwap reference / BSC perps simulation"
   },
   "performance_summary": {},
-  "generated_at": "2026-06-07T17:19:16.910Z"
+  "generated_at": "2026-06-12T22:23:12.697Z"
 }

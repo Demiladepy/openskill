@@ -501,5 +501,18 @@
   ],
   "dataSource": "mock-with-warning",
   "cmcSignalSource": "mock",
-  "mockWarning": "MOCK DATA — set CMC_API_KEY for live CoinMarketCap Data API"
+  "mockWarning": "MOCK DATA — set CMC_API_KEY for live CoinMarketCap Data API",
+  "rulesPlainEnglish": [
+    "Uses CMC pre-computed RSI/MACD via MCP when MCP_ENABLED=1, else CMC quote momentum + Fear & Greed.",
+    "Entry (buy): CMC RSI < 35 OR (MACD histogram positive AND Fear & Greed < 30).",
+    "Exit (sell): CMC RSI > 65 OR MACD histogram negative OR Fear & Greed > 70.",
+    "Position sizing: 2% of equity. Trailing stop: 5%. Simulation only."
+  ],
+  "attestation": {
+    "digest": "sha256:4b9ffcd081f06d4b7469ee199ff2e5aae4a251ee37feff11d072195fd67b13bd",
+    "txHash": "0x862a04164e9e823c25804a933271df68722572b99f440d3f89febda1d69a90d0",
+    "mode": "simulate",
+    "method": "simulate (set AGENT_PRIVATE_KEY + ATTEST_MODE=live for BSC testnet tx)",
+    "explorer": null
+  }
 }

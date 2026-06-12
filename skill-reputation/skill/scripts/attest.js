@@ -168,7 +168,7 @@ async function main() {
     : await findStrategyKeyByName(logPath, target);
 
   if (!strategyKey) {
-    console.error("Unknown strategy. Run npm run registry first or pass --strategy @/path/to/SKILL.md");
+    console.error("Unknown strategy. Run npm run strategy:all first or pass --strategy @/path/to/SKILL.md");
     process.exit(1);
   }
 
