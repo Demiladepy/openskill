@@ -5,64 +5,28 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { createWriteStream } from "node:fs";
 import archiver from "archiver";
 import { computeStrategyKey } from "../src/lib/strategyKey.js";
-import { readLatestScan } from "../src/lib/behaviorLog.js";
 import { loadProjectEnv } from "../src/lib/loadEnv.js";
 import { runOne } from "../strategies/index.js";
 
 loadProjectEnv();
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
+const SKILLS_DIR = path.join(ROOT, "skills");
 
-function digestShort(digest) {
-  return String(digest).replace(/^0x/, "").slice(0, 8);
+const STRATEGY_MAP = {
+  momentum: "cmc-strategy-momentum",
+  sentiment: "cmc-strategy-sentiment",
+  regime: "cmc-strategy-regime",
+};
+
+function skillFolderFor(strategyName) {
+  const slug = strategyName.toLowerCase();
+  const folder = STRATEGY_MAP[slug];
+  if (!folder) throw new Error(`Unknown strategy "${strategyName}". Use: ${Object.keys(STRATEGY_MAP).join(", ")}`);
+  return path.join(SKILLS_DIR, folder);
 }
 
-function buildSkillMarkdown(spec, strategyKey, digest, scanMeta) {
-  const perf = spec.backtest_performance || {};
-  return `---
-name: ${spec.name}
-version: ${spec.version || "1.0.0"}
-strategy_type: ${spec.strategy_type || "cmc-quant"}
-cmc_requirements:
-  indicators: ${JSON.stringify(spec.cmc_requirements?.indicators || [])}
-  data_frequency: ${spec.cmc_requirements?.data_frequency || "daily"}
-  min_history_days: ${spec.cmc_requirements?.min_history_days || 90}
-risk_profile: ${spec.risk_profile || "moderate"}
-backtest_period:
-  from: ${scanMeta.from || "2026-06-01"}
-  to: ${scanMeta.to || "2026-06-21"}
-backtest_performance:
-  sharpe: ${perf.sharpeRatio ?? 0}
-  max_drawdown: ${perf.maxDrawdownPct ?? 0}%
-  total_return: ${perf.totalReturnPct ?? 0}%
-strategy_key: ${strategyKey}
-digest: ${digest}
-simulation_only: true
-live_trading: false
-data_source: CoinMarketCap Data API
----
-
-# ${spec.name}
-
-CoinMarketCap Strategy Skill — **backtestable spec** for Skills Marketplace (Track 2).
-
-## Trading logic
-${(spec.rules_plain_english || []).map((r) => `- ${r}`).join("\n")}
-
-## Parameters
-${JSON.stringify(spec.params || {}, null, 2)}
-
-## Entry / exit
-- Entry: ${(spec.entry_rules || []).join("; ") || "See rules above"}
-- Exit: ${(spec.exit_rules || []).join("; ") || "See rules above"}
-
-## Fingerprint
-- strategyKey: \`${strategyKey}\`
-- digest: \`${digest}\`
-`;
-}
-
-async function zipDirectory(sourceDir, outPath) {
+async function zipDirectory(sourceDir, outPath, archiveRootName) {
   await fs.mkdir(path.dirname(outPath), { recursive: true });
   return new Promise((resolve, reject) => {
     const output = createWriteStream(outPath);
@@ -70,115 +34,86 @@ async function zipDirectory(sourceDir, outPath) {
     output.on("close", resolve);
     archive.on("error", reject);
     archive.pipe(output);
-    archive.directory(sourceDir, false);
+    archive.directory(sourceDir, archiveRootName || false);
     archive.finalize();
   });
 }
 
-const JS_MAP = {
-  momentum: "momentumMerger.js",
-  sentiment: "sentimentDivergence.js",
-  regime: "regimeDetector.js",
-  "momentum merger": "momentumMerger.js",
-  "sentiment divergence": "sentimentDivergence.js",
-  "regime detector": "regimeDetector.js",
-};
-
-function resolveStrategySlug(name) {
-  const n = name.toLowerCase();
-  if (n.includes("momentum")) return "momentum";
-  if (n.includes("sentiment")) return "sentiment";
-  if (n.includes("regime")) return "regime";
-  return n.replace(/\s+/g, "-");
+async function copySkillFolder(srcDir, destDir) {
+  await fs.rm(destDir, { recursive: true, force: true });
+  await fs.mkdir(destDir, { recursive: true });
+  await fs.cp(srcDir, destDir, { recursive: true });
 }
 
-export async function exportFromScan(opts = {}) {
-  const scan = await readLatestScan();
-  if (!scan) throw new Error("No scan found in behavior-log.jsonl. Run: npm run registry");
-
-  const strategies = scan.snapshot?.strategies || scan.snapshot?.skills || [];
-  const exports = [];
-
-  for (const entry of strategies) {
-    const slug = resolveStrategySlug(entry.name);
-    const jsFile = JS_MAP[slug] || JS_MAP[entry.name?.toLowerCase()];
-    if (!jsFile) continue;
-
-    const { result, strategy } = await runOne(slug, {
-      from: opts.from || "2026-06-01",
-      to: opts.to || "2026-06-21",
-    });
-
-    const spec = strategy.exportSpec();
-    spec.strategy_type = spec.strategy_type || slug;
-    const body = JSON.stringify(spec, null, 2);
-    const strategyKey = entry.skillKey || entry.strategyKey || computeStrategyKey(body, spec.name);
-    const digest = scan.digest || computeStrategyKey(body + JSON.stringify(result.metrics), spec.name);
-
-    const staging = path.join(ROOT, "examples", `.staging-${slug}`);
-    await fs.rm(staging, { recursive: true, force: true });
-    await fs.mkdir(staging, { recursive: true });
-
-    await fs.writeFile(
-      path.join(staging, "SKILL.md"),
-      buildSkillMarkdown(spec, strategyKey, digest, { from: opts.from, to: opts.to })
-    );
-    await fs.writeFile(path.join(staging, "strategy.spec.json"), body);
-    await fs.writeFile(
-      path.join(staging, "backtest_results.json"),
-      JSON.stringify({ metrics: result.metrics, replay: result.replay, rules: result.rulesPlainEnglish }, null, 2)
-    );
-
-    const jsSrc = path.join(ROOT, "strategies", jsFile);
-    await fs.copyFile(jsSrc, path.join(staging, jsFile));
-
-    const safeName = spec.name.toLowerCase().replace(/\s+/g, "-");
-    const outZip = path.join(ROOT, "examples", `${safeName}-${digestShort(digest)}.cmcskill.zip`);
-    await zipDirectory(staging, outZip);
-    await fs.rm(staging, { recursive: true, force: true });
-
-    exports.push({ outZip, strategyKey, digest, name: spec.name });
-  }
-
-  return { scanDigest: scan.digest, exports };
-}
-
+/**
+ * Export one CMC-compatible skill folder (+ optional backtest appendix) as zip.
+ */
 export async function exportCmcSkill(strategyName, opts = {}) {
-  const { result, strategy } = await runOne(strategyName, {
-    from: opts.from || "2026-06-01",
-    to: opts.to || "2026-06-21",
+  const skillDir = skillFolderFor(strategyName);
+  await fs.access(path.join(skillDir, "SKILL.md"));
+
+  const { result, strategyInstance } = await runOne(strategyName, {
+    from: opts.from || "2026-03-01",
+    to: opts.to || "2026-06-01",
     symbol: opts.symbol || "BNB",
     convert: opts.convert || "USDT",
   });
 
-  const spec = strategy.exportSpec();
+  const spec = strategyInstance.exportSpec();
   const body = JSON.stringify(spec, null, 2);
   const strategyKey = computeStrategyKey(body, spec.name);
-  const digest = computeStrategyKey(body + JSON.stringify(result.metrics), spec.name);
+  const folderName = path.basename(skillDir);
 
-  const staging = path.join(ROOT, "examples", `.staging-${strategyName}`);
-  await fs.rm(staging, { recursive: true, force: true });
-  await fs.mkdir(staging, { recursive: true });
+  const staging = path.join(ROOT, "examples", `.staging-${folderName}`);
+  await copySkillFolder(skillDir, staging);
 
-  await fs.writeFile(
-    path.join(staging, "SKILL.md"),
-    buildSkillMarkdown(spec, strategyKey, digest, { from: opts.from, to: opts.to })
-  );
-  await fs.writeFile(path.join(staging, "strategy.spec.json"), body);
-  await fs.writeFile(
-    path.join(staging, "backtest_results.json"),
-    JSON.stringify({ metrics: result.metrics, replay: result.replay }, null, 2)
-  );
+  await fs.writeFile(path.join(staging, "backtest_results.json"), JSON.stringify({
+    strategy: strategyName,
+    metrics: result.metrics,
+    replay: result.replay,
+    rules: result.rulesPlainEnglish,
+    strategyKey,
+    simulation_only: true,
+    exported_at: new Date().toISOString(),
+  }, null, 2));
 
-  const jsSrc = path.join(ROOT, "strategies", JS_MAP[strategyName] || `${strategyName}.js`);
-  await fs.copyFile(jsSrc, path.join(staging, path.basename(jsSrc)));
-
-  const safeName = spec.name.toLowerCase().replace(/\s+/g, "-");
-  const outZip = path.join(ROOT, "examples", `${safeName}-${digestShort(digest)}.cmcskill.zip`);
-  await zipDirectory(staging, outZip);
+  const outZip = path.join(ROOT, "examples", `${folderName}.zip`);
+  await zipDirectory(staging, outZip, folderName);
   await fs.rm(staging, { recursive: true, force: true });
 
-  return { outZip, strategyKey, digest, spec };
+  return { outZip, strategyKey, folderName, spec };
+}
+
+/**
+ * Export all three CMC skills as one marketplace bundle zip.
+ */
+export async function exportFromScan(opts = {}) {
+  const exports = [];
+  for (const name of Object.keys(STRATEGY_MAP)) {
+    const out = await exportCmcSkill(name, opts);
+    exports.push(out);
+  }
+
+  const bundleStaging = path.join(ROOT, "examples", ".staging-cmc-strategy-skills");
+  await fs.rm(bundleStaging, { recursive: true, force: true });
+  await fs.mkdir(bundleStaging, { recursive: true });
+
+  for (const name of Object.keys(STRATEGY_MAP)) {
+    const src = skillFolderFor(name);
+    await fs.cp(src, path.join(bundleStaging, path.basename(src)), { recursive: true });
+    const btPath = path.join(ROOT, "backtest_results", `${name}_BNB.json`);
+    try {
+      await fs.copyFile(btPath, path.join(bundleStaging, path.basename(src), "backtest_results.json"));
+    } catch {
+      /* optional */
+    }
+  }
+
+  const bundleZip = path.join(ROOT, "examples", "cmc-strategy-skills.zip");
+  await zipDirectory(bundleStaging, bundleZip, false);
+  await fs.rm(bundleStaging, { recursive: true, force: true });
+
+  return { bundleZip, exports };
 }
 
 async function main() {

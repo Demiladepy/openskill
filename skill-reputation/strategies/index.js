@@ -108,6 +108,7 @@ async function runOne(name, opts) {
 
   return {
     strategy: name,
+    strategyInstance: strategy,
     asset: opts.symbol,
     sharpe: result.metrics.sharpeRatio,
     maxDd: result.metrics.maxDrawdownPct,
@@ -116,6 +117,7 @@ async function runOne(name, opts) {
     ret: result.metrics.totalReturnPct,
     outPath,
     mockWarning: market.meta?.mockWarning,
+    result,
   };
 }
 

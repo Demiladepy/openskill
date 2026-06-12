@@ -1,58 +1,65 @@
 ---
 name: cmc-strategy-forge
-description: Generate backtestable CoinMarketCap trading strategy specs from CMC Data API market data. Track 2 — simulation only, no live trading.
-version: 2.0.0
-metadata:
-  cmc:
-    track: strategy-skills
-    marketplace: coinmarketcap-agent-hub
-    requires:
-      env:
-        - CMC_API_KEY
-      bins:
-        - node
-    simulation_only: true
-    live_trading: false
+version: 1.0.0
+description: Suite of backtestable quant strategies powered by CoinMarketCap data
+author: CMC Strategy Forge
+tags: [crypto, quant, backtesting, strategy, coinmarketcap]
 ---
 
 # CMC Strategy Forge
 
-**CoinMarketCap Strategy Skill** for BNB Hackathon **Track 2 (Strategy Skills)**.
+A strategy skills platform for CoinMarketCap Agent Hub. Contains 3 backtestable quant strategies:
 
-This skill generates **backtestable strategy specs** powered exclusively by the **CoinMarketCap Data API**. Judges run scripts locally to produce JSON specs and replay reports — **no live trading agent** and **no execution layer**.
+1. **cmc-strategy-momentum** — RSI + MACD + Fear & Greed momentum trading
+2. **cmc-strategy-sentiment** — Social/market sentiment divergence detection
+3. **cmc-strategy-regime** — Market regime detection (trending/ranging/volatile)
 
-## What this skill does
+All strategies consume **CMC pre-computed signals** (REST + optional MCP). Simulation only — no live trading.
 
-1. Pull CMC market data (spot, social, derivatives, Fear & Greed)
-2. Run one of three strategy templates (momentum, sentiment, regime)
-3. Output backtest metrics + `replay_data.json` + optional `.cmcskill` package
+## Installation
+
+Copy the skills folder to your agent's skills directory:
+
+```bash
+cp -r skills/cmc-strategy-* /path/to/your/skills/directory/
+```
+
+Or install via npx:
+
+```bash
+npx skills add https://github.com/Demiladepy/openskill/tree/main/skill-reputation/skills
+```
+
+## Prerequisites
+
+- `CMC_API_KEY` in `skill/.env` (or `CMC_USE_MOCK=1` for offline demo)
+- Optional: `MCP_ENABLED=1` for CMC MCP pre-computed RSI/MACD
+- Node.js 18+
 
 ## Quick commands
 
 From repo root (`skill-reputation/`):
 
 ```bash
-cp skill/.env.example skill/.env   # add CMC_API_KEY
+cp skill/.env.example skill/.env
 npm install
-npm run registry                   # scan strategies + strategyKey fingerprints
-npm run strategy -- momentum -- --from 2026-06-01 --to 2026-06-21
-npm run backtest
+npm run registry
+npm run strategy:all
 npm run replay
 npm run export -- momentum
 npm run validate
 ```
 
-## Strategy fingerprint (version control)
+## Skill locations
 
-Each strategy manifest is hashed into a **strategyKey** (same algorithm as the original skillKey digest system). This fingerprint ties a spec to exact strategy bytes for marketplace submission.
+| Skill | Path |
+|-------|------|
+| Momentum | `skills/cmc-strategy-momentum/SKILL.md` |
+| Sentiment | `skills/cmc-strategy-sentiment/SKILL.md` |
+| Regime | `skills/cmc-strategy-regime/SKILL.md` |
 
 ## Track 2 compliance
 
-- Data source: **CoinMarketCap Data API only**
-- Output: **backtestable spec** (JSON + SKILL.md)
-- No live trading, no wallet integration, no on-chain requirement
-
-## Security
-
-- Never commit `CMC_API_KEY`
-- Set `CMC_USE_MOCK=1` for offline demo (mock data warning included in output)
+- Data source: **CoinMarketCap Data API + Agent Hub MCP**
+- Output: **backtestable spec** (JSON + official CMC SKILL.md format)
+- No live trading, no wallet integration

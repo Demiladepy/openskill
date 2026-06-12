@@ -64,21 +64,22 @@ async function main() {
   const replay = await generateReplayReport({ from: "2026-06-01", to: "2026-06-28" });
   check("replay_report", true, replay.htmlPath);
 
-  const exampleZip = path.join(ROOT, "examples");
+  const skillsDir = path.join(ROOT, "skills");
+  try {
+    const report = await validatePackage(skillsDir);
+    check("cmc_skills_format", report.ok, "skills/cmc-strategy-*/SKILL.md");
+  } catch (err) {
+    check("cmc_skills_format", false, err instanceof Error ? err.message : String(err));
+  }
+
   let zipFile = null;
   try {
-    const files = await fs.readdir(exampleZip);
-    zipFile = files.find((f) => f.endsWith(".cmcskill.zip"));
+    const files = await fs.readdir(path.join(ROOT, "examples"));
+    zipFile = files.find((f) => f === "cmc-strategy-skills.zip" || f.startsWith("cmc-strategy-"));
   } catch {
     /* no examples yet */
   }
-
-  if (zipFile) {
-    const report = await validatePackage(path.join(exampleZip, zipFile));
-    check("cmcskill_package", report.ok, zipFile);
-  } else {
-    check("cmcskill_package", false, "run npm run export -- --from-scan");
-  }
+  check("skills_export_zip", !!zipFile, zipFile || "run npm run export:scan");
 
   const manifest = {
     checklist,
@@ -87,7 +88,8 @@ async function main() {
     doraHacks_upload: [
       "GitHub repo URL",
       "Demo video (strategy → replay → export)",
-      "examples/*.cmcskill.zip",
+      "skills/cmc-strategy-*/SKILL.md",
+      "examples/cmc-strategy-skills.zip",
       "replay/output/submission_manifest.json",
     ],
     generated_at: new Date().toISOString(),
@@ -97,7 +99,9 @@ async function main() {
   await fs.writeFile(outPath, JSON.stringify(manifest, null, 2));
 
   console.log(JSON.stringify(manifest, null, 2));
-  const failed = checklist.filter((c) => !c.ok && !c.name.startsWith("env_bnb") && c.name !== "cmcskill_package");
+  const failed = checklist.filter(
+    (c) => !c.ok && !c.name.startsWith("env_bnb") && c.name !== "skills_export_zip"
+  );
   if (failed.length) {
     console.warn("\nSome checks need attention before DoraHacks upload.");
     process.exitCode = 1;

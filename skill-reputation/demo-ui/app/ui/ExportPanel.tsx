@@ -31,7 +31,7 @@ export function ExportPanel() {
   return (
     <section className="panel">
       <h2>Export to CMC Marketplace</h2>
-      <p className="muted">Generate a `.cmcskill.zip` backtestable spec package for DoraHacks submission.</p>
+      <p className="muted">Export CMC-compatible skill folders as zip for DoraHacks submission.</p>
       <label>
         Strategy
         <select value={strategy} onChange={(e) => setStrategy(e.target.value)}>

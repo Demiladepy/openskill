@@ -8,6 +8,20 @@ Generate **backtestable trading strategy specs** from **CoinMarketCap Data API**
 
 **We use CMC's pre-computed RSI/MACD/Fear & Greed via MCP** when `MCP_ENABLED=1`, with REST pre-computed signals as fallback.
 
+## CMC Skills Marketplace format
+
+Strategy skills follow the official [CoinMarketCap skills structure](https://github.com/coinmarketcap-official/skills-for-ai-agents-by-CoinMarketCap):
+
+```bash
+# Install into Cursor / Claude Code / OpenClaw
+npx skills add https://github.com/Demiladepy/openskill/tree/main/skill-reputation/skills
+
+# Or copy folders manually
+cp -r skills/cmc-strategy-* ~/.cursor/skills/
+```
+
+Validate format: `npm run validate`
+
 ## CMC Agent Hub / MCP integration
 
 | Layer | Module | Purpose |
@@ -44,10 +58,11 @@ skill-reputation/
 ├── src/                   # CMC client, registry, backtest engine
 ├── backtest/              # Legacy MA crossover module
 ├── replay/                # PnL replay HTML generator
-├── marketplace/           # .cmcskill export + validator
+├── skills/                # Official CMC-format strategy skills (installable)
+├── marketplace/           # Skill export + CMC format validator
 ├── cli-skill/             # CMC CLI Skill (cmc skills install)
 ├── backtest_results/      # Generated specs + replay JSON
-└── examples/              # Exported .cmcskill packages
+└── examples/              # Exported CMC skill zips (cmc-strategy-*.zip)
 ```
 
 ## Quickstart
@@ -103,9 +118,9 @@ TWAK session events are appended to `behavior-log.jsonl`.
 | `npm run strategy:all` | Run all three strategies |
 | `npm run backtest` | Alias: momentum backtest |
 | `npm run replay` | Generate HTML PnL replay + submission manifest |
-| `npm run export -- momentum` | Export `.cmcskill.zip` package |
-| `npm run export:scan` | Export all strategies from latest scan |
-| `npm run validate` | Validate package for submission |
+| `npm run export -- momentum` | Export `examples/cmc-strategy-momentum.zip` |
+| `npm run export:scan` | Export all 3 skills + `cmc-strategy-skills.zip` bundle |
+| `npm run validate` | Validate `skills/` against CMC official SKILL.md format |
 | `npm run hackathon:verify` | Full submission checklist + manifest |
 | `npm run twak:setup` | First-time TWAK wallet setup |
 | `npm run cli-skill -- run --strategy momentum` | Run CMC CLI quant skill |
@@ -156,8 +171,8 @@ Install for other developers: `cmc skills install <repo-url>/skill-reputation/cl
    ```
 4. Submit:
    - GitHub repo link
-   - Demo video (2–3 min): run strategy → replay HTML → export `.cmcskill`
-   - `.cmcskill` backtestable spec from `examples/`
+   - Demo video (2–3 min): run strategy → replay HTML → export CMC skills zip
+   - `examples/cmc-strategy-skills.zip` + `skills/cmc-strategy-*/SKILL.md`
 
 **This is NOT a live trading agent.** Judges evaluate simulation output only.
 

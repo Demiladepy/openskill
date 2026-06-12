@@ -47,9 +47,10 @@ async function loadJsStrategy(modulePath) {
 
 export async function scanStrategyRegistry(strategiesDir = path.join(ROOT, "strategies")) {
   const manifests = await walkStrategyManifests(strategiesDir);
+  const skillManifests = await walkStrategyManifests(path.join(ROOT, "skills"));
   const entries = [];
 
-  for (const file of manifests) {
+  for (const file of [...manifests, ...skillManifests]) {
     const raw = await fs.readFile(file, "utf8");
     const { front } = parseFrontmatter(raw);
     const name = front.name || path.basename(path.dirname(file));
