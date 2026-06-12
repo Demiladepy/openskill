@@ -20,8 +20,12 @@ test-log.jsonl
 **/*.pem
 **/*.key
 
-# BNB Agent local state (may contain job IDs / tx refs)
+# BNB Agent local state
 bnbagent/.env.agent
 bnbagent/agent_state.json
 bnbagent/.agent-data/
+
+# TWAK session path if stored in project (default is ~/.twak/)
+.twak/
+
 cli-skill/result.json

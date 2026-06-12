@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createPublicClient, http, parseAbi, type Hex } from "viem";
-import { baseSepolia } from "viem/chains";
+import { bscTestnet } from "viem/chains";
 
 const contractAbi = parseAbi([
   "event Attested(address indexed attestor, bytes32 indexed skillKey, uint8 score, bytes32 digest, uint256 timestamp)",
@@ -30,12 +30,13 @@ export function Dashboard() {
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const rpc = env("NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL");
-    const contract = (env("NEXT_PUBLIC_SKILL_REPUTATION_CONTRACT") ||
+    const rpc = env("NEXT_PUBLIC_BNB_RPC_URL") || env("NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL");
+    const contract = (env("NEXT_PUBLIC_ATTESTATION_CONTRACT") ||
+      env("NEXT_PUBLIC_SKILL_REPUTATION_CONTRACT") ||
       env("NEXT_PUBLIC_CONTRACT_ADDRESS")) as Hex | undefined;
     if (!rpc || !contract) {
       setError(
-        "Set NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL and NEXT_PUBLIC_SKILL_REPUTATION_CONTRACT (or NEXT_PUBLIC_CONTRACT_ADDRESS) in .env.local"
+        "Set NEXT_PUBLIC_BNB_RPC_URL and NEXT_PUBLIC_ATTESTATION_CONTRACT in .env.local (optional demo UI)"
       );
       setLoading(false);
       return;
@@ -43,7 +44,7 @@ export function Dashboard() {
 
     const fromBlockEnv = env("NEXT_PUBLIC_FROM_BLOCK");
     try {
-      const client = createPublicClient({ chain: baseSepolia, transport: http(rpc) });
+      const client = createPublicClient({ chain: bscTestnet, transport: http(rpc) });
       const latest = await client.getBlockNumber();
       const span = 4000n;
       let fromBlock = latest > span ? latest - span : 0n;
@@ -122,7 +123,7 @@ export function Dashboard() {
               <td className="mono">{r.blockNumber.toString()}</td>
               <td>
                 <a
-                  href={`https://sepolia.basescan.org/tx/${r.txHash}`}
+                  href={`https://testnet.bscscan.com/tx/${r.txHash}`}
                   target="_blank"
                   rel="noreferrer"
                   className="mono"

@@ -1,13 +1,15 @@
-# Garry Tan gstack clone lives here for local use — do not commit (large; optional).
-# If git ever records it as a submodule without .gitmodules, remove with:
-#   git rm --cached -f gstack
+# Garry Tan gstack clone — optional local tool, do not commit
 gstack/
 
-# Secrets and local env (do not use `.env.*` — that would ignore `.env.example` in subprojects)
+# Secrets
 .env
 .env.local
 .env.development
 .env.production
+**/.env.agent
+
+# TWAK session (never commit)
+.twak/
 
 node_modules/
 .next/

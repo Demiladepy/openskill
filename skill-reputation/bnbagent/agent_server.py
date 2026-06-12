@@ -134,7 +134,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="CMC Strategy Vault Agent",
+    title="CMC Strategy Forge Agent",
     description="ERC-8183 provider — backtest-only strategy validation",
     lifespan=lifespan,
 )

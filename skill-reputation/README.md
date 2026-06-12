@@ -3,6 +3,8 @@
 > CoinMarketCap-powered quant strategy skills for BNB Hackathon Track 2.
 > Backtests crypto strategies using CMC pre-computed signals. Ships installable CMC skills. Attests results on BNB Chain.
 
+*GitHub repo: [Demiladepy/openskill](https://github.com/Demiladepy/openskill) — all code is in this directory.*
+
 **Simulation only** — no live trading.
 
 ## Quick Start
@@ -10,7 +12,7 @@
 ```bash
 cd skill-reputation
 npm install
-cp skill/.env.example skill/.env
+cp .env.example .env
 # Set CMC_API_KEY and AGENT_PRIVATE_KEY (BSC testnet throwaway wallet)
 
 npm run strategy:all    # 1. Run all strategies
@@ -61,6 +63,7 @@ Reproduce: `CMC_USE_MOCK=1 npm run strategy:all` or live with `CMC_API_KEY`. Ful
 - **CMC Skills format** — installable skills in `skills/cmc-strategy-*/SKILL.md`
 
 ```bash
+# CMC Strategy Forge skills (openskill repo)
 npx skills add https://github.com/Demiladepy/openskill/tree/main/skill-reputation/skills
 ```
 
@@ -112,7 +115,7 @@ These are supported but **not part of the 3-minute judge demo**:
 
 ## Environment
 
-Copy `skill/.env.example` → `skill/.env`:
+Copy `.env.example` → `.env` in this directory (`skill-reputation/`):
 
 | Variable | Purpose |
 |----------|---------|

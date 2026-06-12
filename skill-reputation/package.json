@@ -2,7 +2,7 @@
   "name": "cmc-strategy-forge",
   "version": "2.0.0",
   "private": true,
-  "description": "CoinMarketCap Strategy Forge — Track 2 backtestable strategy skills (simulation only).",
+  "description": "CoinMarketCap-powered quant strategy skills for BNB Hackathon Track 2",
   "type": "module",
   "workspaces": [
     "skill",

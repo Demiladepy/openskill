@@ -6,6 +6,8 @@ Installable **CoinMarketCap CLI Skill** for backtestable quant strategies. Simul
 
 ### Via CMC CLI (production)
 
+Install from the **openskill** repo (project: CMC Strategy Forge):
+
 ```bash
 cmc skills install https://github.com/Demiladepy/openskill/tree/main/skill-reputation/cli-skill
 ```

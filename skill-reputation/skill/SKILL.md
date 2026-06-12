@@ -41,7 +41,7 @@ npx skills add https://github.com/Demiladepy/openskill/tree/main/skill-reputatio
 From repo root (`skill-reputation/`):
 
 ```bash
-cp skill/.env.example skill/.env
+cp ../.env.example ../.env
 npm install
 npm run strategy:all
 npm run replay

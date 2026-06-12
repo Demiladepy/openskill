@@ -82,7 +82,7 @@ export async function runScan(argv, opts = {}) {
   }
 
   if (roots.length === 0) {
-    throw new Error("No skill roots found. Set CMC_STRATEGY_ROOTS / SKILL_REPUTATION_ROOTS or create ~/.openclaw/skills etc.");
+    throw new Error("No skill roots found. Set CMC_STRATEGY_ROOTS or create ~/.openclaw/skills etc.");
   }
 
   const skills = [];

@@ -1,6 +1,6 @@
 # BNB AI Agent SDK Integration
 
-On-chain agent identity (ERC-8004) and agentic commerce (ERC-8183) for the CMC Strategy Vault validator.
+On-chain agent identity (ERC-8004) and agentic commerce (ERC-8183) for **CMC Strategy Forge**.
 
 ## Setup
 

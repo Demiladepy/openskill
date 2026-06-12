@@ -2,6 +2,7 @@ import path from "node:path";
 import os from "node:os";
 
 export function getBehaviorLogPath() {
+  if (process.env.CMC_STRATEGY_FORGE_LOG) return process.env.CMC_STRATEGY_FORGE_LOG;
   if (process.env.CMC_STRATEGY_VAULT_LOG) return process.env.CMC_STRATEGY_VAULT_LOG;
   if (process.env.SKILL_REPUTATION_LOG) return process.env.SKILL_REPUTATION_LOG;
   const base =
