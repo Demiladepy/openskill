@@ -14,6 +14,7 @@ import {
 import { CopyBlock } from "./CopyBlock";
 import { CopyPageButton } from "./CopyPageButton";
 import { ForgeLogo } from "./ForgeLogo";
+import { IconSearch, IconSparkles } from "./DocIcons";
 import { SearchCommand } from "./SearchCommand";
 import { SkillLevelsTable } from "./SkillLevelsTable";
 import { Dashboard } from "../ui/Dashboard";
@@ -40,6 +41,17 @@ export function DocShell() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [headings, setHeadings] = useState<{ id: string; text: string }[]>([]);
   const [cmdOpen, setCmdOpen] = useState(false);
+  const [cmdMode, setCmdMode] = useState<"search" | "ask">("search");
+
+  const openSearch = useCallback(() => {
+    setCmdMode("search");
+    setCmdOpen(true);
+  }, []);
+
+  const openAsk = useCallback(() => {
+    setCmdMode("ask");
+    setCmdOpen(true);
+  }, []);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -55,12 +67,12 @@ export function DocShell() {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
-        setCmdOpen(true);
+        openSearch();
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [openSearch]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -113,22 +125,19 @@ export function DocShell() {
         <button
           type="button"
           className="searchTrigger"
-          onClick={() => setCmdOpen(true)}
+          onClick={openSearch}
           aria-label="Open search"
         >
           <span className="searchIcon" aria-hidden>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="7" />
-              <path d="M20 20l-3.5-3.5" />
-            </svg>
+            <IconSearch size={16} />
           </span>
           <span className="searchTriggerText">Search docs…</span>
           <kbd className="searchKbd">⌘K</kbd>
         </button>
 
         <div className="topnavActions">
-          <button type="button" className="askDocsNavBtn" onClick={() => setCmdOpen(true)}>
-            <span aria-hidden>✦</span> Ask Docs
+          <button type="button" className="askDocsNavBtn" onClick={openAsk}>
+            <IconSparkles size={14} /> Ask Docs
           </button>
           <a className="ghostBtn" href={GITHUB_URL} target="_blank" rel="noreferrer">
             GitHub ↗
@@ -479,6 +488,7 @@ export function DocShell() {
 
       <SearchCommand
         open={cmdOpen}
+        initialMode={cmdMode}
         onOpenChange={setCmdOpen}
         onNavigate={scrollTo}
       />
@@ -486,10 +496,10 @@ export function DocShell() {
       <button
         type="button"
         className="askDocsFab"
-        onClick={() => setCmdOpen(true)}
+        onClick={openAsk}
         aria-label="Ask Docs"
       >
-        <ForgeLogo size={22} />
+        <IconSparkles size={16} />
         Ask Docs
       </button>
     </div>

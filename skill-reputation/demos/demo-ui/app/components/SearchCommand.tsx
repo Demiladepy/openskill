@@ -2,25 +2,40 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { DOCS_FAQ, type DocFaq } from "../lib/docsContent";
+import { BRAND } from "../lib/docsCopy";
 import { NAV } from "../lib/navigation";
-import { ForgeLogo } from "./ForgeLogo";
+import { IconOpenBook, IconSearch, IconSend, IconSparkles } from "./DocIcons";
+
+const EXAMPLE_QUESTIONS = [
+  "How do I install skills in my agent?",
+  "How do I run a backtest on BTC?",
+  "What belongs in a SKILL.md file?",
+];
 
 type SearchCommandProps = {
   open: boolean;
+  initialMode?: "search" | "ask";
   onOpenChange: (open: boolean) => void;
   onNavigate: (sectionId: string) => void;
 };
 
-export function SearchCommand({ open, onOpenChange, onNavigate }: SearchCommandProps) {
+export function SearchCommand({
+  open,
+  initialMode = "search",
+  onOpenChange,
+  onNavigate,
+}: SearchCommandProps) {
   const [q, setQ] = useState("");
-  const [mode, setMode] = useState<"search" | "ask">("search");
+  const [mode, setMode] = useState<"search" | "ask">(initialMode);
+  const [activeAnswer, setActiveAnswer] = useState<DocFaq | null>(null);
 
   useEffect(() => {
-    if (!open) {
+    if (open) {
+      setMode(initialMode);
       setQ("");
-      setMode("search");
+      setActiveAnswer(null);
     }
-  }, [open]);
+  }, [open, initialMode]);
 
   useEffect(() => {
     if (!open) return;
@@ -58,6 +73,30 @@ export function SearchCommand({ open, onOpenChange, onNavigate }: SearchCommandP
     onNavigate(sectionId);
   }
 
+  function matchQuestion(text: string): DocFaq | undefined {
+    const lower = text.trim().toLowerCase();
+    if (!lower) return undefined;
+    return DOCS_FAQ.find(
+      (f) =>
+        f.question.toLowerCase() === lower ||
+        f.question.toLowerCase().includes(lower) ||
+        lower.includes(f.question.toLowerCase().slice(0, 20)) ||
+        f.keywords.some((k) => lower.includes(k))
+    );
+  }
+
+  function submitAsk(text?: string) {
+    const query = text ?? q;
+    const match = matchQuestion(query);
+    if (match) {
+      setActiveAnswer(match);
+      setQ(match.question);
+    } else if (results.faqItems[0]) {
+      setActiveAnswer(results.faqItems[0]);
+      setQ(results.faqItems[0].question);
+    }
+  }
+
   function pickFaq(faq: DocFaq) {
     go(faq.sectionId);
   }
@@ -65,109 +104,163 @@ export function SearchCommand({ open, onOpenChange, onNavigate }: SearchCommandP
   if (!open) return null;
 
   return (
-    <div className="cmdOverlay" role="dialog" aria-modal="true" aria-label="Search documentation">
+    <div
+      className="cmdOverlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label={mode === "ask" ? "Ask Docs" : "Search documentation"}
+    >
       <div className="cmdBackdrop" onClick={() => onOpenChange(false)} />
-      <div className="cmdPanel">
-        <div className="cmdSearchRow">
-          <span className="cmdIcon" aria-hidden>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="7" />
-              <path d="M20 20l-3.5-3.5" />
-            </svg>
-          </span>
-          <input
-            className="cmdInput"
-            placeholder={mode === "ask" ? "Ask about Forge Skills…" : "Search for anything…"}
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            autoFocus
-            onKeyDown={(e) => {
-              if (e.key === "Escape") onOpenChange(false);
-            }}
-          />
-          <button
-            type="button"
-            className={`cmdSearchBtn ${mode === "search" ? "active" : ""}`}
-            onClick={() => setMode("search")}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="7" />
-              <path d="M20 20l-3.5-3.5" />
-            </svg>
-            Search
-          </button>
-          <button
-            type="button"
-            className={`cmdAskBtn ${mode === "ask" ? "active" : ""}`}
-            onClick={() => setMode("ask")}
-          >
-            <span aria-hidden>✦</span> Ask Docs
-          </button>
-        </div>
 
-        <div className="cmdAskBar">
-          <span className="cmdAskLabel">
-            <ForgeLogo size={18} />
-            Ask about
-          </span>
-          <button type="button" className="cmdConversation" onClick={() => setMode("ask")}>
-            Start conversation
-            <kbd>↵</kbd>
-          </button>
-        </div>
+      {mode === "ask" ? (
+        <div className="askPanel">
+          <header className="askPanelHeader">
+            <span className="askPanelTitle">Ask AI</span>
+            <div className="askPanelTabs">
+              <button type="button" className="askTab" onClick={() => setMode("search")}>
+                <IconSearch size={15} />
+                Search
+              </button>
+              <button type="button" className="askTab askTabActive">
+                <IconSparkles size={14} />
+                Ask Docs
+              </button>
+            </div>
+          </header>
 
-        <div className="cmdResults">
-          {mode === "search" ? (
-            <>
-              <p className="cmdResultsLabel">Pages</p>
-              <ul className="cmdList">
-                {results.navItems.map((item) => (
-                  <li key={item.id}>
-                    <button type="button" className="cmdItem" onClick={() => go(item.id)}>
-                      <span className="cmdItemTitle">{item.label}</span>
-                      <span className="cmdItemMeta">{item.group}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-              {(q ? results.faqItems : DOCS_FAQ.slice(0, 4)).length > 0 && (
-                <>
-                  <p className="cmdResultsLabel">{q ? "Answers" : "Popular questions"}</p>
-                  <ul className="cmdList">
-                    {(q ? results.faqItems : DOCS_FAQ.slice(0, 4)).map((faq) => (
-                      <li key={faq.id}>
-                        <button type="button" className="cmdItem" onClick={() => pickFaq(faq)}>
-                          <span className="cmdItemTitle">{faq.question}</span>
-                          <span className="cmdItemDesc">{faq.answer}</span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
-            </>
-          ) : (
-            <>
-              <p className="cmdResultsLabel">Common questions</p>
-              <ul className="cmdList">
-                {(q ? results.faqItems : DOCS_FAQ).map((faq) => (
-                  <li key={faq.id}>
-                    <button type="button" className="cmdItem" onClick={() => pickFaq(faq)}>
-                      <span className="cmdItemTitle">{faq.question}</span>
-                      <span className="cmdItemDesc">{faq.answer}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-              {q && results.faqItems.length === 0 && (
-                <p className="cmdEmpty">
-                  No exact match — try &quot;install&quot;, &quot;backtest&quot;, or &quot;SKILL.md&quot;
+          <div className="askPanelBody">
+            <div className="askHero">
+              <IconOpenBook size={56} className="askBookIcon" />
+              <div className="askHeroText">
+                <p className="askGreeting">Hi!</p>
+                <p className="askIntro">
+                  I&apos;m an AI assistant trained on Forge Skills documentation, skill manifests,
+                  and backtest guides.
                 </p>
-              )}
-            </>
-          )}
+                <p className="askPrompt">
+                  Ask me anything about{" "}
+                  <span className="askBadge">{BRAND.name}</span>.
+                </p>
+              </div>
+            </div>
+
+            {activeAnswer ? (
+              <div className="askAnswer">
+                <p className="askAnswerQ">{activeAnswer.question}</p>
+                <p className="askAnswerA">{activeAnswer.answer}</p>
+                <button
+                  type="button"
+                  className="askAnswerLink"
+                  onClick={() => go(activeAnswer.sectionId)}
+                >
+                  Read more in docs →
+                </button>
+              </div>
+            ) : (
+              <>
+                <p className="askExamplesLabel">Example questions</p>
+                <div className="askExamples">
+                  {EXAMPLE_QUESTIONS.map((question) => (
+                    <button
+                      key={question}
+                      type="button"
+                      className="askExampleBtn"
+                      onClick={() => submitAsk(question)}
+                    >
+                      {question}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          <footer className="askPanelFooter">
+            <input
+              className="askInput"
+              placeholder="How do I get started?"
+              value={q}
+              onChange={(e) => {
+                setQ(e.target.value);
+                setActiveAnswer(null);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") submitAsk();
+              }}
+              autoFocus
+            />
+            <button
+              type="button"
+              className="askSendBtn"
+              aria-label="Send question"
+              onClick={() => submitAsk()}
+            >
+              <IconSend size={18} />
+            </button>
+          </footer>
         </div>
-      </div>
+      ) : (
+        <div className="cmdPanel">
+          <header className="askPanelHeader cmdPanelHeader">
+            <span className="askPanelTitle mutedTitle">Search</span>
+            <div className="askPanelTabs">
+              <button type="button" className="askTab askTabActive">
+                <IconSearch size={15} />
+                Search
+              </button>
+              <button type="button" className="askTab" onClick={() => setMode("ask")}>
+                <IconSparkles size={14} />
+                Ask Docs
+              </button>
+            </div>
+          </header>
+
+          <div className="cmdSearchRow">
+            <span className="cmdIcon" aria-hidden>
+              <IconSearch size={18} />
+            </span>
+            <input
+              className="cmdInput"
+              placeholder="Search for anything…"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === "Escape") onOpenChange(false);
+              }}
+            />
+          </div>
+
+          <div className="cmdResults">
+            <p className="cmdResultsLabel">Pages</p>
+            <ul className="cmdList">
+              {results.navItems.map((item) => (
+                <li key={item.id}>
+                  <button type="button" className="cmdItem" onClick={() => go(item.id)}>
+                    <span className="cmdItemTitle">{item.label}</span>
+                    <span className="cmdItemMeta">{item.group}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            {(q ? results.faqItems : DOCS_FAQ.slice(0, 4)).length > 0 && (
+              <>
+                <p className="cmdResultsLabel">{q ? "Answers" : "Popular questions"}</p>
+                <ul className="cmdList">
+                  {(q ? results.faqItems : DOCS_FAQ.slice(0, 4)).map((faq) => (
+                    <li key={faq.id}>
+                      <button type="button" className="cmdItem" onClick={() => pickFaq(faq)}>
+                        <span className="cmdItemTitle">{faq.question}</span>
+                        <span className="cmdItemDesc">{faq.answer}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
