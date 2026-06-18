@@ -1,7 +1,7 @@
 /**
  * CMC Data Sources Used:
  * - /v1/cryptocurrency/quotes/latest (pre-computed 7d/30d percent changes, volume)
- * - /v3/fear-and-greed/latest (market sentiment divergence vs price)
+ * - /v3/fear-and-greed/historical (per-bar sentiment divergence vs price)
  * - /v1/global-metrics/quotes/latest (volume / market cap ratio)
  * - CMC MCP: get_global_metrics_latest (when MCP_ENABLED=1)
  */
@@ -13,18 +13,20 @@ export default class SentimentDivergence extends BaseStrategy {
   constructor() {
     super({
       name: "Sentiment Divergence",
-      version: "1.2.0",
+      version: "1.3.0",
       riskProfile: "moderate",
       params: {
         maxDrawdownPct: 18,
         positionSizePct: 10,
+        minBuyConfidence: 0.58,
         lookbackShort: 7,
         lookbackLong: 30,
-        buyShortThreshold: -9.5,
-        buyLongMin: 0,
-        sellShortThreshold: 15,
-        sellLongThreshold: -15,
-        fearGreedBuyMax: 45,
+        buyShortThreshold: -3,
+        buyLongMin: -5,
+        sellShortThreshold: 10,
+        sellLongThreshold: -10,
+        fearGreedBuyMax: 50,
+        fearGreedSellMin: 72,
       },
     });
   }
@@ -43,22 +45,34 @@ export default class SentimentDivergence extends BaseStrategy {
       const r7 = ret7[i] ?? priceSignals.change_7d ?? 0;
       const r30 = ret30[i] ?? priceSignals.change_30d ?? 0;
       const fear = fearGreedForBar(marketData, bars[i].timestamp);
+      const fearPrev = fearGreedForBar(marketData, bars[i - this.params.lookbackShort].timestamp);
+      const fearDelta = fear - fearPrev;
 
-      // Sentiment divergence: price weak short-term, structure still positive long-term
       const priceDivergenceBuy =
         r7 < this.params.buyShortThreshold && r30 > this.params.buyLongMin;
-      // CMC Fear & Greed divergence: extreme fear while price still above long-term trend
-      const sentimentDivergenceBuy = fear < this.params.fearGreedBuyMax && r30 > 0 && r7 < 0;
-      // Volume spike during fear (capitulation)
-      const volumeCapitulation = volRatio != null && volRatio > 0.001 && fear < 40;
+      const sentimentDivergenceBuy =
+        fear < this.params.fearGreedBuyMax && r30 > 0 && r7 < 0;
+      const fearCapitulation = fear < 35 && fearDelta < -8;
+      const volumeCapitulation = volRatio != null && volRatio > 0.0008 && fear < 42;
+      const greedExhaustion = fear > this.params.fearGreedSellMin && r7 > 5;
 
       let sig = "hold";
       let confidence = 0.55;
+      let buyScore = 0;
+      if (priceDivergenceBuy) buyScore += 2;
+      if (sentimentDivergenceBuy) buyScore += 2;
+      if (fearCapitulation) buyScore += 1;
+      if (volumeCapitulation) buyScore += 1;
 
-      if (priceDivergenceBuy || sentimentDivergenceBuy || volumeCapitulation) {
+      const sellTrigger =
+        r7 > this.params.sellShortThreshold ||
+        r30 < this.params.sellLongThreshold ||
+        greedExhaustion;
+
+      if (buyScore >= 1 && !sellTrigger) {
         sig = "buy";
-        confidence = priceDivergenceBuy ? 0.8 : 0.72;
-      } else if (r7 > this.params.sellShortThreshold || r30 < this.params.sellLongThreshold || fear > 75) {
+        confidence = Math.min(0.92, 0.55 + buyScore * 0.12);
+      } else if (sellTrigger) {
         sig = "sell";
         confidence = 0.74;
       }
@@ -68,9 +82,11 @@ export default class SentimentDivergence extends BaseStrategy {
         signal: sig,
         confidence,
         strength: confidence,
+        buy_score: buyScore,
         cmc_change_7d: r7,
         cmc_change_30d: r30,
         cmc_fear_greed: fear,
+        cmc_fear_greed_delta: fearDelta,
         cmc_volume_mc_ratio: volRatio,
       });
     }
@@ -83,15 +99,15 @@ export default class SentimentDivergence extends BaseStrategy {
     return {
       signals,
       rulesPlainEnglish: [
-        "Uses CMC pre-computed percent_change_7d / percent_change_30d from quotes API.",
-        "Sentiment divergence: Fear & Greed < 45 while 30d return remains positive.",
-        "Entry: 7d return < -9.5% AND 30d return > 0%, OR fear/price divergence.",
-        "Exit: 7d return > +15%, 30d return < -15%, or Fear & Greed > 75.",
+        "Uses CMC Fear & Greed historical (per bar) + OHLCV rolling 7d/30d returns.",
+        "Price divergence: weak 7d vs positive 30d structure.",
+        "Sentiment divergence: extreme fear while long-term trend holds.",
+        "Fear capitulation: Fear & Greed drops >8 pts in 7d during weakness.",
         "Simulation only — no live trading.",
       ],
       cmcEndpointsUsed: [
         "/v1/cryptocurrency/quotes/latest",
-        "/v3/fear-and-greed/latest",
+        "/v3/fear-and-greed/historical",
         "/v1/global-metrics/quotes/latest",
       ],
     };

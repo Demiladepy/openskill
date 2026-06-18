@@ -44,17 +44,17 @@ Mock demo window `2026-03-01 → 2026-06-01` (set `CMC_API_KEY` for live CMC dat
 
 | Strategy | Asset | Sharpe | Max DD | Trades | Win Rate | Return |
 |----------|-------|--------|--------|--------|----------|--------|
-| Momentum | BTC | 0.00 | 0.06% | 1 | 100% | 0.47% |
-| Momentum | ETH | 0.00 | 0.06% | 1 | 100% | 0.47% |
-| Momentum | BNB | 0.00 | 0.06% | 1 | 100% | 0.47% |
-| Sentiment | BTC | 0.00 | 0.30% | 1 | 100% | 2.52% |
-| Sentiment | ETH | 0.00 | 0.30% | 1 | 100% | 2.52% |
-| Sentiment | BNB | 0.00 | 0.30% | 1 | 100% | 2.52% |
-| Regime | BTC | 0.00 | 2.83% | 1 | 100% | 7.62% |
-| Regime | ETH | 0.00 | 2.83% | 1 | 100% | 7.62% |
-| Regime | BNB | 0.00 | 2.83% | 1 | 100% | 7.62% |
+| Momentum | BTC | 9.89 | 0.34% | 2 | 50% | 1.93% |
+| Momentum | ETH | 5.97 | 0.90% | 3 | 33% | 1.53% |
+| Momentum | BNB | 3.71 | 1.33% | 4 | 25% | 1.06% |
+| Sentiment | BTC | -8.55 | 0.51% | 1 | 0% | -0.51% |
+| Sentiment | ETH | -2.00 | 0.02% | 1 | 0% | -0.02% |
+| Sentiment | BNB | -6.84 | 0.60% | 1 | 0% | -0.60% |
+| Regime | BTC | 11.60 | 0.86% | 1 | 100% | 4.41% |
+| Regime | ETH | 16.13 | 0.06% | 1 | 100% | 5.34% |
+| Regime | BNB | 15.72 | 0.04% | 1 | 100% | 5.17% |
 
-Reproduce: `CMC_USE_MOCK=1 npm run strategy:all` or live with `CMC_API_KEY`. Full JSON in `backtest_results/`.
+*Mock demo `2026-03-01 → 2026-06-01`. Re-run `CMC_USE_MOCK=1 npm run strategy:all` or use live `CMC_API_KEY` and update this table before submission.*
 
 ## CMC Integration
 
@@ -83,9 +83,9 @@ Each backtest JSON includes an `attestation` block (digest, signature, txHash, e
 
 | Sponsor | Integration | Status |
 |---------|-------------|--------|
-| CoinMarketCap | Data API + MCP + Skills format | Live |
-| Trust Wallet | TWAK-compatible attestation signing | Live (BSC testnet) |
-| BNB Chain | ERC-8004 agent + BSC attestation | Live (BSC testnet) |
+| CoinMarketCap | Data API + MCP + Skills format | ✅ Code ready — run with `CMC_API_KEY` |
+| Trust Wallet | TWAK-compatible attestation (viem bridge) | ⚠️ Set `AGENT_PRIVATE_KEY` for live tx |
+| BNB Chain | ERC-8004 agent + BSC attestation | ⚠️ Run `register_agent.py --live` |
 
 ## Architecture
 

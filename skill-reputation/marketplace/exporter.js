@@ -52,16 +52,23 @@ export async function exportCmcSkill(strategyName, opts = {}) {
   const skillDir = skillFolderFor(strategyName);
   await fs.access(path.join(skillDir, "SKILL.md"));
 
-  const { result, strategyInstance } = await runOne(strategyName, {
+  const { result } = await runOne(strategyName, {
     from: opts.from || "2026-03-01",
     to: opts.to || "2026-06-01",
     symbol: opts.symbol || "BNB",
     convert: opts.convert || "USDT",
   });
 
-  const spec = strategyInstance.exportSpec();
+  const specPath = path.join(ROOT, "backtest_results", `${strategyName}_BNB_spec.json`);
+  let spec = { name: strategyName };
+  try {
+    const raw = await fs.readFile(specPath, "utf8");
+    spec = JSON.parse(raw);
+  } catch {
+    /* fallback */
+  }
   const body = JSON.stringify(spec, null, 2);
-  const strategyKey = computeStrategyKey(body, spec.name);
+  const strategyKey = computeStrategyKey(body, spec.identity?.name || spec.name || strategyName);
   const folderName = path.basename(skillDir);
 
   const staging = path.join(ROOT, "examples", `.staging-${folderName}`);
@@ -71,7 +78,7 @@ export async function exportCmcSkill(strategyName, opts = {}) {
     strategy: strategyName,
     metrics: result.metrics,
     replay: result.replay,
-    rules: result.rulesPlainEnglish,
+    rules: result.rulesPlainEnglish || [],
     strategyKey,
     simulation_only: true,
     exported_at: new Date().toISOString(),

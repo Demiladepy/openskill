@@ -2,8 +2,8 @@
   "project": "CMC Strategy Forge",
   "track": "BNB Hackathon Track 2 — Strategy Skills",
   "replay_window": {
-    "from": "2026-06-01",
-    "to": "2026-06-28"
+    "from": "2026-03-01",
+    "to": "2026-06-01"
   },
   "strategy_fingerprints": [
     {
@@ -87,5 +87,5 @@
     "venue": "PancakeSwap reference / BSC perps simulation"
   },
   "performance_summary": {},
-  "generated_at": "2026-06-12T22:23:12.697Z"
+  "generated_at": "2026-06-17T23:44:09.306Z"
 }

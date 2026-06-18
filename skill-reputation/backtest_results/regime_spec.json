@@ -1,6 +1,6 @@
 {
   "name": "Regime Detector",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "risk_profile": "conservative",
   "track": "BNB Hackathon Track 2 — Strategy Skills",
   "data_source": "CoinMarketCap Data API only",
@@ -8,32 +8,37 @@
   "simulation_only": true,
   "params": {
     "maxDrawdownPct": 15,
-    "positionSizePct": 25,
-    "btcDominanceTrendThreshold": 0.3,
-    "marketCapChangeThreshold": 0.5
+    "positionSizePct": 20,
+    "minBuyConfidence": 0.62,
+    "smaFast": 20,
+    "smaSlow": 50,
+    "atrPeriod": 14,
+    "volThresholdPct": 2.5,
+    "btcDominanceRiskOff": 54,
+    "btcDominanceRiskOn": 52
   },
   "backtest_performance": {
-    "totalReturnPct": 7.6225,
+    "totalReturnPct": 0,
     "sharpeRatio": 0,
-    "maxDrawdownPct": 2.8315,
-    "winRatePct": 100,
-    "trades": 1,
-    "profitFactor": 999,
-    "avgTradeDurationDays": 92
+    "maxDrawdownPct": 0,
+    "winRatePct": 0,
+    "trades": 0,
+    "profitFactor": 0,
+    "avgTradeDurationDays": 0
   },
   "rules_plain_english": [
-    "Uses CMC global metrics: BTC dominance + total market cap change for regime detection.",
-    "TRENDING UP: positive 7d/30d CMC percent changes + BTC dominance < 55%.",
-    "TRENDING DOWN: negative momentum + elevated BTC dominance (risk-off).",
-    "RANGING: flat market cap change and low asset momentum → no position.",
+    "Regime = SMA(20/50) trend + ATR volatility + CMC BTC dominance + derivatives funding/OI.",
+    "TRENDING UP: price above SMA stack, positive momentum, risk-on dominance/funding.",
+    "TRENDING DOWN / VOLATILE: flight to safety or elevated ATR with flat momentum.",
     "Simulation only — no live trading."
   ],
   "cmc_requirements": {
     "indicators": [
       "BTCDominance",
-      "TotalMarketCap",
-      "PercentChange7d",
-      "PercentChange30d"
+      "FundingRate",
+      "OpenInterest",
+      "SMA",
+      "ATR"
     ],
     "data_frequency": "daily",
     "min_history_days": 90,

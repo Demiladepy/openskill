@@ -8,6 +8,7 @@ import {
   fetchFearGreedIndex,
   fetchFearGreedHistorical,
   fetchMarketBundle,
+  parseCmcTimestamp,
   useMock,
 } from "./cmcDataClient.js";
 import { fetchCryptoTechnicals, mcpEnabled } from "./cmcMcpClient.js";
@@ -123,7 +124,7 @@ export async function enrichMarketBundle(bundle) {
   }
 
   const fearByDate = new Map(
-    fearHistory.map((f) => [new Date(f.timestamp).toISOString().slice(0, 10), f.value])
+    fearHistory.map((f) => [parseCmcTimestamp(f.timestamp).slice(0, 10), f.value])
   );
 
   return {

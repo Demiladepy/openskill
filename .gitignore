@@ -1,15 +1,17 @@
 # Garry Tan gstack clone — optional local tool, do not commit
 gstack/
 
-# Secrets
+# Secrets — never commit real keys (examples *.env.example are OK)
 .env
-.env.local
-.env.development
-.env.production
+.env.*
+**/.env
 **/.env.agent
+!**/.env.example
+!**/.env.*.example
 
 # TWAK session (never commit)
 .twak/
+**/.twak/
 
 node_modules/
 .next/

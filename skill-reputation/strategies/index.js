@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 import fs from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { fetchMarketBundle, useMock } from "../src/cmcDataClient.js";
 import { enrichMarketBundle } from "../src/cmcSignals.js";
 import { runStrategyBacktest } from "../src/backtestEngine.js";
 import { attestStrategyResult } from "../src/strategyAttestation.js";
+import { buildStrategySpec } from "../src/lib/buildStrategySpec.js";
 import { loadProjectEnv } from "../src/lib/loadEnv.js";
 import MomentumMerger from "./momentumMerger.js";
 import SentimentDivergence from "./sentimentDivergence.js";
@@ -31,7 +32,7 @@ function parseArgs(argv) {
     symbol: "BNB",
     convert: "USDT",
     all: false,
-    barCount: 180,
+    barCount: 365,
   };
   for (let i = 3; i < argv.length; i++) {
     if (argv[i] === "--from" && argv[i + 1]) opts.from = argv[++i];
@@ -78,16 +79,41 @@ async function runOne(name, opts) {
   const raw = await fetchMarketBundle({
     symbol: opts.symbol,
     convert: opts.convert,
-    barCount: opts.barCount || 180,
+    barCount: opts.barCount || 365,
   });
   const market = await enrichMarketBundle(raw);
   const result = await runStrategyBacktest(strategy, market, { startDate: opts.from, endDate: opts.to });
+  const bt = strategy.backtest(market, opts.from, opts.to);
+  result.signals = bt.signals;
 
   await fs.mkdir(RESULTS_DIR, { recursive: true });
   const assetSuffix = opts.symbol;
   const outPath = path.join(RESULTS_DIR, `${name}_${assetSuffix}.json`);
   const replayPath = path.join(RESULTS_DIR, `${name}_replay_data.json`);
-  const specPath = path.join(RESULTS_DIR, `${name}_spec.json`);
+  const specPath = path.join(RESULTS_DIR, `${name}_${assetSuffix}_spec.json`);
+
+  let attestation;
+  try {
+    attestation = await attestStrategyResult({
+      strategy: name,
+      result: { ...result, cmcSignalSource: market.cmcSignals?.source },
+      strategyInstance: strategy,
+    });
+  } catch (err) {
+    attestation = {
+      mode: "error",
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
+
+  const strategySpec = buildStrategySpec({
+    strategySlug: name,
+    strategyInstance: strategy,
+    market,
+    result: { ...result, signals: bt.signals },
+    attestation,
+    opts,
+  });
 
   const payload = {
     strategy: name,
@@ -97,28 +123,19 @@ async function runOne(name, opts) {
     equityCurve: result.equityCurve,
     replay: result.replay,
     dataSource: market.meta?.dataSource,
+    dataProvenance: market.meta?.dataProvenance,
     cmcSignalSource: market.cmcSignals?.source,
     mockWarning: market.meta?.mockWarning,
     rulesPlainEnglish: result.rulesPlainEnglish,
+    strategy_spec: strategySpec,
+    attestation,
   };
 
-  try {
-    payload.attestation = await attestStrategyResult({
-      strategy: name,
-      result: { ...result, cmcSignalSource: market.cmcSignals?.source },
-      strategyInstance: strategy,
-    });
-  } catch (err) {
-    payload.attestation = {
-      mode: "error",
-      error: err instanceof Error ? err.message : String(err),
-    };
-  }
-
   await fs.writeFile(outPath, JSON.stringify(payload, null, 2));
+  await fs.writeFile(specPath, JSON.stringify(strategySpec, null, 2));
   if (opts.symbol === "BNB") {
     await fs.writeFile(replayPath, JSON.stringify({ replay: result.replay, metrics: result.metrics }, null, 2));
-    await fs.writeFile(specPath, JSON.stringify(strategy.exportSpec(), null, 2));
+    await fs.writeFile(path.join(RESULTS_DIR, `${name}_spec.json`), JSON.stringify(strategy.exportSpec(), null, 2));
   }
 
   return {
@@ -169,9 +186,14 @@ async function main() {
   console.log(JSON.stringify(row, null, 2));
 }
 
-main().catch((e) => {
-  console.error(e instanceof Error ? e.message : e);
-  process.exit(1);
-});
+const isMain =
+  process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
+
+if (isMain) {
+  main().catch((e) => {
+    console.error(e instanceof Error ? e.message : e);
+    process.exit(1);
+  });
+}
 
 export { STRATEGIES, runOne, ASSETS };

@@ -94,6 +94,78 @@ export async function fetchSpotQuotes(symbol = "BNB", convert = "USDT") {
   }
 }
 
+export function parseCmcTimestamp(ts) {
+  if (ts == null) return new Date().toISOString();
+  if (typeof ts === "number") {
+    const ms = ts < 1e12 ? ts * 1000 : ts;
+    return new Date(ms).toISOString();
+  }
+  const asNum = Number(ts);
+  if (!Number.isNaN(asNum) && /^\d+$/.test(String(ts).trim())) {
+    const ms = asNum < 1e12 ? asNum * 1000 : asNum;
+    return new Date(ms).toISOString();
+  }
+  const d = new Date(ts);
+  return Number.isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
+}
+
+/**
+ * Free-tier fallback: daily bars anchored to live CMC spot + pre-computed % changes.
+ * Honest label — not full OHLCV history (paid endpoint).
+ */
+function synthesizeOhlcvFromSpot(spot, symbol, count) {
+  const end = new Date();
+  end.setUTCHours(0, 0, 0, 0);
+  const priceNow = spot.price;
+  const r7 = (spot.percentChange7d ?? 0) / 100;
+  const r30 = (spot.percentChange30d ?? 0) / 100;
+  const r90 = (spot.percentChange90d ?? spot.percentChange30d ?? 0) / 100;
+  const seed = [...String(symbol)].reduce((a, c) => a + c.charCodeAt(0), 0);
+
+  const anchors = [
+    { days: 0, price: priceNow },
+    { days: 7, price: priceNow / (1 + r7 || 1) },
+    { days: 30, price: priceNow / (1 + r30 || 1) },
+    { days: 90, price: priceNow / (1 + r90 || 1) },
+  ];
+
+  function priceAtDaysAgo(daysAgo) {
+    if (daysAgo <= 0) return priceNow;
+    const maxDay = Math.max(count - 1, 90);
+    const target = Math.min(daysAgo, maxDay);
+    for (let i = 0; i < anchors.length - 1; i++) {
+      const a = anchors[i];
+      const b = anchors[i + 1];
+      if (target >= a.days && target <= b.days) {
+        const t = b.days === a.days ? 0 : (target - a.days) / (b.days - a.days);
+        return a.price * (1 - t) + b.price * t;
+      }
+    }
+    return anchors[anchors.length - 1].price;
+  }
+
+  const bars = [];
+  for (let i = 0; i < count; i++) {
+    const daysAgo = count - 1 - i;
+    const d = new Date(end.getTime() - daysAgo * 86400000);
+    const base = priceAtDaysAgo(daysAgo);
+    const wobble = 1 + Math.sin((i + seed) / 11) * 0.006;
+    const close = base * wobble;
+    const open = close * (1 + Math.sin(i * 0.5 + seed) * 0.004);
+    bars.push({
+      timestamp: d.toISOString(),
+      open,
+      high: Math.max(open, close) * 1.008,
+      low: Math.min(open, close) * 0.992,
+      close,
+      volume: (spot.volume24h ?? 1e9) * (0.85 + Math.sin(i / 7) * 0.1),
+    });
+  }
+  bars._synthetic = "cmc-anchored";
+  bars._anchor = { price: priceNow, percentChange7d: spot.percentChange7d, percentChange30d: spot.percentChange30d };
+  return bars;
+}
+
 /** @param {string} symbol @param {number} count */
 export async function fetchHistoricalOhlcv(symbol = "BNB", convert = "USDT", count = 90) {
   if (useMock()) return mockHistoricalOhlcv(symbol, convert, count);
@@ -118,6 +190,19 @@ export async function fetchHistoricalOhlcv(symbol = "BNB", convert = "USDT", cou
     } catch (err) {
       console.warn(`[cmcDataClient] OHLCV ${path} failed:`, err instanceof Error ? err.message : err);
     }
+  }
+
+  try {
+    const spot = await fetchSpotQuotes(symbol, convert);
+    if (spot.source === "cmc" && spot.price > 0) {
+      console.warn(
+        `[cmcDataClient] OHLCV paid endpoint unavailable on your plan — synthesizing ${count} daily bars from live CMC quotes (% changes) for`,
+        symbol
+      );
+      return synthesizeOhlcvFromSpot(spot, symbol, count);
+    }
+  } catch (err) {
+    console.warn("[cmcDataClient] spot anchor for OHLCV failed:", err instanceof Error ? err.message : err);
   }
 
   console.warn("[cmcDataClient] OHLCV fallback to mock for", symbol);
@@ -200,7 +285,7 @@ export async function fetchFearGreedHistorical(limit = 90) {
     const json = await cmcFetch("/v3/fear-and-greed/historical", { limit });
     return (json?.data || []).map((row) => ({
       source: "cmc",
-      timestamp: row.timestamp || row.time_open,
+      timestamp: parseCmcTimestamp(row.timestamp || row.time_open),
       value: row.value ?? 50,
       classification: row.value_classification ?? "Neutral",
     }));
@@ -260,9 +345,21 @@ export async function fetchMarketBundle(opts = {}) {
     (x) => x?.source?.includes?.("mock") || x?._mock
   );
 
+  const dataProvenance = {
+    spot: spot?.source,
+    ohlcv: ohlcv?._mock ? "mock" : ohlcv?._synthetic ? "cmc-synthetic-ohlcv" : Array.isArray(ohlcv) ? "cmc" : ohlcv?.source,
+    globalMetrics: globalMetrics?.source,
+    onChain: onChain?.source,
+    social: social?.source,
+    derivatives: derivatives?.source,
+    fearGreed: fearGreed?.source,
+    fetched_at: new Date().toISOString(),
+  };
+
   return {
     meta: {
       dataSource: mock ? "mock-with-warning" : anyFallback ? "cmc-mixed" : "coinmarketcap-data-api",
+      dataProvenance,
       docs: CMC_AGENT_DOCS,
       mockWarning: mock
         ? "MOCK DATA — set CMC_API_KEY for live CoinMarketCap Data API"
@@ -315,27 +412,31 @@ function mockSpotQuotes(symbol, convert, warned = false) {
 function mockHistoricalOhlcv(symbol, convert, count, warned = false) {
   const bases = { BTC: 95000, ETH: 3500, BNB: 580, CAKE: 2.5 };
   const base = bases[symbol] ?? 580;
+  const seed = [...String(symbol)].reduce((a, c) => a + c.charCodeAt(0), 0);
+  const phase = (seed % 17) * 0.15;
   const bars = [];
-  const start = new Date("2026-01-01T00:00:00Z");
+  const start = new Date("2025-06-01T00:00:00Z");
 
   for (let i = 0; i < count; i++) {
     const d = new Date(start.getTime() + i * 86400000);
-    let price;
-    if (i < 30) price = base * (0.82 + i * 0.002);
-    else if (i < 75) price = base * (0.88 + (i - 30) * 0.011);
-    else if (i < 82) price = base * 1.385 * (1 - (i - 75) * 0.017);
-    else if (i < 140) price = base * 1.25 * (1 + (i - 82) * 0.005);
-    else price = base * 1.55 * (1 + Math.sin(i / 10) * 0.02);
+    const cycle = Math.sin((i + seed) / 18 + phase) * 0.12;
+    const trend = i * 0.0008 * (1 + (seed % 5) * 0.1);
+    let price = base * (0.75 + trend + cycle);
 
-    const open = price * 0.999;
+    if (i >= 40 && i < 55) price *= 0.92 - (i - 40) * 0.002;
+    if (i >= 55 && i < 70) price *= 1.0 + (i - 55) * 0.008;
+    if (i >= 120 && i < 135) price *= 0.94;
+    if (i >= 200 && i < 220) price *= 1.0 + (i - 200) * 0.006;
+
+    const open = price * (0.998 + Math.sin(i + seed) * 0.002);
     const close = price;
     bars.push({
       timestamp: d.toISOString(),
       open,
-      high: Math.max(open, close) * 1.01,
-      low: Math.min(open, close) * 0.99,
+      high: Math.max(open, close) * (1.008 + (seed % 3) * 0.002),
+      low: Math.min(open, close) * (0.992 - (seed % 3) * 0.002),
       close,
-      volume: 500000 + i * 1200,
+      volume: 400000 + i * 1500 + seed * 100,
     });
   }
   bars._mock = warned ? "fallback" : true;
@@ -375,12 +476,13 @@ function mockSocialSentiment(symbol, warned = false) {
 }
 
 function mockDerivatives(symbol, warned = false) {
+  const seed = [...String(symbol)].reduce((a, c) => a + c.charCodeAt(0), 0);
   return {
     source: warned ? "mock-fallback" : "mock",
     symbol,
-    fundingRate: 0.00012,
-    openInterest: 890000000,
-    openInterestChange24h: 0.034,
+    fundingRate: 0.00008 + (seed % 7) * 0.00002,
+    openInterest: 800000000 + seed * 1e6,
+    openInterestChange24h: -0.02 + (seed % 5) * 0.015,
   };
 }
 
@@ -395,14 +497,15 @@ function mockFearGreed(warned = false) {
 
 function mockFearGreedHistorical(limit, warned = false) {
   const out = [];
-  const start = Date.now() - limit * 86400000;
+  const start = new Date("2025-06-01T00:00:00Z").getTime();
   for (let i = 0; i < limit; i++) {
     const d = new Date(start + i * 86400000);
+    const value = Math.round(42 + Math.sin(i / 9) * 18 + Math.cos(i / 23) * 8);
     out.push({
       source: warned ? "mock-fallback" : "mock",
       timestamp: d.toISOString(),
-      value: 35 + Math.sin(i / 7) * 15,
-      classification: "Neutral",
+      value: Math.max(10, Math.min(90, value)),
+      classification: value < 35 ? "Fear" : value > 65 ? "Greed" : "Neutral",
     });
   }
   return out;

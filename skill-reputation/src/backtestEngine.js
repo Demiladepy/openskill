@@ -4,7 +4,7 @@
 
  */
 
-import { sharpeFromReturns, round } from "../cli-skill/scripts/quant/sharpe.js";
+import { sharpeFromReturns, sharpeFromEquityCurve, round } from "../cli-skill/scripts/quant/sharpe.js";
 
 import { maxDrawdownFromEquity } from "../cli-skill/scripts/quant/maxdd.js";
 
@@ -143,6 +143,10 @@ export function runBacktestSimulation(bars, signals, opts = {}) {
 
     if (sig?.signal === "buy" && !position) {
 
+      const minConf = opts.minBuyConfidence ?? 0.55;
+
+      if ((sig.confidence ?? sig.strength ?? 1) >= minConf) {
+
       const spend = cash * positionSizePct;
 
       const fee = spend * FEE;
@@ -180,6 +184,8 @@ export function runBacktestSimulation(bars, signals, opts = {}) {
         equity: cash + units * bar.close,
 
       });
+
+      }
 
     }
 
@@ -221,7 +227,21 @@ export function runBacktestSimulation(bars, signals, opts = {}) {
 
   const totalReturnPct = ((finalEquity - capital0) / capital0) * 100;
 
-  const sharpe = sharpeFromReturns(tradeReturns, CRYPTO_PERIODS_PER_YEAR);
+  const sharpeFromTrades = sharpeFromReturns(tradeReturns, CRYPTO_PERIODS_PER_YEAR);
+
+  const sharpeFromEquity = sharpeFromEquityCurve(equityCurve, CRYPTO_PERIODS_PER_YEAR);
+
+  const sharpe =
+
+    tradeReturns.length >= 2
+
+      ? sharpeFromTrades
+
+      : sharpeFromEquity !== 0
+
+        ? sharpeFromEquity
+
+        : sharpeFromTrades;
 
   const winRatePct =
 
@@ -304,6 +324,8 @@ export async function runStrategyBacktest(strategy, marketBundle, range) {
     positionSizePct: strategy.params?.positionSizePct ?? 100,
 
     trailingStopPct: strategy.params?.trailingStopPct ?? 0,
+
+    minBuyConfidence: strategy.params?.minBuyConfidence ?? 0.55,
 
   });
 

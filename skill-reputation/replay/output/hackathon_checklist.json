@@ -1,69 +1,153 @@
 {
+  "project": "CMC Strategy Forge",
   "checklist": [
     {
-      "name": "unit_tests",
+      "name": "cmc_api_key",
       "ok": true,
-      "detail": "backtest tests passed"
+      "detail": "mock or missing key",
+      "severity": "required"
     },
     {
-      "name": "env_cmc_api_key",
+      "name": "backtest_momentum_BTC",
       "ok": true,
-      "detail": "present or mock mode"
+      "detail": "2 trades, Sharpe 9.8865",
+      "severity": "required"
     },
     {
-      "name": "env_bnb_rpc_url",
+      "name": "backtest_momentum_ETH",
       "ok": true,
-      "detail": "optional — not set"
+      "detail": "3 trades, Sharpe 5.9733",
+      "severity": "required"
     },
     {
-      "name": "env_twak_unlock_passphrase",
+      "name": "backtest_momentum_BNB",
       "ok": true,
-      "detail": "optional — not set"
+      "detail": "4 trades, Sharpe 3.7137",
+      "severity": "required"
     },
     {
-      "name": "env_cmc_strategy_vault_contract",
+      "name": "backtest_sentiment_BTC",
       "ok": true,
-      "detail": "optional — not set"
+      "detail": "1 trades, Sharpe -8.5475",
+      "severity": "required"
     },
     {
-      "name": "cmc_api",
+      "name": "backtest_sentiment_ETH",
       "ok": true,
-      "detail": "mock/skipped"
+      "detail": "1 trades, Sharpe -2.0027",
+      "severity": "required"
     },
     {
-      "name": "twak_session",
+      "name": "backtest_sentiment_BNB",
       "ok": true,
-      "detail": "run twak:setup or set AGENT_PRIVATE_KEY"
+      "detail": "1 trades, Sharpe -6.8438",
+      "severity": "required"
     },
     {
-      "name": "on_chain_attestation",
+      "name": "backtest_regime_BTC",
       "ok": true,
-      "detail": "2 simulated attestations (demo mode)"
+      "detail": "1 trades, Sharpe 11.6017",
+      "severity": "required"
     },
     {
-      "name": "replay_report",
+      "name": "backtest_regime_ETH",
       "ok": true,
-      "detail": "C:\\Users\\User\\Desktop\\nothing\\skill\\skill-reputation\\replay\\output\\replay_report.html"
+      "detail": "1 trades, Sharpe 16.1329",
+      "severity": "required"
     },
     {
-      "name": "cmc_skills_format",
+      "name": "backtest_regime_BNB",
       "ok": true,
-      "detail": "skills/cmc-strategy-*/SKILL.md"
+      "detail": "1 trades, Sharpe 15.7163",
+      "severity": "required"
+    },
+    {
+      "name": "backtest_any_sharpe_gt_1",
+      "ok": true,
+      "detail": "yes",
+      "severity": "recommended"
+    },
+    {
+      "name": "backtest_live_cmc_data",
+      "ok": true,
+      "detail": "mock only — set CMC_API_KEY",
+      "severity": "recommended"
+    },
+    {
+      "name": "backtest_total_trades",
+      "ok": true,
+      "detail": "15 total trades",
+      "severity": "recommended"
+    },
+    {
+      "name": "no_stale_cmcskill_zip",
+      "ok": true,
+      "detail": "ok",
+      "severity": "required"
     },
     {
       "name": "skills_export_zip",
       "ok": true,
-      "detail": "cmc-strategy-momentum.zip"
+      "detail": "cmc-strategy-momentum.zip, cmc-strategy-regime.zip, cmc-strategy-sentiment.zip, cmc-strategy-skills.zip",
+      "severity": "required"
+    },
+    {
+      "name": "cmc_skills_format",
+      "ok": true,
+      "detail": "skills/cmc-strategy-*/SKILL.md",
+      "severity": "required"
+    },
+    {
+      "name": "strategy_spec_momentum",
+      "ok": true,
+      "detail": "PositionSight-style spec present",
+      "severity": "required"
+    },
+    {
+      "name": "strategy_spec_sentiment",
+      "ok": true,
+      "detail": "PositionSight-style spec present",
+      "severity": "required"
+    },
+    {
+      "name": "strategy_spec_regime",
+      "ok": true,
+      "detail": "PositionSight-style spec present",
+      "severity": "required"
+    },
+    {
+      "name": "live_attestation_tx",
+      "ok": false,
+      "detail": "set AGENT_PRIVATE_KEY + npm run attest",
+      "severity": "recommended"
+    },
+    {
+      "name": "erc8004_registration",
+      "ok": false,
+      "detail": "0x0c989596165e740fb667bb942e2e038a22766ac20f16291dd8869c2465569bd3",
+      "severity": "recommended"
+    },
+    {
+      "name": "replay_html",
+      "ok": true,
+      "detail": "C:\\Users\\User\\Desktop\\nothing\\skill\\skill-reputation\\replay\\output\\replay_report.html",
+      "severity": "required"
     }
   ],
-  "twak_fingerprint": null,
-  "submission_manifest": "C:\\Users\\User\\Desktop\\nothing\\skill\\skill-reputation\\replay\\output\\submission_manifest.json",
-  "doraHacks_upload": [
-    "GitHub repo URL",
-    "Demo video (strategy → replay → export)",
-    "skills/cmc-strategy-*/SKILL.md",
-    "examples/cmc-strategy-skills.zip",
-    "replay/output/submission_manifest.json"
+  "submission_files": [
+    "README.md",
+    "skill-reputation/DEMO.md",
+    "skill-reputation/backtest_results/*.json",
+    "skill-reputation/skills/cmc-strategy-*/SKILL.md",
+    "skill-reputation/examples/cmc-strategy-skills.zip",
+    "skill-reputation/replay/output/replay_report.html"
   ],
-  "generated_at": "2026-06-12T22:23:12.701Z"
+  "manual_steps_remaining": [
+    "Set CMC_API_KEY and re-run strategy:all with live data",
+    "Set AGENT_PRIVATE_KEY, npm run attest, paste BscScan link in README",
+    "python bnbagent/register_agent.py --live for ERC-8004 tx",
+    "Record demo video per DEMO.md",
+    "Push to GitHub and submit DoraHacks BUIDL"
+  ],
+  "generated_at": "2026-06-17T23:44:09.311Z"
 }

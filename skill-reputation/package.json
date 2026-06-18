@@ -18,6 +18,9 @@
     "attest": "node skill/scripts/attest.js --strategy momentum --score 85",
     "export:skills": "node marketplace/exporter.js --from-scan",
     "verify": "node scripts/hackathonVerify.js",
+    "check:secrets": "node scripts/checkSecrets.js",
+    "cmc:signals": "node scripts/cmcSignalsCli.js",
+    "cmc:mcp": "node scripts/mcpToolsCli.js",
     "registry": "npm run strategy:all",
     "hackathon:verify": "npm run verify",
     "twak:setup": "node skill/scripts/twakSetup.js"

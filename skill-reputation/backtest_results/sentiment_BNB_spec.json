@@ -1,0 +1,186 @@
+{
+  "schema": "cmc-strategy-forge/1.0",
+  "generated_at": "2026-06-18T00:05:02.148Z",
+  "identity": {
+    "slug": "sentiment",
+    "name": "Sentiment Divergence",
+    "version": "1.3.0",
+    "risk_profile": "moderate"
+  },
+  "market": {
+    "symbol": "BNB",
+    "convert": "USDT",
+    "data_source": "cmc-mixed",
+    "cmc_signal_source": "mock",
+    "mock_warning": "Partial mock fallback — some CMC endpoints unavailable on this tier",
+    "data_provenance": {
+      "spot": "cmc",
+      "ohlcv": "cmc-synthetic-ohlcv",
+      "globalMetrics": "cmc",
+      "onChain": "mock-fallback",
+      "social": "mock-fallback",
+      "derivatives": "mock-fallback",
+      "fearGreed": "cmc",
+      "fetched_at": "2026-06-18T00:04:58.466Z"
+    }
+  },
+  "period": {
+    "startDate": "2026-03-01",
+    "endDate": "2026-06-01"
+  },
+  "cmc_integration": {
+    "rest_endpoints": [
+      "/v1/cryptocurrency/quotes/latest",
+      "/v3/fear-and-greed/historical",
+      "/v1/global-metrics/quotes/latest"
+    ],
+    "mcp_enabled": false,
+    "mcp_limitation": "MCP technicals are point-in-time only; backtests use REST percent changes + Fear & Greed history.",
+    "mcp_tools": [
+      "get_global_metrics_latest",
+      "get_crypto_quotes_latest"
+    ]
+  },
+  "performance": {
+    "total_return_pct": -0.4753,
+    "sharpe_ratio": -8.2953,
+    "max_drawdown_pct": 0.4908,
+    "win_rate_pct": 0,
+    "trades": 1,
+    "profit_factor": 0,
+    "avg_trade_duration_days": 66
+  },
+  "risk_assessment": {
+    "max_drawdown_limit_pct": 18,
+    "within_limit": true,
+    "reason": null
+  },
+  "signals_summary": {
+    "buy": 4,
+    "sell": 0,
+    "hold": 89
+  },
+  "rules_plain_english": [
+    "Uses CMC Fear & Greed historical (per bar) + OHLCV rolling 7d/30d returns.",
+    "Price divergence: weak 7d vs positive 30d structure.",
+    "Sentiment divergence: extreme fear while long-term trend holds.",
+    "Fear capitulation: Fear & Greed drops >8 pts in 7d during weakness.",
+    "Simulation only — no live trading."
+  ],
+  "params": {
+    "maxDrawdownPct": 18,
+    "positionSizePct": 10,
+    "minBuyConfidence": 0.58,
+    "lookbackShort": 7,
+    "lookbackLong": 30,
+    "buyShortThreshold": -3,
+    "buyLongMin": -5,
+    "sellShortThreshold": 10,
+    "sellLongThreshold": -10,
+    "fearGreedBuyMax": 50,
+    "fearGreedSellMin": 72
+  },
+  "entry_rules": [],
+  "exit_rules": [],
+  "attestation": {
+    "mode": "error",
+    "error": "TWAK live mode requires AGENT_PRIVATE_KEY or TWAK_AGENT_PRIVATE_KEY. Run: npm run twak:setup"
+  },
+  "equity_curve_tail": [
+    {
+      "date": "2026-05-18T00:00:00.000Z",
+      "equity": 9995.31,
+      "position": "long"
+    },
+    {
+      "date": "2026-05-19T00:00:00.000Z",
+      "equity": 9995.77,
+      "position": "long"
+    },
+    {
+      "date": "2026-05-20T00:00:00.000Z",
+      "equity": 9992.36,
+      "position": "long"
+    },
+    {
+      "date": "2026-05-21T00:00:00.000Z",
+      "equity": 9988.97,
+      "position": "long"
+    },
+    {
+      "date": "2026-05-22T00:00:00.000Z",
+      "equity": 9985.61,
+      "position": "long"
+    },
+    {
+      "date": "2026-05-23T00:00:00.000Z",
+      "equity": 9982.27,
+      "position": "long"
+    },
+    {
+      "date": "2026-05-24T00:00:00.000Z",
+      "equity": 9978.94,
+      "position": "long"
+    },
+    {
+      "date": "2026-05-25T00:00:00.000Z",
+      "equity": 9975.64,
+      "position": "long"
+    },
+    {
+      "date": "2026-05-26T00:00:00.000Z",
+      "equity": 9972.33,
+      "position": "long"
+    },
+    {
+      "date": "2026-05-27T00:00:00.000Z",
+      "equity": 9969.04,
+      "position": "long"
+    },
+    {
+      "date": "2026-05-28T00:00:00.000Z",
+      "equity": 9965.74,
+      "position": "long"
+    },
+    {
+      "date": "2026-05-29T00:00:00.000Z",
+      "equity": 9962.44,
+      "position": "long"
+    },
+    {
+      "date": "2026-05-30T00:00:00.000Z",
+      "equity": 9959.13,
+      "position": "long"
+    },
+    {
+      "date": "2026-05-31T00:00:00.000Z",
+      "equity": 9955.81,
+      "position": "long"
+    },
+    {
+      "date": "2026-06-01T00:00:00.000Z",
+      "equity": 9952.47,
+      "position": "long"
+    }
+  ],
+  "trade_log": [
+    {
+      "timestamp": "2026-03-27T00:00:00.000Z",
+      "action": "entry",
+      "price": 643.1747604204062,
+      "signal": "buy",
+      "confidence": 0.67,
+      "equity": 9998.001998001999
+    },
+    {
+      "timestamp": "2026-06-01T00:00:00.000Z",
+      "action": "exit",
+      "price": 613.2163014582114,
+      "signal": "end_of_period",
+      "pnlPct": -4.943643747789167,
+      "equity": 9950.563562522108
+    }
+  ],
+  "simulation_only": true,
+  "live_trading": false
+}

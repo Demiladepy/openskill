@@ -1,0 +1,238 @@
+{
+  "schema": "cmc-strategy-forge/1.0",
+  "generated_at": "2026-06-18T00:03:32.446Z",
+  "identity": {
+    "slug": "momentum",
+    "name": "Momentum Merger",
+    "version": "1.3.0",
+    "risk_profile": "moderate"
+  },
+  "market": {
+    "symbol": "ETH",
+    "convert": "USDT",
+    "data_source": "cmc-mixed",
+    "cmc_signal_source": "mock",
+    "mock_warning": "Partial mock fallback — some CMC endpoints unavailable on this tier",
+    "data_provenance": {
+      "spot": "cmc",
+      "ohlcv": "cmc-synthetic-ohlcv",
+      "globalMetrics": "cmc",
+      "onChain": "mock-fallback",
+      "social": "mock-fallback",
+      "derivatives": "mock-fallback",
+      "fearGreed": "cmc",
+      "fetched_at": "2026-06-18T00:03:30.355Z"
+    }
+  },
+  "period": {
+    "startDate": "2026-03-01",
+    "endDate": "2026-06-01"
+  },
+  "cmc_integration": {
+    "rest_endpoints": [
+      "/v1/cryptocurrency/quotes/latest",
+      "/v3/fear-and-greed/latest",
+      "/v1/global-metrics/quotes/latest"
+    ],
+    "mcp_enabled": false,
+    "mcp_limitation": "MCP technicals are point-in-time only; backtests use REST percent changes + Fear & Greed history.",
+    "mcp_tools": [
+      "get_crypto_technical_analysis",
+      "get_crypto_quotes_latest"
+    ]
+  },
+  "performance": {
+    "total_return_pct": -1.1905,
+    "sharpe_ratio": -25.9421,
+    "max_drawdown_pct": 1.2373,
+    "win_rate_pct": 25,
+    "trades": 4,
+    "profit_factor": 0.0234,
+    "avg_trade_duration_days": 21.8
+  },
+  "risk_assessment": {
+    "max_drawdown_limit_pct": 20,
+    "within_limit": true,
+    "reason": null
+  },
+  "signals_summary": {
+    "buy": 52,
+    "sell": 4,
+    "hold": 37
+  },
+  "rules_plain_english": [
+    "Score-based momentum: RSI, MACD histogram/crossover, CMC Fear & Greed, 7d return.",
+    "Entry (buy): composite buy score ≥ 3 (MCP RSI/MACD when enabled).",
+    "Exit (sell): composite sell score ≥ 3.",
+    "Position sizing: 8% of equity. Trailing stop: 5%. Simulation only."
+  ],
+  "params": {
+    "maxDrawdownPct": 20,
+    "positionSizePct": 8,
+    "trailingStopPct": 5,
+    "minBuyConfidence": 0.6,
+    "minBuyScore": 3,
+    "minSellScore": 3,
+    "rsiBuy": 40,
+    "rsiSell": 60,
+    "fearBuy": 40,
+    "fearSell": 65
+  },
+  "entry_rules": [
+    "Buy score ≥ 3",
+    "CMC Fear & Greed < 40 adds weight"
+  ],
+  "exit_rules": [
+    "Sell score ≥ 3",
+    "5% trailing stop"
+  ],
+  "attestation": {
+    "mode": "error",
+    "error": "TWAK live mode requires AGENT_PRIVATE_KEY or TWAK_AGENT_PRIVATE_KEY. Run: npm run twak:setup"
+  },
+  "equity_curve_tail": [
+    {
+      "date": "2026-05-18T00:00:00.000Z",
+      "equity": 9996.5,
+      "position": "long"
+    },
+    {
+      "date": "2026-05-19T00:00:00.000Z",
+      "equity": 9996.81,
+      "position": "long"
+    },
+    {
+      "date": "2026-05-20T00:00:00.000Z",
+      "equity": 9988.96,
+      "position": "long"
+    },
+    {
+      "date": "2026-05-21T00:00:00.000Z",
+      "equity": 9981.08,
+      "position": "long"
+    },
+    {
+      "date": "2026-05-22T00:00:00.000Z",
+      "equity": 9973.17,
+      "position": "long"
+    },
+    {
+      "date": "2026-05-23T00:00:00.000Z",
+      "equity": 9962.11,
+      "position": "long"
+    },
+    {
+      "date": "2026-05-24T00:00:00.000Z",
+      "equity": 9953.78,
+      "position": "long"
+    },
+    {
+      "date": "2026-05-25T00:00:00.000Z",
+      "equity": 9945.41,
+      "position": "long"
+    },
+    {
+      "date": "2026-05-26T00:00:00.000Z",
+      "equity": 9937.01,
+      "position": "long"
+    },
+    {
+      "date": "2026-05-27T00:00:00.000Z",
+      "equity": 9928.57,
+      "position": "long"
+    },
+    {
+      "date": "2026-05-28T00:00:00.000Z",
+      "equity": 9917,
+      "position": "long"
+    },
+    {
+      "date": "2026-05-29T00:00:00.000Z",
+      "equity": 9908.04,
+      "position": "long"
+    },
+    {
+      "date": "2026-05-30T00:00:00.000Z",
+      "equity": 9899.05,
+      "position": "long"
+    },
+    {
+      "date": "2026-05-31T00:00:00.000Z",
+      "equity": 9890.02,
+      "position": "long"
+    },
+    {
+      "date": "2026-06-01T00:00:00.000Z",
+      "equity": 9880.95,
+      "position": "long"
+    }
+  ],
+  "trade_log": [
+    {
+      "timestamp": "2026-03-01T00:00:00.000Z",
+      "action": "entry",
+      "price": 2138.593254386415,
+      "signal": "buy",
+      "confidence": 0.74,
+      "equity": 9998.401598401599
+    },
+    {
+      "timestamp": "2026-03-24T00:00:00.000Z",
+      "action": "exit",
+      "price": 2152.7989568319017,
+      "signal": "sell",
+      "pnlPct": 0.362563652679583,
+      "equity": 10002.900509221437
+    },
+    {
+      "timestamp": "2026-03-29T00:00:00.000Z",
+      "action": "entry",
+      "price": 2151.85869988177,
+      "signal": "buy",
+      "confidence": 0.8200000000000001,
+      "equity": 10001.301644005178
+    },
+    {
+      "timestamp": "2026-05-23T00:00:00.000Z",
+      "action": "exit",
+      "price": 2052.5942090108038,
+      "signal": "trailing_stop",
+      "pnlPct": -4.89884014102588,
+      "equity": 9963.698420788427
+    },
+    {
+      "timestamp": "2026-05-23T00:00:00.000Z",
+      "action": "entry",
+      "price": 2054.6468032198145,
+      "signal": "buy",
+      "confidence": 0.8200000000000001,
+      "equity": 9962.105821640249
+    },
+    {
+      "timestamp": "2026-05-28T00:00:00.000Z",
+      "action": "exit",
+      "price": 1944.1792689146762,
+      "signal": "trailing_stop",
+      "pnlPct": -5.660059983838177,
+      "equity": 9918.582316210397
+    },
+    {
+      "timestamp": "2026-05-28T00:00:00.000Z",
+      "action": "entry",
+      "price": 1946.1234481835907,
+      "signal": "buy",
+      "confidence": 0.9,
+      "equity": 9916.996928427585
+    },
+    {
+      "timestamp": "2026-06-01T00:00:00.000Z",
+      "action": "exit",
+      "price": 1855.6889445217198,
+      "signal": "end_of_period",
+      "pnlPct": -4.93267810805575,
+      "equity": 9879.4421771271
+    }
+  ],
+  "simulation_only": true,
+  "live_trading": false
+}

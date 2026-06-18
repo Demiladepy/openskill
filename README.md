@@ -24,7 +24,9 @@ npm install && cp .env.example .env
 npm run strategy:all && npm run replay && npm run attest
 ```
 
-→ Full documentation: [skill-reputation/README.md](./skill-reputation/README.md)
+→ Full documentation: [skill-reputation/README.md](./skill-reputation/README.md)  
+→ Judge demo script: [skill-reputation/DEMO.md](./skill-reputation/DEMO.md)  
+→ 12-prompt pack tracker: [skill-reputation/PROMPTS.md](./skill-reputation/PROMPTS.md)
 
 ## What's inside
 
