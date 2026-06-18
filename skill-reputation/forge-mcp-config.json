@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "forge-skills": {
+      "command": "node",
+      "args": ["scripts/forgeMcpServer.js"],
+      "cwd": "skill-reputation",
+      "env": {
+        "CMC_USE_MOCK": "0"
+      }
+    }
+  },
+  "_note": "Forge Skills MCP — add to Cursor Settings → MCP. Set cwd to absolute path to skill-reputation on your machine. Tools: forge_list_skills, forge_get_backtest, forge_get_signals, forge_verify_submission. Requires CMC_API_KEY in skill-reputation/.env for live signals."
+}

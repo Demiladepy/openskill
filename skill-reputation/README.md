@@ -126,6 +126,25 @@ and the path to backtest_results/momentum_BTC.json.
 
 Interactive docs + Ask Docs chatbot → [`demos/demo-ui/`](./demos/demo-ui/)
 
+### Forge Skills MCP (agent-native API)
+
+Expose backtests and CMC signals to Cursor / Claude via MCP:
+
+```bash
+npm run mcp:forge   # stdio server — add to Cursor MCP settings
+```
+
+| Tool | Purpose |
+|------|---------|
+| `forge_list_skills` | Installable skills + registry |
+| `forge_get_backtest` | Metrics for strategy × asset (e.g. regime/BTC) |
+| `forge_get_signals` | Live CMC snapshot (+ optional TWAK risk) |
+| `forge_verify_submission` | Runs `npm run verify` checklist |
+
+Cursor config snippet → [`forge-mcp-config.json`](./forge-mcp-config.json) (set `cwd` to your absolute `skill-reputation` path).
+
+Aligns with BNB Chain’s **Agent Skills and MCPs** stack alongside `@bnb-chain/mcp` and ERC-8004 registration.
+
 ---
 
 ## Architecture
@@ -163,6 +182,7 @@ CoinMarketCap REST (+ optional MCP)
 | `npm run attest` | BSC testnet attestation |
 | `npm run twak:check` | Verify TWAK CLI |
 | `npm run agent:register` | ERC-8004 agent (gas-free) |
+| `npm run mcp:forge` | Forge Skills MCP server (4 tools) |
 | `npm run check:secrets` | Pre-push secret scan |
 
 ---
