@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BACKTEST_ROWS, GITHUB_URL, NAV } from "../lib/navigation";
+import { AGENT_PROMPT_CARDS, AGENT_SNIPPETS } from "../lib/agentSnippets";
+import { CopyBlock } from "./CopyBlock";
 import { ForgeLogo } from "./ForgeLogo";
 import { Dashboard } from "../ui/Dashboard";
 import { ExportPanel } from "../ui/ExportPanel";
@@ -146,27 +148,51 @@ export function DocShell() {
               <p className="eyebrow">BNB Hackathon · Track 2</p>
               <h1>Strategy Skills Overview</h1>
               <p className="lead">
-                Installable quant strategy skills powered by CoinMarketCap data. Backtest on BTC, ETH, and BNB,
-                export CMC-compatible skill zips, and optionally attest fingerprints on BSC testnet.
+                Strategy skills for AI agents — not dashboards for humans to click through. Developers search,
+                copy, paste into Cursor or Windsurf, and let the agent run the pipeline.
               </p>
               <div className="callout">
-                <strong>Simulation only</strong> — no live trading. This UI mirrors the Agent Skills docs experience
-                while exposing export and on-chain verification tools.
+                <strong>Built for pipe-coders.</strong> Every command and agent prompt on this site is one-click
+                copy. Skills live in <code>skills/</code> as <code>SKILL.md</code> — the same format CMC Agent Hub
+                expects. Simulation only — no live trading.
               </div>
+            </section>
+
+            <section id="for-agents" className="docSection">
+              <h2 id="for-agents-heading">For agents</h2>
+              <p>
+                Most devs don&apos;t build from scratch anymore. They paste a prompt, point the agent at a skill, and
+                run. Copy any block below into Cursor, Windsurf, Claude Code, or OpenClaw.
+              </p>
+
+              <h3 id="install-skills">Install skills</h3>
+              <CopyBlock code={AGENT_SNIPPETS.installSkills} label="Copy install command" />
+
+              <h3 id="agent-prompts">Ready-made agent prompts</h3>
+              <p className="muted">Paste these directly into chat — the agent reads SKILL.md and runs the CLI.</p>
+
+              <div className="pasteGrid">
+                {AGENT_PROMPT_CARDS.slice(3).map((card) => (
+                  <div key={card.key} className="pasteCard">
+                    <p className="pasteCardTitle">{card.title}</p>
+                    <CopyBlock code={AGENT_SNIPPETS[card.key]} label="Copy prompt" />
+                  </div>
+                ))}
+              </div>
+
+              <h3 id="cursor-context">Cursor / Windsurf context block</h3>
+              <CopyBlock code={AGENT_SNIPPETS.cursorContext} label="Copy @ context" />
+
+              <h3 id="env-template">Environment template</h3>
+              <CopyBlock code={AGENT_SNIPPETS.envTemplate} label="Copy .env template" />
             </section>
 
             <section id="quick-start" className="docSection">
               <h2 id="quick-start-heading">Quick start</h2>
               <p>Clone the repo and run the judge path locally:</p>
-              <pre className="codeBlock">{`cd skill-reputation
-npm install
-cp .env.example .env
-# Set CMC_API_KEY (+ AGENT_PRIVATE_KEY for attestations)
-npm run strategy:all
-npm run replay
-npm run export:skills`}</pre>
+              <CopyBlock code={AGENT_SNIPPETS.cloneAndRun} label="Copy setup" />
               <h3 id="three-command-demo">Three-command demo</h3>
-              <pre className="codeBlock">{`npm run strategy:all && npm run replay && npm run attest`}</pre>
+              <CopyBlock code={AGENT_SNIPPETS.judgeDemo} label="Copy demo commands" />
             </section>
 
             <section id="strategies" className="docSection">
@@ -191,7 +217,7 @@ npm run export:skills`}</pre>
                 </div>
               </div>
 
-              <pre className="codeBlock">{`npx skills add https://github.com/Demiladepy/openskill/tree/main/skill-reputation/skills`}</pre>
+              <CopyBlock code={AGENT_SNIPPETS.installSkills} label="Copy install command" />
             </section>
 
             <section id="backtest-results" className="docSection">
@@ -254,8 +280,7 @@ npm run export:skills`}</pre>
 
             <section id="verify" className="docSection">
               <h2>Verify submission</h2>
-              <pre className="codeBlock">{`npm run verify
-npm run check:secrets`}</pre>
+              <CopyBlock code={`npm run verify\nnpm run check:secrets`} label="Copy verify commands" />
               <p>Confirms backtests, skill zips, replay HTML, and flags missing on-chain proofs.</p>
             </section>
           </article>

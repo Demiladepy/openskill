@@ -21,6 +21,28 @@ CMC Strategy Forge does all four in one repo. A judge clones it, runs `npm run s
 
 ---
 
+## For AI agents (copy-paste first)
+
+This project is built for **agents**, not hand-coded from scratch. The intended workflow:
+
+1. **Install skills** → `npx skills add …/skill-reputation/skills`
+2. **Paste a prompt** → “Run momentum backtest on BTC using `skills/cmc-strategy-momentum/SKILL.md`”
+3. **Agent runs CLI** → `npm run strategy:all`, reads `backtest_results/*.json`, exports zips
+
+Every `SKILL.md` follows [CMC’s official skills format](https://github.com/coinmarketcap-official/skills-for-ai-agents-by-CoinMarketCap) so Cursor, Windsurf, Claude Code, and OpenClaw can discover and execute without custom wiring.
+
+**Paste into your agent:**
+
+```
+@skill-reputation
+Run the CMC momentum strategy backtest on BTC for 2026-03-01 to 2026-06-01.
+Use skills/cmc-strategy-momentum/SKILL.md. Show Sharpe, drawdown, trades.
+```
+
+Live copy-paste library → [demos/demo-ui](demos/demo-ui/) (“For agents” section on the docs site).
+
+---
+
 ## What you get
 
 | Output | Location | Command |

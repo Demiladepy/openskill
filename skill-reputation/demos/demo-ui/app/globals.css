@@ -350,13 +350,88 @@ code {
 .codeBlock {
   background: var(--code-bg);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 0 0 10px 10px;
   padding: 14px 16px;
   overflow-x: auto;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 13px;
   line-height: 1.55;
-  margin: 12px 0;
+  margin: 0;
+}
+
+.copyBlock {
+  margin: 12px 0 20px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.copyBlockBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--border);
+}
+
+.copyBlockHint {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.copyBtn {
+  flex-shrink: 0;
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 550;
+  cursor: pointer;
+}
+
+.copyBtn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.pasteGrid {
+  display: grid;
+  gap: 16px;
+  margin: 16px 0 24px;
+}
+
+.pasteCard {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--bg-subtle);
+}
+
+.pasteCardTitle {
+  margin: 0;
+  padding: 12px 14px 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.pasteCard .copyBlock {
+  margin: 8px 12px 12px;
+  border: none;
+}
+
+.pasteCard .copyBlockBar {
+  background: transparent;
+  border-bottom: none;
+  padding: 4px 0 8px;
+}
+
+.pasteCard .codeBlock {
+  border-radius: 8px;
+  border: 1px solid var(--border);
 }
 
 .skillCards {
