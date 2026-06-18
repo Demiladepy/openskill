@@ -1,95 +1,62 @@
-# CMC Strategy Forge
+# CMC Strategy Forge / Forge Skills
 
 **BNB Hackathon · Track 2 — Strategy Skills**
 
-> *Quant research that agents can actually run.*  
-> Backtest crypto strategies on **CoinMarketCap data**, ship them as **installable CMC skills**, and attest results on **BNB Chain** — simulation only, no live trading.
+Quant research that AI agents can install, run, and verify. Live CoinMarketCap data, TWAK risk scoring, BNB Chain attestation — simulation only.
 
-**Repo:** [`Demiladepy/openskill`](https://github.com/Demiladepy/openskill)  
-**Code lives in:** [`skill-reputation/`](./skill-reputation/) ← start here
-
----
-
-## The idea in one sentence
-
-Most hackathon “AI traders” are vibes in a README. **CMC Strategy Forge** is a reproducible pipeline: **CMC signals in → backtest out → skill zip + optional BSC attestation** — so a judge can clone, run three commands, and verify the numbers.
+**Start here:** [`skill-reputation/`](./skill-reputation/)  
+**Interactive docs:** deploy [`skill-reputation/demos/demo-ui/`](./skill-reputation/demos/demo-ui/) on Vercel
 
 ---
 
-## 60-second start
+## Quick start
 
 ```bash
 cd skill-reputation
-npm install
-cp .env.example .env
-# Add CMC_API_KEY (and later AGENT_PRIVATE_KEY for on-chain demo)
+npm install && cp .env.example .env
+# Add CMC_API_KEY, then:
 npm run strategy:all
 ```
 
-**Judge path (3 commands):**
+**Judge path:** `npm run strategy:all && npm run replay && npm run export:skills`
 
-```bash
-npm run strategy:all && npm run replay && npm run attest
-```
-
-Full guide → **[skill-reputation/README.md](./skill-reputation/README.md)**
+Full documentation → **[skill-reputation/README.md](./skill-reputation/README.md)**
 
 ---
 
-## What’s in the box
+## What ships
 
-| Folder | What it does |
-|--------|----------------|
-| [`skill-reputation/`](./skill-reputation/) | **Main app** — strategies, backtest engine, CMC integration |
-| [`skill-reputation/skills/`](./skill-reputation/skills/) | Three **CMC-format** agent skills (installable) |
-| [`skill-reputation/backtest_results/`](./skill-reputation/backtest_results/) | JSON outputs + equity curves |
-| [`skill-reputation/bnbagent/`](./skill-reputation/bnbagent/) | BNB AI Agent SDK (ERC-8004) — optional |
-| [`skill-reputation/demos/demo-ui/`](./skill-reputation/demos/demo-ui/) | Optional Vercel dashboard |
+| Output | Command |
+|--------|---------|
+| 9 backtest JSON files | `npm run strategy:all` |
+| PnL replay HTML | `npm run replay` |
+| CMC skill zips | `npm run export:skills` |
+| Submission checklist | `npm run verify` |
 
----
-
-## Three strategies
-
-1. **Momentum Merger** — RSI, MACD, Fear & Greed, CMC % changes  
-2. **Sentiment Divergence** — short vs long-term return divergence + sentiment  
-3. **Regime Detector** — BTC dominance, macro regime, trend/volatility  
-
-All consume **CMC pre-computed signals** (REST + optional MCP). Details in the [main README](./skill-reputation/README.md#strategies).
+**Best live result:** Regime/BTC · Sharpe **2.17** · window Mar–Jun 2026
 
 ---
 
-## Sponsor stack (what we integrated)
+## Sponsor integrations
 
-| Sponsor | How we use it |
-|---------|----------------|
-| **CoinMarketCap** | Data API, MCP technicals, official Skills format |
-| **Trust Wallet** | TWAK CLI — token risk scoring + attestation signing (`npm run twak:check`) |
-| **BNB Chain** | ERC-8004 registration (gas-free testnet) + BSC attestation txs |
+| CoinMarketCap | Trust Wallet | BNB Chain |
+|---------------|--------------|-----------|
+| REST + MCP + Skills format | TWAK CLI risk + signing | ERC-8004 + BSC attestations |
 
----
-
-## Docs map
-
-| Doc | Purpose |
-|-----|---------|
-| [skill-reputation/README.md](./skill-reputation/README.md) | **Full documentation** — setup, architecture, results |
-| [skill-reputation/DEMO.md](./skill-reputation/DEMO.md) | 3-minute judge video script |
-| [skill-reputation/SUBMISSION.md](./skill-reputation/SUBMISSION.md) | DoraHacks checklist |
-| [skill-reputation/PROMPTS.md](./skill-reputation/PROMPTS.md) | Build tracker |
+The [docs UI](./skill-reputation/demos/demo-ui/) shows live integration status, sponsor stack, Ask Docs chatbot, and copy-paste agent prompts. TWAK and BNB registration run via CLI on your machine.
 
 ---
 
 ## Links
 
-- [DoraHacks — BNB Hack](https://dorahacks.io/hackathon/bnbhack-twt-cmc/)
+- [DoraHacks submission](https://dorahacks.io/hackathon/bnbhack-twt-cmc/)
 - [CMC Agent Hub](https://coinmarketcap.com/api/agent/)
-- [CMC Hackathon](https://coinmarketcap.com/api/hackathon/)
-- Demo video: *(add before submission)*
-- **Vercel demo UI:** Root Directory = `skill-reputation/demos/demo-ui`
+- [TWAK Portal](https://portal.trustwallet.com/dashboard/apps)
+- [BNB Agent SDK](https://github.com/bnb-chain/bnbagent-sdk)
+- [SUBMISSION.md](./skill-reputation/SUBMISSION.md) · [DEMO.md](./skill-reputation/DEMO.md)
+
+**Deadline:** June 21, 2026 · 12:00 UTC
 
 ---
 
-## Important
-
-- **Simulation only** — no live order execution.  
-- **Never commit** `.env` (contains API keys / wallet keys). Run `npm run check:secrets` before push.
+Simulation only. Never commit `.env`. Run `npm run check:secrets` before push.

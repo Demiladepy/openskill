@@ -1211,6 +1211,192 @@ a {
   color: var(--text);
 }
 
+.integrationLoading {
+  margin: 16px 0;
+}
+
+.integrationCompact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0 8px;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 550;
+  border: 1px solid var(--border);
+}
+
+.statusOk {
+  background: rgba(5, 150, 105, 0.1);
+  color: var(--positive);
+  border-color: rgba(5, 150, 105, 0.25);
+}
+
+.statusPending {
+  background: var(--bg-subtle);
+  color: var(--muted);
+}
+
+.integrationPanel {
+  margin: 24px 0;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  background: var(--bg-subtle);
+}
+
+.integrationTitle {
+  margin: 0 0 4px;
+  font-family: var(--font-garamond), Georgia, serif;
+  font-size: 1.2rem;
+}
+
+.integrationSub {
+  margin: 0;
+  font-size: 13px;
+}
+
+.integrationGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.integrationCard {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.integrationCardLabel {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.integrationCardDesc {
+  margin: 8px 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.integrationCardMeta {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.integrationLink {
+  font-size: 13px;
+  font-weight: 550;
+}
+
+.integrationDemoKey {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+  margin-top: 8px;
+}
+
+.integrationDemoKeyTitle {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.integrationDemoList {
+  margin: 0 0 16px;
+  padding-left: 1.2rem;
+  font-size: 14px;
+}
+
+.integrationDemoList li {
+  margin-bottom: 6px;
+}
+
+.sponsorGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin: 20px 0;
+}
+
+.sponsorCard {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: var(--shadow);
+}
+
+.sponsorCardHead {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sponsorCardHead h3 {
+  margin: 0;
+  font-family: var(--font-garamond), Georgia, serif;
+  font-size: 1.15rem;
+}
+
+.sponsorPrize {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+
+.sponsorUses {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--muted);
+  flex: 1;
+}
+
+.sponsorUses li {
+  margin-bottom: 6px;
+}
+
+.sponsorFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+}
+
+.sponsorFoot code {
+  font-size: 11px;
+}
+
+@media (max-width: 900px) {
+  .integrationGrid,
+  .sponsorGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 1100px) {
   .docsBody {
     grid-template-columns: 220px minmax(0, 1fr);

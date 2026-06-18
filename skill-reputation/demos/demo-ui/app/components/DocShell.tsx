@@ -19,6 +19,8 @@ import { SearchCommand } from "./SearchCommand";
 import { SkillLevelsTable } from "./SkillLevelsTable";
 import { Dashboard } from "../ui/Dashboard";
 import { ExportPanel } from "../ui/ExportPanel";
+import { IntegrationStatus } from "../ui/IntegrationStatus";
+import { SponsorStack } from "../ui/SponsorStack";
 
 const SECTIONS = NAV.map((n) => n.id);
 
@@ -191,6 +193,8 @@ export function DocShell() {
                 this site is one-click copy — skills live in <code>skills/</code> as{" "}
                 <code>SKILL.md</code>, the same format CoinMarketCap Agent Hub expects.
               </div>
+
+              <IntegrationStatus compact />
             </section>
 
             <section id="specification" className="docSection">
@@ -411,6 +415,84 @@ export function DocShell() {
                   </tbody>
                 </table>
               </div>
+            </section>
+
+            <section id="sponsor-stack" className="docSection">
+              <h2>Sponsor stack</h2>
+              <p>
+                Forge Skills integrates all three hackathon sponsors — CoinMarketCap for data and skills
+                format, Trust Wallet for risk scoring and signing, BNB Chain for agent identity and
+                attestation. Track 2 is simulation only; no live trade execution.
+              </p>
+              <SponsorStack />
+              <IntegrationStatus />
+            </section>
+
+            <section id="twak-integration" className="docSection">
+              <h2>TWAK integration</h2>
+              <p>
+                Trust Wallet Agent Kit (<code>@trustwallet/cli</code>) enriches strategy signals with live
+                prices and token risk scoring. Attestations try <code>twak wallet sign</code> before viem
+                fallback — self-custody, keys never leave your machine.
+              </p>
+              <CopyBlock
+                code={`# Install\nnpm install -g @trustwallet/cli\n# or\ncurl -fsSL https://agent-kit.trustwallet.com/install.sh | bash\n\n# Credentials: https://portal.trustwallet.com/dashboard/apps\ntwak setup\n\n# Enable in pipeline\nTWAK_ENABLED=1\nnpm run twak:check\nnpm run strategy:all`}
+                label="Copy TWAK setup"
+              />
+              <h3>What TWAK does in Forge Skills</h3>
+              <ul className="docsList">
+                <li>
+                  <strong>Token risk</strong> — <code>src/twakCliClient.js</code> → <code>cmcSignals.js</code>{" "}
+                  reduces entry confidence when risk is high
+                </li>
+                <li>
+                  <strong>Attestation signing</strong> — <code>skill/scripts/lib/attestationSigning.js</code>
+                </li>
+                <li>
+                  <strong>Agent MCP</strong> — <code>twak serve</code> (see <code>twak-mcp-config.json</code>)
+                </li>
+              </ul>
+              <p className="muted">
+                TWAK CLI runs on your machine, not on Vercel. The status panel shows whether this server
+                detected it; install locally for full enrichment during backtests.
+              </p>
+            </section>
+
+            <section id="bnb-agent" className="docSection">
+              <h2>BNB Agent SDK</h2>
+              <p>
+                Register the Forge Strategy Agent on BSC testnet via ERC-8004. Registration is{" "}
+                <strong>gas-free</strong> on testnet through the MegaFuel paymaster — you do not need tBNB
+                for agent identity.
+              </p>
+              <CopyBlock
+                code={`pip install "bnbagent[server]"\n# Set AGENT_PRIVATE_KEY in .env\nnpm run agent:discover\nnpm run agent:register`}
+                label="Copy BNB Agent commands"
+              />
+              <div className="tableWrap docsTable">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Contract</th>
+                      <th>Address</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>ERC-8004 Registry</td>
+                      <td className="mono">0x8004A818BFB912233c491871b3d84c89A494BD9e</td>
+                    </tr>
+                    <tr>
+                      <td>AgenticCommerce</td>
+                      <td className="mono">0xa206c0517b6371c6638cd9e4a42cc9f02a33b0de</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p className="muted">
+                Optional ERC-8183 job server: <code>npm run agent:server</code> accepts backtest jobs at port
+                8000.
+              </p>
             </section>
 
             <section id="export-skills" className="docSection">
