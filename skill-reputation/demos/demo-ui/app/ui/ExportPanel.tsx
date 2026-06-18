@@ -29,27 +29,25 @@ export function ExportPanel() {
   }
 
   return (
-    <section className="panel">
-      <h2>Export to CMC Marketplace</h2>
-      <p className="muted">Export CMC-compatible skill folders as zip for DoraHacks submission.</p>
+    <div className="panel">
       <label>
-        Strategy
+        Strategy skill
         <select value={strategy} onChange={(e) => setStrategy(e.target.value)}>
           <option value="momentum">Momentum Merger</option>
           <option value="sentiment">Sentiment Divergence</option>
           <option value="regime">Regime Detector</option>
         </select>
       </label>
-      <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-        <button type="button" disabled={loading} onClick={() => exportPackage(false)}>
-          {loading ? "Exporting…" : "Export strategy"}
+      <div className="panelActions">
+        <button type="button" className="btnPrimary" disabled={loading} onClick={() => exportPackage(false)}>
+          {loading ? "Exporting…" : "Export strategy zip"}
         </button>
-        <button type="button" disabled={loading} onClick={() => exportPackage(true)}>
-          Export all from scan
+        <button type="button" className="btnSecondary" disabled={loading} onClick={() => exportPackage(true)}>
+          Export all skills bundle
         </button>
       </div>
       {error && <p className="error">{error}</p>}
       {result && <pre>{result}</pre>}
-    </section>
+    </div>
   );
 }
