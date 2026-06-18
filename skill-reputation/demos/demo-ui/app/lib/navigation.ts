@@ -5,7 +5,10 @@ export type NavItem = {
 };
 
 export const NAV: NavItem[] = [
-  { id: "overview", label: "Overview", group: "Start" },
+  { id: "overview", label: "Overview", group: "Documentation" },
+  { id: "specification", label: "Specification", group: "Documentation" },
+  { id: "skill-structure", label: "Skill structure", group: "Documentation" },
+  { id: "best-practices", label: "Best practices", group: "Documentation" },
   { id: "for-agents", label: "For agents", group: "Start" },
   { id: "quick-start", label: "Quick start", group: "Start" },
   { id: "strategies", label: "Strategies", group: "Skills" },

@@ -600,6 +600,188 @@ a {
   font-size: 12px;
 }
 
+.pageMeta {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.copyPageBtn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.copyPageBtn:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.fileTree {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 12px 0;
+}
+
+.docsList {
+  margin: 8px 0 20px;
+  padding-left: 1.25rem;
+}
+
+.docsList li {
+  margin-bottom: 8px;
+}
+
+.docsTable table {
+  font-size: 14px;
+}
+
+.docsTable td,
+.docsTable th {
+  padding: 12px 14px;
+}
+
+.askDocsNavBtn {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--text);
+  color: var(--bg);
+  font-size: 13px;
+  font-weight: 550;
+  cursor: pointer;
+}
+
+.askDocsFab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: none;
+  background: var(--text);
+  color: var(--bg);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+}
+
+.askDocsOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.askDocsBackdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.askDocsPanel {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  max-height: 80vh;
+  overflow: auto;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
+}
+
+.askDocsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.askDocsHeader h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.askDocsClose {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: var(--bg-subtle);
+  border-radius: 8px;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.askDocsSub {
+  font-size: 14px;
+  margin: 8px 0 16px;
+}
+
+.askDocsInput {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 15px;
+  background: var(--bg-subtle);
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.askDocsList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.askDocsItem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+  text-align: left;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text);
+}
+
+.askDocsItem:hover {
+  background: var(--bg-subtle);
+}
+
+.askDocsItem span {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.askDocsEmpty {
+  padding: 12px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
 @media (max-width: 1100px) {
   .docsBody {
     grid-template-columns: 220px minmax(0, 1fr);

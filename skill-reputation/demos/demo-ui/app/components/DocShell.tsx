@@ -3,8 +3,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BACKTEST_ROWS, GITHUB_URL, NAV } from "../lib/navigation";
 import { AGENT_PROMPT_CARDS, AGENT_SNIPPETS } from "../lib/agentSnippets";
+import { DOCS_FAQ, SKILL_MD_EXAMPLE } from "../lib/docsContent";
+import { AskDocs } from "./AskDocs";
 import { CopyBlock } from "./CopyBlock";
+import { CopyPageButton } from "./CopyPageButton";
 import { ForgeLogo } from "./ForgeLogo";
+import { SkillLevelsTable } from "./SkillLevelsTable";
 import { Dashboard } from "../ui/Dashboard";
 import { ExportPanel } from "../ui/ExportPanel";
 
@@ -34,10 +38,22 @@ export function DocShell() {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
+  const [askOpen, setAskOpen] = useState(false);
+
   const filteredNav = useMemo(() => {
     if (!query.trim()) return NAV;
     const q = query.toLowerCase();
-    return NAV.filter((n) => n.label.toLowerCase().includes(q));
+    const navHits = NAV.filter((n) => n.label.toLowerCase().includes(q));
+    const faqHits = DOCS_FAQ.filter(
+      (f) =>
+        f.question.toLowerCase().includes(q) ||
+        f.keywords.some((k) => k.includes(q))
+    ).map((f) => NAV.find((n) => n.id === f.sectionId)).filter(Boolean) as typeof NAV;
+    const merged = [...navHits];
+    for (const item of faqHits) {
+      if (!merged.find((m) => m.id === item.id)) merged.push(item);
+    }
+    return merged.length ? merged : NAV;
   }, [query]);
 
   const scrollTo = useCallback((id: string) => {
@@ -50,7 +66,7 @@ export function DocShell() {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
-        document.querySelector<HTMLInputElement>(".searchWrap input")?.focus();
+        setAskOpen(true);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -109,6 +125,9 @@ export function DocShell() {
         </div>
 
         <div className="topnavActions">
+          <button type="button" className="askDocsNavBtn" onClick={() => setAskOpen(true)}>
+            ✦ Ask Docs
+          </button>
           <a className="ghostBtn" href={GITHUB_URL} target="_blank" rel="noreferrer">
             GitHub ↗
           </a>
@@ -145,8 +164,15 @@ export function DocShell() {
         <main className="content">
           <article className="prose">
             <section id="overview" className="docSection">
+              <div className="pageMeta">
+                <CopyPageButton
+                  getText={() =>
+                    document.querySelector("#overview")?.textContent?.slice(0, 2000) || "CMC Strategy Forge docs"
+                  }
+                />
+              </div>
               <p className="eyebrow">BNB Hackathon · Track 2</p>
-              <h1>Strategy Skills Overview</h1>
+              <h1>Forge Skills Overview</h1>
               <p className="lead">
                 Strategy skills for AI agents — not dashboards for humans to click through. Developers search,
                 copy, paste into Cursor or Windsurf, and let the agent run the pipeline.
@@ -156,6 +182,116 @@ export function DocShell() {
                 copy. Skills live in <code>skills/</code> as <code>SKILL.md</code> — the same format CMC Agent Hub
                 expects. Simulation only — no live trading.
               </div>
+            </section>
+
+            <section id="specification" className="docSection">
+              <h2 id="spec-heading">Specification</h2>
+              <h3 id="what-are-skills">What are Forge Skills?</h3>
+              <p>
+                Forge Skills are quant strategy packages for AI agents — folders with a <code>SKILL.md</code>{" "}
+                manifest. They follow the same progressive-disclosure model as{" "}
+                <a href="https://agentskills.io" target="_blank" rel="noreferrer">
+                  Agent Skills
+                </a>{" "}
+                and CoinMarketCap&apos;s official skills repo.
+              </p>
+              <p>
+                <strong>Code</strong> is the CLI pipeline (<code>npm run strategy:all</code>).{" "}
+                <strong>Resources</strong> are backtest JSON, replay HTML, and exported zips — loaded only when the
+                agent needs them.
+              </p>
+
+              <h3 id="how-skills-work">How skills work</h3>
+              <p>
+                Skills load in three levels — keeping context small until the agent actually runs a strategy:
+              </p>
+              <SkillLevelsTable />
+
+              <h3 id="progressive-disclosure">Progressive disclosure</h3>
+              <p className="muted">
+                Level 1 is always in agent context so your agent knows a momentum skill exists. Level 2 loads when
+                the user asks to backtest. Level 3 (full repo CLI) runs only when executing commands.
+              </p>
+            </section>
+
+            <section id="skill-structure" className="docSection">
+              <h2 id="structure-heading">Skill structure</h2>
+              <p>Each skill folder matches CMC Agent Hub format:</p>
+              <pre className="fileTree">{`skills/
+  cmc-strategy-momentum/
+    SKILL.md          ← manifest + instructions
+  cmc-strategy-sentiment/
+    SKILL.md
+  cmc-strategy-regime/
+    SKILL.md`}</pre>
+
+              <h3 id="frontmatter">Required frontmatter</h3>
+              <div className="tableWrap docsTable">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Field</th>
+                      <th>Required</th>
+                      <th>Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><code>name</code></td>
+                      <td>Yes</td>
+                      <td>Unique skill identifier (e.g. cmc-strategy-momentum)</td>
+                    </tr>
+                    <tr>
+                      <td><code>version</code></td>
+                      <td>Yes</td>
+                      <td>Semver string</td>
+                    </tr>
+                    <tr>
+                      <td><code>description</code></td>
+                      <td>Yes</td>
+                      <td>One-line summary for agent discovery</td>
+                    </tr>
+                    <tr>
+                      <td><code>tags</code></td>
+                      <td>Yes</td>
+                      <td>Array for marketplace search</td>
+                    </tr>
+                    <tr>
+                      <td><code>author</code></td>
+                      <td>Recommended</td>
+                      <td>CMC Strategy Forge</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <h3 id="example-skill">Example SKILL.md</h3>
+              <CopyBlock code={SKILL_MD_EXAMPLE} label="Copy example" />
+            </section>
+
+            <section id="best-practices" className="docSection">
+              <h2 id="practices-heading">Best practices</h2>
+              <h3 id="for-skill-creators">For skill creators</h3>
+              <ul className="docsList">
+                <li>Keep <code>description</code> under 200 chars — agents scan this at startup.</li>
+                <li>Put copy-paste prompts in the <strong>Usage</strong> section.</li>
+                <li>List every CMC endpoint in <strong>CMC Data Sources</strong>.</li>
+                <li>State <strong>simulation only</strong> — never imply live trading.</li>
+              </ul>
+              <h3 id="for-agents-using-skills">For agents using skills</h3>
+              <ul className="docsList">
+                <li>Read Level 1 metadata first; load full SKILL.md only when user asks to backtest.</li>
+                <li>Run <code>npm run strategy:all</code> from <code>skill-reputation/</code>, not repo root.</li>
+                <li>Return paths to <code>backtest_results/*.json</code> in every response.</li>
+                <li>Use <code>npm run verify</code> before claiming submission-ready.</li>
+              </ul>
+              <h3 id="optimizing-descriptions">Optimizing descriptions</h3>
+              <p>
+                Good: <em>&quot;Momentum strategy using CMC RSI, MACD, Fear &amp; Greed — backtestable on BTC/ETH/BNB&quot;</em>
+              </p>
+              <p className="muted">
+                Bad: <em>&quot;A strategy&quot;</em> — too vague for agent routing.
+              </p>
             </section>
 
             <section id="for-agents" className="docSection">
@@ -309,6 +445,15 @@ export function DocShell() {
           )}
         </aside>
       </div>
+
+      <AskDocs
+        open={askOpen}
+        onOpenChange={setAskOpen}
+        onNavigate={(id) => {
+          setAskOpen(false);
+          scrollTo(id);
+        }}
+      />
     </div>
   );
 }
