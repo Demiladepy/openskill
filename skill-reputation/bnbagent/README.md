@@ -45,9 +45,11 @@ node verify_job.js
 
 One-command demo: `bash demo.sh`
 
-## Public deployment (Render)
+## Public deployment (optional — Render, later)
 
-See [`RENDER_DEPLOY.md`](./RENDER_DEPLOY.md) for Render web service setup. Set `AGENT_PUBLIC_URL` to your Render URL, then `npm run agent:register` so ERC-8004 `agentURI` lists the live ERC-8183 endpoint.
+Default hackathon path: **GitHub** for skills/MCP/docs in `agentURI`, **local** for ERC-8183 jobs.
+
+See [`RENDER_DEPLOY.md`](./RENDER_DEPLOY.md) when you want a hosted job server URL.
 
 Optional stretch: `--onchain` job posting via ERC-8183Client (requires `CLIENT_PRIVATE_KEY`).
 

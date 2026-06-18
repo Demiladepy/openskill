@@ -35,7 +35,7 @@ export const BAP692_LAYERS = [
     id: "commerce",
     standard: "ERC-8183",
     status: "demo",
-    description: "Backtest jobs via agent server (HTTP + optional on-chain)",
+    description: "Backtest jobs — local demo now; optional Render URL later",
     verify: "npm run marketplace:post",
   },
   {

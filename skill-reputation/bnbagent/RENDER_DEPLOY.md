@@ -1,12 +1,26 @@
-# Deploy ERC-8183 Agent Server on Render
+# Deploy ERC-8183 Agent Server on Render (optional — later)
 
-Public URL for ERC-8004 `agentURI` and ERC-8183 job demos. Use **local fallback** when Render billing fails.
+> **Default for hackathon:** push to **GitHub** and register ERC-8004 with GitHub discovery URLs (`AGENT_DISCOVERY_MODE=github`). Judges clone the repo and run locally. **Render is optional** when you want a public job server URL.
 
-## Quick deploy
+## When to use Render
+
+Use Render **after** GitHub submission when you want:
+
+- A public `AGENT_PUBLIC_URL` for live ERC-8183 job POSTs
+- Demo video segment hitting a hosted `/api/jobs` endpoint
+
+Until then, commerce runs locally:
+
+```bash
+npm run agent:server
+npm run marketplace:post -- --strategy regime --asset BTC
+```
+
+## Quick deploy (later)
 
 1. Create a **Web Service** on [Render](https://render.com) from this repo.
 2. Set **Root Directory** to `skill-reputation`.
-3. Use the settings in [`render.yaml`](./render.yaml) or configure manually:
+3. Use the settings in [`render.yaml`](../render.yaml) or configure manually:
 
 | Setting | Value |
 |---------|--------|
@@ -23,49 +37,35 @@ AGENT_PRIVATE_KEY=<your BSC testnet key>
 WALLET_PASSWORD=<keystore password if needed>
 CMC_API_KEY=<optional live backtests>
 CMC_USE_MOCK=1
-AGENT_PORT=10000
+AGENT_DISCOVERY_MODE=render
 AGENT_PUBLIC_URL=https://YOUR-SERVICE.onrender.com/erc8183/status
 AGENT_FALLBACK_URL=http://localhost:8000/erc8183/status
-AGENT_DOCS_URL=https://YOUR-VERCEL-APP.vercel.app
+AGENT_DOCS_URL=https://github.com/Demiladepy/openskill/tree/main/skill-reputation
 ```
 
-Render sets `PORT` 
-` — `agent_server.py` reads `AGENT_PORT` or defaults to 8000. On Render, set:
-
-```
-AGENT_PORT=$PORT
-```
-
-Or update `agent_server.py` to prefer `PORT` env (already uses `AGENT_PORT`; add `os.getenv("PORT", ...)` if needed).
+The server reads `PORT` from Render automatically (`agent_server.py`).
 
 ## After deploy
 
-1. Copy Render URL into `bnbagent/.env.agent`:
-   ```
-   AGENT_PUBLIC_URL=https://YOUR-SERVICE.onrender.com/erc8183/status
-   ```
-2. Re-register on-chain:
+1. Set `AGENT_PUBLIC_URL` in `bnbagent/.env.agent` to your Render URL.
+2. Set `AGENT_DISCOVERY_MODE=render` (or leave `AGENT_PUBLIC_URL` as an `http` URL).
+3. Re-register on-chain:
    ```bash
    npm run agent:register
    ```
-3. Test job:
+4. Test job:
    ```bash
    npm run marketplace:post -- --strategy regime --asset BTC
    ```
 
-## Fallback when Render card fails
+## GitHub-first (recommended now)
 
-| Surface | Works offline? |
-|---------|----------------|
-| Forge MCP (`npm run mcp:forge`) | Yes |
-| Vercel docs UI | Yes |
-| ERC-8004 identity (local register) | Yes |
-| ERC-8183 jobs | Local only: `npm run agent:server` + optional ngrok |
-
-```bash
-npm run agent:server
-# optional: ngrok http 8000 → set AGENT_PUBLIC_URL to ngrok URL → npm run agent:register
-```
+| Surface | Where |
+|---------|--------|
+| Skills + MCP configs | GitHub raw/tree URLs in `agentURI` |
+| Judges verify | `git clone` → `npm run verify` |
+| ERC-8183 jobs | Local `npm run agent:server` |
+| ERC-8004 register | `npm run agent:register` (no Render needed) |
 
 ## x402 payments demo (roadmap)
 

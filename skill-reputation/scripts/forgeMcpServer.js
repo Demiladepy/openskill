@@ -121,7 +121,9 @@ function agentStatus() {
     bap692_layers: state?.bap692_layers ?? BAP692_LAYERS.map((l) => l.id),
     gasFree: state?.gasFree ?? true,
     register_cmd: "npm run agent:register",
-    note: "Re-register with AGENT_PUBLIC_URL when Render URL changes.",
+    discovery_mode: state?.discovery_mode ?? "github",
+    github_repo: state?.github_repo ?? BNB_STACK.github,
+    note: "GitHub-first by default. Set AGENT_PUBLIC_URL + re-register when Render is ready.",
   };
 }
 

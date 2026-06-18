@@ -52,10 +52,17 @@ Add to Cursor → Settings → MCP (adjust `cwd` to your clone):
 
 Tools: `forge_list_skills`, `forge_get_backtest`, `forge_get_signals`, `forge_verify_submission`, `forge_agent_status`, `forge_bnb_stack`.
 
-## Agent server (Render + local fallback)
+## Agent server (GitHub first — Render optional later)
 
-- **Primary:** Deploy per [`bnbagent/RENDER_DEPLOY.md`](./bnbagent/RENDER_DEPLOY.md) → set `AGENT_PUBLIC_URL` → `npm run agent:register`
-- **Fallback:** `npm run agent:server` locally (+ ngrok if needed)
+1. **Push to GitHub** — judges clone `https://github.com/Demiladepy/openskill`
+2. **Register ERC-8004** with GitHub discovery URLs (default):
+   ```bash
+   cp bnbagent/.env.agent.example bnbagent/.env.agent
+   # AGENT_DISCOVERY_MODE=github (default) — no AGENT_PUBLIC_URL needed
+   npm run agent:register
+   ```
+3. **Commerce demo (local):** `npm run agent:server` + `npm run marketplace:post`
+4. **Later (optional):** Render deploy → set `AGENT_PUBLIC_URL` → re-register — see [`bnbagent/RENDER_DEPLOY.md`](./bnbagent/RENDER_DEPLOY.md)
 
 ## BNB pitch alignment (Track 2)
 

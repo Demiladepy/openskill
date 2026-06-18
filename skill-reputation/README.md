@@ -92,7 +92,7 @@ npm run attest           # strategy fingerprint on BscScan
 
 Registry: `0x8004A818BFB912233c491871b3d84c89A494BD9e`
 
-**BAP-692 alignment:** Identity (ERC-8004) + Skills/MCP (Forge, CMC, TWAK, `@bnb-chain/mcp`) + Commerce demo (ERC-8183 jobs) + Payments/Memory roadmap (x402 stub, Greenfield pin). See [`bnbagent/RENDER_DEPLOY.md`](./bnbagent/RENDER_DEPLOY.md).
+**BAP-692 alignment:** Identity (ERC-8004) + Skills/MCP on **GitHub** + Commerce demo local (`npm run marketplace:post`) + Payments/Memory roadmap. Optional public server later → [`bnbagent/RENDER_DEPLOY.md`](./bnbagent/RENDER_DEPLOY.md).
 
 ---
 
@@ -233,7 +233,7 @@ Copy `.env.example` → `.env` (never commit).
 
 **Do I need tBNB for ERC-8004?** No — bnbagent SDK uses MegaFuel paymaster on BSC testnet for gas-free registration.
 
-**Render agent server down?** Forge MCP + Vercel docs still work. See [`bnbagent/RENDER_DEPLOY.md`](./bnbagent/RENDER_DEPLOY.md) for dual Render/local deployment.
+**Render agent server?** Not required for submission. Push to GitHub, register ERC-8004 with GitHub URLs, run commerce locally. Render is optional later — see [`bnbagent/RENDER_DEPLOY.md`](./bnbagent/RENDER_DEPLOY.md).
 
 **Simulation only?** Yes. No live orders. Backtests produce JSON metrics and equity curves for research.
 
@@ -243,7 +243,7 @@ Copy `.env.example` → `.env` (never commit).
 
 | Layer | Status | Next step |
 |-------|--------|-----------|
-| Identity (ERC-8004) | Live | Re-register when Render URL changes |
+| Identity (ERC-8004) | Live | Register after push to GitHub (`AGENT_DISCOVERY_MODE=github`) |
 | Commerce (ERC-8183) | HTTP demo | Full escrow via EvaluatorRouter |
 | Payments (x402) | Stub | `X402_DEMO=1` on agent server |
 | Memory (Greenfield) | Manifest | `npm run greenfield:pin` → upload via `@bnb-chain/mcp` |

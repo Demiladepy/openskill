@@ -93,6 +93,10 @@ export async function GET() {
   const attestationUrl =
     (agentState?.attestationExplorer as string) ?? (agentState?.attestation_tx as string) ?? null;
 
+  const discoveryMode = (agentState?.discovery_mode as string) ?? "github";
+  const githubRepo =
+    (agentState?.github_repo as string) ?? "https://github.com/Demiladepy/openskill";
+
   const bap692Layers = [
     {
       id: "identity",
@@ -106,11 +110,15 @@ export async function GET() {
     {
       id: "commerce",
       standard: "ERC-8183",
-      status: endpointPrimary && !endpointPrimary.includes("localhost") ? "demo" : "demo",
-      description: "Backtest jobs via agent server (HTTP + optional on-chain)",
+      status: discoveryMode === "github" ? "demo" : "demo",
+      description:
+        discoveryMode === "github"
+          ? "Backtest jobs — run locally; GitHub docs in agentURI until Render"
+          : "Backtest jobs via public agent server",
       verify: "npm run marketplace:post",
-      link: endpointPrimary,
-      ok: Boolean(endpointPrimary),
+      link:
+        endpointPrimary?.includes("github.com") ? endpointPrimary : githubRepo + "/tree/main/skill-reputation/bnbagent",
+      ok: true,
     },
     {
       id: "payments",
@@ -159,6 +167,8 @@ export async function GET() {
       endpointFallback,
       attestationUrl,
       endpoints: agentState?.endpoints ?? [],
+      discoveryMode,
+      githubRepo,
     },
     bap692: {
       framework: "BAP-692",
@@ -166,8 +176,10 @@ export async function GET() {
       agentEndpoint: endpointPrimary,
       agentFallback: endpointFallback,
       scanUrl: agentId ? `https://testnet.8004scan.io/agent/${agentId}` : null,
+      discoveryMode,
+      githubRepo,
       pitch:
-        "Track 2 research layer on BNB agent stack: Skills + MCP → ERC-8004 → ERC-8183 jobs → x402/Greenfield roadmap.",
+        "GitHub-first: skills + MCP in agentURI. Local ERC-8183 jobs now; optional Render later.",
     },
     cmc: {
       client: "src/cmcDataClient.js",

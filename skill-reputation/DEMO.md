@@ -82,11 +82,11 @@ npm run marketplace:post -- --strategy regime --asset BTC   # ERC-8183 job demo
 npm run mcp:forge               # Forge MCP (forge_bnb_stack, forge_agent_status)
 ```
 
-**Say:** "Forge Skills maps onto BNB's four-layer agent stack — CMC Skills + Forge MCP for capability, ERC-8004 for identity, ERC-8183 for backtest jobs, x402 and Greenfield on the roadmap."
+**Say:** "Forge Skills maps onto BNB's four-layer agent stack — skills and MCP configs on GitHub, ERC-8004 identity, local ERC-8183 backtest jobs. Render is optional later."
 
-Open docs UI **Sponsor stack** section → BAP-692 layer panel.
+Open docs UI **Sponsor stack** → BAP-692 layer panel.
 
-**Render fallback:** If public agent server is down, show local `npm run agent:server` + Forge MCP (always works).
+**No Render needed:** Push to GitHub + `npm run agent:register` + local `npm run agent:server` for commerce demo.
 
 ## Verify everything
 
