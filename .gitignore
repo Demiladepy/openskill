@@ -17,3 +17,5 @@ node_modules/
 .next/
 cache/
 artifacts/
+__pycache__/
+*.pyc

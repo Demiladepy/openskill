@@ -1,16 +1,28 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { DOCS_FAQ, type DocFaq } from "../lib/docsContent";
+import { DOCS_FAQ } from "../lib/docsContent";
 import { BRAND } from "../lib/docsCopy";
 import { NAV } from "../lib/navigation";
-import { IconOpenBook, IconSearch, IconSend, IconSparkles } from "./DocIcons";
+import { ForgeLogo } from "./ForgeLogo";
+import { IconSearch, IconSend, IconSparkles } from "./DocIcons";
 
 const EXAMPLE_QUESTIONS = [
-  "How do I install skills in my agent?",
   "How do I run a backtest on BTC?",
-  "What belongs in a SKILL.md file?",
+  "What are the live backtest results for all strategies?",
+  "How do I export skills for DoraHacks submission?",
 ];
+
+type AskResponse = {
+  ok: boolean;
+  title?: string;
+  answer?: string;
+  sectionId?: string;
+  commands?: string[];
+  related?: { question: string; sectionId: string }[];
+  engine?: string;
+  error?: string;
+};
 
 type SearchCommandProps = {
   open: boolean;
@@ -27,13 +39,15 @@ export function SearchCommand({
 }: SearchCommandProps) {
   const [q, setQ] = useState("");
   const [mode, setMode] = useState<"search" | "ask">(initialMode);
-  const [activeAnswer, setActiveAnswer] = useState<DocFaq | null>(null);
+  const [askResult, setAskResult] = useState<AskResponse | null>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (open) {
       setMode(initialMode);
       setQ("");
-      setActiveAnswer(null);
+      setAskResult(null);
+      setLoading(false);
     }
   }, [open, initialMode]);
 
@@ -73,32 +87,31 @@ export function SearchCommand({
     onNavigate(sectionId);
   }
 
-  function matchQuestion(text: string): DocFaq | undefined {
-    const lower = text.trim().toLowerCase();
-    if (!lower) return undefined;
-    return DOCS_FAQ.find(
-      (f) =>
-        f.question.toLowerCase() === lower ||
-        f.question.toLowerCase().includes(lower) ||
-        lower.includes(f.question.toLowerCase().slice(0, 20)) ||
-        f.keywords.some((k) => lower.includes(k))
-    );
-  }
+  async function submitAsk(text?: string) {
+    const query = (text ?? q).trim();
+    if (!query) return;
 
-  function submitAsk(text?: string) {
-    const query = text ?? q;
-    const match = matchQuestion(query);
-    if (match) {
-      setActiveAnswer(match);
-      setQ(match.question);
-    } else if (results.faqItems[0]) {
-      setActiveAnswer(results.faqItems[0]);
-      setQ(results.faqItems[0].question);
+    setQ(query);
+    setLoading(true);
+    setAskResult(null);
+
+    try {
+      const res = await fetch("/api/ask-docs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: query }),
+      });
+      const data = (await res.json()) as AskResponse;
+      setAskResult(data.ok ? data : { ok: false, error: data.error || "No answer found" });
+    } catch {
+      setAskResult({ ok: false, error: "Could not reach Ask Docs engine. Run locally with Python 3." });
+    } finally {
+      setLoading(false);
     }
   }
 
-  function pickFaq(faq: DocFaq) {
-    go(faq.sectionId);
+  function pickFaq(sectionId: string) {
+    go(sectionId);
   }
 
   if (!open) return null;
@@ -129,34 +142,57 @@ export function SearchCommand({
           </header>
 
           <div className="askPanelBody">
-            <div className="askHero">
-              <IconOpenBook size={56} className="askBookIcon" />
-              <div className="askHeroText">
-                <p className="askGreeting">Hi!</p>
-                <p className="askIntro">
-                  I&apos;m an AI assistant trained on Forge Skills documentation, skill manifests,
-                  and backtest guides.
-                </p>
-                <p className="askPrompt">
-                  Ask me anything about{" "}
-                  <span className="askBadge">{BRAND.name}</span>.
-                </p>
+            {!askResult && (
+              <div className="askHero">
+                <ForgeLogo size={56} />
+                <div className="askHeroText">
+                  <p className="askGreeting">Hi!</p>
+                  <p className="askIntro">
+                    I answer from the live Forge Skills codebase — backtest JSON, npm scripts, skill
+                    manifests, CMC pipeline, and BSC attestation flow. No external API.
+                  </p>
+                  <p className="askPrompt">
+                    Ask me anything about{" "}
+                    <span className="askBadge">{BRAND.name}</span>.
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
 
-            {activeAnswer ? (
+            {loading && <p className="askLoading">Thinking…</p>}
+
+            {askResult?.ok && askResult.answer && (
               <div className="askAnswer">
-                <p className="askAnswerQ">{activeAnswer.question}</p>
-                <p className="askAnswerA">{activeAnswer.answer}</p>
-                <button
-                  type="button"
-                  className="askAnswerLink"
-                  onClick={() => go(activeAnswer.sectionId)}
-                >
-                  Read more in docs →
-                </button>
+                {askResult.title && <p className="askAnswerQ">{askResult.title}</p>}
+                <div className="askAnswerBody">{askResult.answer}</div>
+                {askResult.commands && askResult.commands.length > 0 && (
+                  <div className="askCommands">
+                    <p className="askCommandsLabel">Run locally</p>
+                    {askResult.commands.map((cmd) => (
+                      <code key={cmd} className="askCommand">{cmd}</code>
+                    ))}
+                  </div>
+                )}
+                {askResult.sectionId && (
+                  <button
+                    type="button"
+                    className="askAnswerLink"
+                    onClick={() => go(askResult.sectionId!)}
+                  >
+                    Read more in docs →
+                  </button>
+                )}
+                {askResult.engine && (
+                  <p className="askEngineTag">Engine: {askResult.engine}</p>
+                )}
               </div>
-            ) : (
+            )}
+
+            {askResult && !askResult.ok && (
+              <p className="askError">{askResult.error}</p>
+            )}
+
+            {!askResult && !loading && (
               <>
                 <p className="askExamplesLabel">Example questions</p>
                 <div className="askExamples">
@@ -182,11 +218,12 @@ export function SearchCommand({
               value={q}
               onChange={(e) => {
                 setQ(e.target.value);
-                setActiveAnswer(null);
+                if (askResult) setAskResult(null);
               }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") submitAsk();
               }}
+              disabled={loading}
               autoFocus
             />
             <button
@@ -194,6 +231,7 @@ export function SearchCommand({
               className="askSendBtn"
               aria-label="Send question"
               onClick={() => submitAsk()}
+              disabled={loading}
             >
               <IconSend size={18} />
             </button>
@@ -249,7 +287,7 @@ export function SearchCommand({
                 <ul className="cmdList">
                   {(q ? results.faqItems : DOCS_FAQ.slice(0, 4)).map((faq) => (
                     <li key={faq.id}>
-                      <button type="button" className="cmdItem" onClick={() => pickFaq(faq)}>
+                      <button type="button" className="cmdItem" onClick={() => pickFaq(faq.sectionId)}>
                         <span className="cmdItemTitle">{faq.question}</span>
                         <span className="cmdItemDesc">{faq.answer}</span>
                       </button>
