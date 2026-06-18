@@ -26,18 +26,18 @@ export function Dashboard() {
   const [rows, setRows] = useState<Row[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [missingConfig, setMissingConfig] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setMissingConfig(false);
     const rpc = env("NEXT_PUBLIC_BNB_RPC_URL") || env("NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL");
     const contract = (env("NEXT_PUBLIC_ATTESTATION_CONTRACT") ||
       env("NEXT_PUBLIC_SKILL_REPUTATION_CONTRACT") ||
       env("NEXT_PUBLIC_CONTRACT_ADDRESS")) as Hex | undefined;
     if (!rpc || !contract) {
-      setError(
-        "Set NEXT_PUBLIC_BNB_RPC_URL and NEXT_PUBLIC_ATTESTATION_CONTRACT in .env.local (optional demo UI)"
-      );
+      setMissingConfig(true);
       setLoading(false);
       return;
     }
@@ -88,22 +88,58 @@ export function Dashboard() {
     void load();
   }, [load]);
 
+  if (missingConfig) {
+    return (
+      <section className="panel">
+        <div className="panelHeader">
+          <div>
+            <h2 style={{ margin: 0 }}>BSC Attestations</h2>
+            <p className="muted" style={{ margin: "0.25rem 0 0" }}>
+              Optional on-chain explorer (disabled).
+            </p>
+          </div>
+          <span className="pill">optional</span>
+        </div>
+        <p className="muted" style={{ marginTop: 12 }}>
+          To enable: set <span className="mono">NEXT_PUBLIC_BNB_RPC_URL</span> and{" "}
+          <span className="mono">NEXT_PUBLIC_ATTESTATION_CONTRACT</span> in{" "}
+          <span className="mono">demos/demo-ui/.env.local</span>.
+        </p>
+      </section>
+    );
+  }
+
   if (loading) return <p className="muted">Loading chain events…</p>;
   if (error) return <p className="error">{error}</p>;
   if (rows.length === 0) {
     return (
-      <p className="muted">
-        No events in the queried window. Deploy the contract, run an attestation, or lower{" "}
-        <span className="mono">NEXT_PUBLIC_FROM_BLOCK</span>.
-      </p>
+      <section className="panel">
+        <div className="panelHeader">
+          <div>
+            <h2 style={{ margin: 0 }}>BSC Attestations</h2>
+            <p className="muted" style={{ margin: "0.25rem 0 0" }}>
+              Recent on-chain attest events (newest first)
+            </p>
+          </div>
+        </div>
+        <p className="muted" style={{ marginTop: 12 }}>
+          No events in the queried window. Run <span className="mono">npm run attest</span> or lower{" "}
+          <span className="mono">NEXT_PUBLIC_FROM_BLOCK</span>.
+        </p>
+      </section>
     );
   }
 
   return (
-    <>
-      <p className="muted" style={{ marginBottom: "1rem" }}>
-        {rows.length} event{rows.length === 1 ? "" : "s"} (newest first)
-      </p>
+    <section className="panel">
+      <div className="panelHeader">
+        <div>
+          <h2 style={{ margin: 0 }}>BSC Attestations</h2>
+          <p className="muted" style={{ margin: "0.25rem 0 0" }}>
+            {rows.length} event{rows.length === 1 ? "" : "s"} (newest first)
+          </p>
+        </div>
+      </div>
       <table>
         <thead>
           <tr>
@@ -135,6 +171,6 @@ export function Dashboard() {
           ))}
         </tbody>
       </table>
-    </>
+    </section>
   );
 }

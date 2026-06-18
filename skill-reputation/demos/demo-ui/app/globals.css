@@ -6,6 +6,7 @@
   --text: #e8eaef;
   --muted: #8b919d;
   --accent: #5b8cff;
+  --accent2: #8a5bff;
 }
 
 * {
@@ -16,7 +17,9 @@ body {
   margin: 0;
   min-height: 100vh;
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-  background: var(--bg);
+  background: radial-gradient(1200px 700px at 20% -20%, rgba(91, 140, 255, 0.18), transparent 60%),
+    radial-gradient(900px 600px at 90% 0%, rgba(138, 91, 255, 0.14), transparent 55%),
+    var(--bg);
   color: var(--text);
 }
 
@@ -27,8 +30,8 @@ main {
 }
 
 h1 {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: 1.9rem;
+  font-weight: 650;
   letter-spacing: -0.02em;
   margin: 0 0 0.5rem;
 }
@@ -93,6 +96,26 @@ a:hover {
   background: var(--panel);
 }
 
+.panelHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
 .panel label {
   display: flex;
   flex-direction: column;
@@ -107,7 +130,7 @@ a:hover {
   padding: 8px 12px;
   border-radius: 8px;
   border: 1px solid var(--border);
-  background: #0c0d10;
+  background: rgba(12, 13, 16, 0.75);
   color: var(--text);
 }
 
