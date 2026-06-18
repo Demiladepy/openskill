@@ -44,3 +44,4 @@ npm run strategy:all && npm run replay && npm run attest
 - [CMC Agent Hub](https://coinmarketcap.com/api/agent/)
 - [CMC Hackathon page](https://coinmarketcap.com/api/hackathon/)
 - Demo video: *(add link before submission)*
+- Optional Vercel demo UI: set **Root Directory** to `skill-reputation/demos/demo-ui`

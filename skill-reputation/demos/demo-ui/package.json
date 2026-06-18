@@ -1,6 +1,6 @@
 {
-  "name": "skill-reputation-demo-ui",
-  "version": "1.0.0",
+  "name": "cmc-strategy-forge-demo-ui",
+  "version": "1.0.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
