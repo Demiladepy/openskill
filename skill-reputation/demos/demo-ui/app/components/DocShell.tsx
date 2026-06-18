@@ -22,6 +22,7 @@ import { ExportPanel } from "../ui/ExportPanel";
 import { IntegrationStatus } from "../ui/IntegrationStatus";
 import { SponsorStack } from "../ui/SponsorStack";
 import { BnbRoadmapPanel } from "../ui/BnbRoadmapPanel";
+import { SkillCatalogCards, SimulationOnlyCallout } from "../ui/SkillCatalogCards";
 
 const SECTIONS = NAV.map((n) => n.id);
 
@@ -225,13 +226,8 @@ export function DocShell() {
             <section id="skill-structure" className="docSection">
               <h2 id="structure-heading">Skill structure</h2>
               <p>{STRUCTURE_COPY.intro}</p>
-              <pre className="fileTree">{`skills/
-  cmc-strategy-momentum/
-    SKILL.md          ← manifest + instructions
-  cmc-strategy-sentiment/
-    SKILL.md
-  cmc-strategy-regime/
-    SKILL.md`}</pre>
+              <SimulationOnlyCallout />
+              <SkillCatalogCards />
 
               <h3 id="frontmatter">Required frontmatter</h3>
               <div className="tableWrap docsTable">
@@ -348,36 +344,10 @@ export function DocShell() {
             <section id="strategies" className="docSection">
               <h2>Strategies</h2>
               <p>
-                Three backtestable skills ship in official CoinMarketCap <code>SKILL.md</code> format under{" "}
-                <code>skills/</code>. Each consumes live CMC data and writes auditable JSON to{" "}
-                <code>backtest_results/</code>.
+                Three backtestable skills ship in official CoinMarketCap <code>SKILL.md</code> format. Each
+                consumes live CMC data and writes auditable JSON to <code>backtest_results/</code>.
               </p>
-
-              <div className="skillCards">
-                <div className="skillCard">
-                  <h3>Momentum Merger</h3>
-                  <p>
-                    Combines RSI, MACD, Fear &amp; Greed, and CMC percent-change signals into a score-based
-                    entry model with trailing stop exits.
-                  </p>
-                  <code>skills/cmc-strategy-momentum/</code>
-                </div>
-                <div className="skillCard">
-                  <h3>Sentiment Divergence</h3>
-                  <p>
-                    Detects 7-day vs 30-day return divergence and capitulation patterns from Fear &amp; Greed
-                    history.
-                  </p>
-                  <code>skills/cmc-strategy-sentiment/</code>
-                </div>
-                <div className="skillCard">
-                  <h3>Regime Detector</h3>
-                  <p>
-                    Uses BTC dominance, SMA trend, and ATR volatility to enter only in risk-on trending regimes.
-                  </p>
-                  <code>skills/cmc-strategy-regime/</code>
-                </div>
-              </div>
+              <SkillCatalogCards showHighlights />
 
               <CopyBlock code={AGENT_SNIPPETS.installSkills} label="Copy install command" />
             </section>
