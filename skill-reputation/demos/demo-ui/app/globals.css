@@ -46,7 +46,7 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-family: var(--font-varela), ui-sans-serif, system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
   font-size: 15px;
@@ -77,27 +77,74 @@ body {
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   text-decoration: none;
   color: inherit;
+  flex-shrink: 0;
+  padding: 4px 8px 4px 0;
+  border-radius: 10px;
+  transition: background 0.15s ease;
+}
+
+.brand:hover {
+  background: var(--bg-subtle);
+}
+
+.forgeLogoImg {
+  border-radius: 10px;
+  object-fit: contain;
   flex-shrink: 0;
 }
 
 .brandText {
   display: flex;
   flex-direction: column;
-  line-height: 1.15;
+  line-height: 1.2;
+  gap: 2px;
 }
 
 .brandText strong {
-  font-size: 14px;
-  font-weight: 650;
-  letter-spacing: -0.02em;
+  font-family: var(--font-garamond), Georgia, "Times New Roman", serif;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .brandText small {
   font-size: 11px;
   color: var(--muted);
+  letter-spacing: 0.01em;
+}
+
+.searchTrigger {
+  flex: 1;
+  max-width: 440px;
+  margin: 0 auto;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 12px 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-subtle);
+  color: var(--muted);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.searchTrigger:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  color: var(--text);
+}
+
+.searchTriggerText {
+  flex: 1;
+  text-align: left;
 }
 
 .searchWrap {
@@ -124,25 +171,21 @@ body {
 }
 
 .searchIcon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
   color: var(--muted);
-  font-size: 14px;
+  flex-shrink: 0;
 }
 
 .searchKbd {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
   font-size: 11px;
   color: var(--muted);
   border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 1px 5px;
+  border-radius: 5px;
+  padding: 2px 6px;
   background: var(--bg);
+  font-family: inherit;
+  flex-shrink: 0;
 }
 
 .topnavActions {
@@ -298,17 +341,19 @@ body {
 }
 
 .prose h1 {
-  font-size: 2rem;
-  font-weight: 700;
-  letter-spacing: -0.03em;
+  font-family: var(--font-garamond), Georgia, "Times New Roman", serif;
+  font-size: 2.25rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   margin: 0 0 12px;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 .prose h2 {
-  font-size: 1.35rem;
-  font-weight: 650;
-  letter-spacing: -0.02em;
+  font-family: var(--font-garamond), Georgia, "Times New Roman", serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   margin: 0 0 12px;
   padding-top: 8px;
 }
@@ -651,14 +696,23 @@ a {
 }
 
 .askDocsNavBtn {
-  padding: 6px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
   border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--text);
   color: var(--bg);
   font-size: 13px;
   font-weight: 550;
+  font-family: inherit;
   cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.askDocsNavBtn:hover {
+  opacity: 0.88;
 }
 
 .askDocsFab {
@@ -668,118 +722,231 @@ a {
   z-index: 40;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 18px;
+  gap: 10px;
+  padding: 12px 20px 12px 14px;
   border-radius: 999px;
   border: none;
   background: var(--text);
   color: var(--bg);
   font-size: 14px;
   font-weight: 600;
+  font-family: inherit;
   cursor: pointer;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.askDocsOverlay {
+.askDocsFab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22);
+}
+
+.askDocsFab .forgeLogoImg {
+  border-radius: 6px;
+}
+
+/* ── Command palette ── */
+.cmdOverlay {
   position: fixed;
   inset: 0;
-  z-index: 100;
+  z-index: 200;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 24px;
+  padding: 12vh 24px 24px;
 }
 
-.askDocsBackdrop {
+.cmdBackdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
 }
 
-.askDocsPanel {
+.cmdPanel {
   position: relative;
   width: 100%;
-  max-width: 520px;
-  max-height: 80vh;
-  overflow: auto;
+  max-width: 640px;
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.22);
+  overflow: hidden;
+  animation: cmdSlideIn 0.18s ease-out;
 }
 
-.askDocsHeader {
+@keyframes cmdSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.cmdSearchRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cmdIcon {
+  display: flex;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.cmdInput {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  font-family: inherit;
+  color: var(--text);
+  outline: none;
+  min-width: 0;
+}
+
+.cmdInput::placeholder {
+  color: var(--muted);
+}
+
+.cmdSearchBtn,
+.cmdAskBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.12s ease;
+}
+
+.cmdSearchBtn.active,
+.cmdAskBtn.active {
+  background: var(--text);
+  color: var(--bg);
+  border-color: var(--text);
+}
+
+.cmdAskBar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-
-.askDocsHeader h2 {
-  margin: 0;
-  font-size: 1.25rem;
-}
-
-.askDocsClose {
-  width: 32px;
-  height: 32px;
-  border: none;
-  background: var(--bg-subtle);
-  border-radius: 8px;
-  font-size: 20px;
-  cursor: pointer;
-}
-
-.askDocsSub {
-  font-size: 14px;
-  margin: 8px 0 16px;
-}
-
-.askDocsInput {
-  width: 100%;
-  padding: 12px 14px;
+  margin: 12px 16px;
+  padding: 10px 14px;
   border: 1px solid var(--border);
-  border-radius: 10px;
-  font-size: 15px;
+  border-radius: 12px;
   background: var(--bg-subtle);
-  color: var(--text);
-  margin-bottom: 12px;
 }
 
-.askDocsList {
+.cmdAskLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.cmdConversation {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  font-weight: 550;
+}
+
+.cmdConversation kbd {
+  font-size: 12px;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  background: var(--bg);
+}
+
+.cmdResults {
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 8px 12px 16px;
+}
+
+.cmdResultsLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin: 8px 8px 6px;
+}
+
+.cmdList {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.askDocsItem {
+.cmdItem {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 4px;
+  gap: 3px;
   width: 100%;
   text-align: left;
-  padding: 12px;
+  padding: 10px 12px;
   border: none;
   border-radius: 10px;
   background: transparent;
   cursor: pointer;
   color: var(--text);
+  font-family: inherit;
+  transition: background 0.12s ease;
 }
 
-.askDocsItem:hover {
+.cmdItem:hover {
   background: var(--bg-subtle);
 }
 
-.askDocsItem span {
-  font-size: 13px;
+.cmdItemTitle {
+  font-size: 14px;
+  font-weight: 550;
+}
+
+.cmdItemMeta {
+  font-size: 12px;
   color: var(--muted);
 }
 
-.askDocsEmpty {
-  padding: 12px;
+.cmdItemDesc {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cmdEmpty {
+  padding: 16px 12px;
   color: var(--muted);
   font-size: 14px;
+  text-align: center;
 }
 
 @media (max-width: 1100px) {
@@ -803,5 +970,17 @@ a {
   }
   .searchKbd {
     display: none;
+  }
+  .searchTrigger {
+    max-width: 180px;
+  }
+  .searchTriggerText {
+    display: none;
+  }
+  .askDocsNavBtn span:first-child {
+    display: none;
+  }
+  .cmdOverlay {
+    padding: 8vh 12px 12px;
   }
 }

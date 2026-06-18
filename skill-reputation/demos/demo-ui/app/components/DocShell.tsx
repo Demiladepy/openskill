@@ -4,10 +4,17 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { BACKTEST_ROWS, GITHUB_URL, NAV } from "../lib/navigation";
 import { AGENT_PROMPT_CARDS, AGENT_SNIPPETS } from "../lib/agentSnippets";
 import { DOCS_FAQ, SKILL_MD_EXAMPLE } from "../lib/docsContent";
-import { AskDocs } from "./AskDocs";
+import {
+  BRAND,
+  OVERVIEW_COPY,
+  PRACTICES_COPY,
+  SPEC_COPY,
+  STRUCTURE_COPY,
+} from "../lib/docsCopy";
 import { CopyBlock } from "./CopyBlock";
 import { CopyPageButton } from "./CopyPageButton";
 import { ForgeLogo } from "./ForgeLogo";
+import { SearchCommand } from "./SearchCommand";
 import { SkillLevelsTable } from "./SkillLevelsTable";
 import { Dashboard } from "../ui/Dashboard";
 import { ExportPanel } from "../ui/ExportPanel";
@@ -30,31 +37,13 @@ function groupNav(items: typeof NAV) {
 
 export function DocShell() {
   const [active, setActive] = useState("overview");
-  const [query, setQuery] = useState("");
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [headings, setHeadings] = useState<{ id: string; text: string }[]>([]);
+  const [cmdOpen, setCmdOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
-
-  const [askOpen, setAskOpen] = useState(false);
-
-  const filteredNav = useMemo(() => {
-    if (!query.trim()) return NAV;
-    const q = query.toLowerCase();
-    const navHits = NAV.filter((n) => n.label.toLowerCase().includes(q));
-    const faqHits = DOCS_FAQ.filter(
-      (f) =>
-        f.question.toLowerCase().includes(q) ||
-        f.keywords.some((k) => k.includes(q))
-    ).map((f) => NAV.find((n) => n.id === f.sectionId)).filter(Boolean) as typeof NAV;
-    const merged = [...navHits];
-    for (const item of faqHits) {
-      if (!merged.find((m) => m.id === item.id)) merged.push(item);
-    }
-    return merged.length ? merged : NAV;
-  }, [query]);
 
   const scrollTo = useCallback((id: string) => {
     setActive(id);
@@ -66,7 +55,7 @@ export function DocShell() {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
-        setAskOpen(true);
+        setCmdOpen(true);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -101,32 +90,45 @@ export function DocShell() {
     );
   }, [active]);
 
+  const navGroups = useMemo(() => groupNav(NAV), []);
+
   return (
     <div className="docs-app">
       <header className="topnav">
-        <a className="brand" href="#overview" onClick={(e) => { e.preventDefault(); scrollTo("overview"); }}>
-          <ForgeLogo />
+        <a
+          className="brand"
+          href="#overview"
+          onClick={(e) => {
+            e.preventDefault();
+            scrollTo("overview");
+          }}
+        >
+          <ForgeLogo size={40} />
           <span className="brandText">
-            <strong>Forge Skills</strong>
-            <small>CMC Strategy Forge</small>
+            <strong>{BRAND.name}</strong>
+            <small>{BRAND.tagline}</small>
           </span>
         </a>
 
-        <div className="searchWrap">
-          <span className="searchIcon" aria-hidden>⌕</span>
-          <input
-            type="search"
-            placeholder="Search docs…"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            aria-label="Search documentation"
-          />
+        <button
+          type="button"
+          className="searchTrigger"
+          onClick={() => setCmdOpen(true)}
+          aria-label="Open search"
+        >
+          <span className="searchIcon" aria-hidden>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="7" />
+              <path d="M20 20l-3.5-3.5" />
+            </svg>
+          </span>
+          <span className="searchTriggerText">Search docs…</span>
           <kbd className="searchKbd">⌘K</kbd>
-        </div>
+        </button>
 
         <div className="topnavActions">
-          <button type="button" className="askDocsNavBtn" onClick={() => setAskOpen(true)}>
-            ✦ Ask Docs
+          <button type="button" className="askDocsNavBtn" onClick={() => setCmdOpen(true)}>
+            <span aria-hidden>✦</span> Ask Docs
           </button>
           <a className="ghostBtn" href={GITHUB_URL} target="_blank" rel="noreferrer">
             GitHub ↗
@@ -144,7 +146,7 @@ export function DocShell() {
 
       <div className="docsBody">
         <aside className="sidebar">
-          {groupNav(filteredNav).map((group) => (
+          {navGroups.map((group) => (
             <div key={group.title} className="navGroup">
               <p className="navGroupTitle">{group.title}</p>
               {group.items.map((item) => (
@@ -167,56 +169,48 @@ export function DocShell() {
               <div className="pageMeta">
                 <CopyPageButton
                   getText={() =>
-                    document.querySelector("#overview")?.textContent?.slice(0, 2000) || "CMC Strategy Forge docs"
+                    document.querySelector("#overview")?.textContent?.slice(0, 2000) || "Forge Skills docs"
                   }
                 />
               </div>
-              <p className="eyebrow">BNB Hackathon · Track 2</p>
-              <h1>Forge Skills Overview</h1>
-              <p className="lead">
-                Strategy skills for AI agents — not dashboards for humans to click through. Developers search,
-                copy, paste into Cursor or Windsurf, and let the agent run the pipeline.
-              </p>
+              <p className="eyebrow">{BRAND.product}</p>
+              <h1>{OVERVIEW_COPY.title}</h1>
+              <p className="lead">{OVERVIEW_COPY.lead}</p>
+              <p>{OVERVIEW_COPY.problem}</p>
               <div className="callout">
-                <strong>Built for pipe-coders.</strong> Every command and agent prompt on this site is one-click
-                copy. Skills live in <code>skills/</code> as <code>SKILL.md</code> — the same format CMC Agent Hub
-                expects. Simulation only — no live trading.
+                <strong>Simulation only.</strong> {OVERVIEW_COPY.simulation} Every command and agent prompt on
+                this site is one-click copy — skills live in <code>skills/</code> as{" "}
+                <code>SKILL.md</code>, the same format CoinMarketCap Agent Hub expects.
               </div>
             </section>
 
             <section id="specification" className="docSection">
               <h2 id="spec-heading">Specification</h2>
               <h3 id="what-are-skills">What are Forge Skills?</h3>
+              <p>{SPEC_COPY.intro}</p>
               <p>
-                Forge Skills are quant strategy packages for AI agents — folders with a <code>SKILL.md</code>{" "}
-                manifest. They follow the same progressive-disclosure model as{" "}
-                <a href="https://agentskills.io" target="_blank" rel="noreferrer">
-                  Agent Skills
-                </a>{" "}
-                and CoinMarketCap&apos;s official skills repo.
-              </p>
-              <p>
-                <strong>Code</strong> is the CLI pipeline (<code>npm run strategy:all</code>).{" "}
-                <strong>Resources</strong> are backtest JSON, replay HTML, and exported zips — loaded only when the
-                agent needs them.
+                <strong>Code</strong> — {SPEC_COPY.code}{" "}
+                <strong>Resources</strong> — {SPEC_COPY.resources}
               </p>
 
-              <h3 id="how-skills-work">How skills work</h3>
+              <h3 id="how-skills-work">How skills load</h3>
               <p>
-                Skills load in three levels — keeping context small until the agent actually runs a strategy:
+                Skills use three disclosure levels so agents keep context small until a strategy is actually
+                triggered:
               </p>
               <SkillLevelsTable />
 
               <h3 id="progressive-disclosure">Progressive disclosure</h3>
               <p className="muted">
-                Level 1 is always in agent context so your agent knows a momentum skill exists. Level 2 loads when
-                the user asks to backtest. Level 3 (full repo CLI) runs only when executing commands.
+                Level 1 metadata is always available so your agent knows a momentum skill exists. Level 2
+                (full SKILL.md) loads when the user asks to backtest. Level 3 (CLI + JSON artifacts) runs only
+                on execution.
               </p>
             </section>
 
             <section id="skill-structure" className="docSection">
               <h2 id="structure-heading">Skill structure</h2>
-              <p>Each skill folder matches CMC Agent Hub format:</p>
+              <p>{STRUCTURE_COPY.intro}</p>
               <pre className="fileTree">{`skills/
   cmc-strategy-momentum/
     SKILL.md          ← manifest + instructions
@@ -239,27 +233,27 @@ export function DocShell() {
                     <tr>
                       <td><code>name</code></td>
                       <td>Yes</td>
-                      <td>Unique skill identifier (e.g. cmc-strategy-momentum)</td>
+                      <td>Unique identifier — e.g. <code>cmc-strategy-momentum</code></td>
                     </tr>
                     <tr>
                       <td><code>version</code></td>
                       <td>Yes</td>
-                      <td>Semver string</td>
+                      <td>Semver string for marketplace versioning</td>
                     </tr>
                     <tr>
                       <td><code>description</code></td>
                       <td>Yes</td>
-                      <td>One-line summary for agent discovery</td>
+                      <td>One-line summary agents use for routing at startup</td>
                     </tr>
                     <tr>
                       <td><code>tags</code></td>
                       <td>Yes</td>
-                      <td>Array for marketplace search</td>
+                      <td>Searchable keywords — crypto, momentum, backtesting</td>
                     </tr>
                     <tr>
                       <td><code>author</code></td>
                       <td>Recommended</td>
-                      <td>CMC Strategy Forge</td>
+                      <td>Publisher name shown in Agent Hub listings</td>
                     </tr>
                   </tbody>
                 </table>
@@ -273,39 +267,45 @@ export function DocShell() {
               <h2 id="practices-heading">Best practices</h2>
               <h3 id="for-skill-creators">For skill creators</h3>
               <ul className="docsList">
-                <li>Keep <code>description</code> under 200 chars — agents scan this at startup.</li>
-                <li>Put copy-paste prompts in the <strong>Usage</strong> section.</li>
-                <li>List every CMC endpoint in <strong>CMC Data Sources</strong>.</li>
-                <li>State <strong>simulation only</strong> — never imply live trading.</li>
+                {PRACTICES_COPY.creators.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
               </ul>
               <h3 id="for-agents-using-skills">For agents using skills</h3>
               <ul className="docsList">
-                <li>Read Level 1 metadata first; load full SKILL.md only when user asks to backtest.</li>
-                <li>Run <code>npm run strategy:all</code> from <code>skill-reputation/</code>, not repo root.</li>
-                <li>Return paths to <code>backtest_results/*.json</code> in every response.</li>
-                <li>Use <code>npm run verify</code> before claiming submission-ready.</li>
+                {PRACTICES_COPY.agents.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
               </ul>
-              <h3 id="optimizing-descriptions">Optimizing descriptions</h3>
+              <h3 id="optimizing-descriptions">Writing good descriptions</h3>
               <p>
-                Good: <em>&quot;Momentum strategy using CMC RSI, MACD, Fear &amp; Greed — backtestable on BTC/ETH/BNB&quot;</em>
+                Good:{" "}
+                <em>
+                  &quot;Momentum strategy using CMC RSI, MACD, and Fear &amp; Greed — backtestable on
+                  BTC/ETH/BNB&quot;
+                </em>
               </p>
               <p className="muted">
-                Bad: <em>&quot;A strategy&quot;</em> — too vague for agent routing.
+                Bad: <em>&quot;A strategy&quot;</em> — too vague for agent routing at Level 1.
               </p>
             </section>
 
             <section id="for-agents" className="docSection">
               <h2 id="for-agents-heading">For agents</h2>
               <p>
-                Most devs don&apos;t build from scratch anymore. They paste a prompt, point the agent at a skill, and
-                run. Copy any block below into Cursor, Windsurf, Claude Code, or OpenClaw.
+                Most developers no longer wire strategies by hand. They paste a prompt, point the agent at a
+                skill folder, and let the pipeline run. Copy any block below into Cursor, Windsurf, Claude Code,
+                or OpenClaw.
               </p>
 
               <h3 id="install-skills">Install skills</h3>
               <CopyBlock code={AGENT_SNIPPETS.installSkills} label="Copy install command" />
 
               <h3 id="agent-prompts">Ready-made agent prompts</h3>
-              <p className="muted">Paste these directly into chat — the agent reads SKILL.md and runs the CLI.</p>
+              <p className="muted">
+                Paste these directly into chat — the agent reads SKILL.md and runs the CLI from{" "}
+                <code>skill-reputation/</code>.
+              </p>
 
               <div className="pasteGrid">
                 {AGENT_PROMPT_CARDS.slice(3).map((card) => (
@@ -325,7 +325,7 @@ export function DocShell() {
 
             <section id="quick-start" className="docSection">
               <h2 id="quick-start-heading">Quick start</h2>
-              <p>Clone the repo and run the judge path locally:</p>
+              <p>Clone the repository and run the full judge path locally in under five minutes:</p>
               <CopyBlock code={AGENT_SNIPPETS.cloneAndRun} label="Copy setup" />
               <h3 id="three-command-demo">Three-command demo</h3>
               <CopyBlock code={AGENT_SNIPPETS.judgeDemo} label="Copy demo commands" />
@@ -333,22 +333,34 @@ export function DocShell() {
 
             <section id="strategies" className="docSection">
               <h2>Strategies</h2>
-              <p>Three backtestable skills ship in official CMC <code>SKILL.md</code> format under <code>skills/</code>.</p>
+              <p>
+                Three backtestable skills ship in official CoinMarketCap <code>SKILL.md</code> format under{" "}
+                <code>skills/</code>. Each consumes live CMC data and writes auditable JSON to{" "}
+                <code>backtest_results/</code>.
+              </p>
 
               <div className="skillCards">
                 <div className="skillCard">
                   <h3>Momentum Merger</h3>
-                  <p>RSI, MACD, Fear &amp; Greed, and CMC % changes. Score-based entries with trailing stop.</p>
+                  <p>
+                    Combines RSI, MACD, Fear &amp; Greed, and CMC percent-change signals into a score-based
+                    entry model with trailing stop exits.
+                  </p>
                   <code>skills/cmc-strategy-momentum/</code>
                 </div>
                 <div className="skillCard">
                   <h3>Sentiment Divergence</h3>
-                  <p>7d vs 30d return divergence plus capitulation signals from Fear &amp; Greed history.</p>
+                  <p>
+                    Detects 7-day vs 30-day return divergence and capitulation patterns from Fear &amp; Greed
+                    history.
+                  </p>
                   <code>skills/cmc-strategy-sentiment/</code>
                 </div>
                 <div className="skillCard">
                   <h3>Regime Detector</h3>
-                  <p>BTC dominance, SMA trend, ATR volatility — enter in risk-on trending regimes.</p>
+                  <p>
+                    Uses BTC dominance, SMA trend, and ATR volatility to enter only in risk-on trending regimes.
+                  </p>
                   <code>skills/cmc-strategy-regime/</code>
                 </div>
               </div>
@@ -359,7 +371,7 @@ export function DocShell() {
             <section id="backtest-results" className="docSection">
               <h2>Backtest results</h2>
               <p className="muted">
-                Window 2026-03-01 → 2026-06-01 · Live CMC data (<code>cmc-mixed</code>). Re-run with{" "}
+                Window 2026-03-01 → 2026-06-01 · Live CMC data (<code>cmc-mixed</code>). Re-run anytime with{" "}
                 <code>npm run strategy:all</code>.
               </p>
               <div className="tableWrap">
@@ -394,30 +406,49 @@ export function DocShell() {
 
             <section id="export-skills" className="docSection">
               <h2>Export skills</h2>
-              <p>Package CMC-compatible skill folders as zip files for DoraHacks submission.</p>
+              <p>
+                Package CMC-compatible skill folders as a zip archive for DoraHacks submission. The export
+                includes all three strategies plus backtest appendix files.
+              </p>
               <ExportPanel />
             </section>
 
             <section id="attestations" className="docSection">
               <h2>BSC attestations</h2>
-              <p>TWAK-compatible self-custody signing on BSC testnet. Optional — requires env vars on Vercel.</p>
+              <p>
+                Optional TWAK-compatible self-custody signing on BSC testnet. Set{" "}
+                <code>AGENT_PRIVATE_KEY</code>, fund your wallet, and run <code>npm run attest</code> to post a
+                verifiable strategy digest.
+              </p>
               <Dashboard />
             </section>
 
             <section id="cmc-integration" className="docSection">
               <h2>CMC integration</h2>
               <h3>Data API</h3>
-              <p>Quotes, Fear &amp; Greed, global metrics via <code>src/cmcDataClient.js</code>.</p>
+              <p>
+                Quotes, Fear &amp; Greed, and global metrics flow through <code>src/cmcDataClient.js</code>.
+                Set <code>CMC_API_KEY</code> and <code>CMC_USE_MOCK=0</code> for live data.
+              </p>
               <h3>MCP</h3>
-              <p>Set <code>MCP_ENABLED=1</code> for pre-computed RSI/MACD from CMC MCP.</p>
+              <p>
+                Enable <code>MCP_ENABLED=1</code> to pull pre-computed RSI and MACD from the CoinMarketCap MCP
+                server instead of computing indicators locally.
+              </p>
               <h3>Skills format</h3>
-              <p>Matches CoinMarketCap official skills structure — frontmatter, prerequisites, workflow, output.</p>
+              <p>
+                Folder layout, frontmatter, and section structure match CoinMarketCap&apos;s official skills
+                repository — ready for Agent Hub import without reformatting.
+              </p>
             </section>
 
             <section id="verify" className="docSection">
               <h2>Verify submission</h2>
               <CopyBlock code={`npm run verify\nnpm run check:secrets`} label="Copy verify commands" />
-              <p>Confirms backtests, skill zips, replay HTML, and flags missing on-chain proofs.</p>
+              <p>
+                Confirms backtest JSON exists, skill zips are present, replay HTML is generated, and flags any
+                missing on-chain proofs before you push to GitHub.
+              </p>
             </section>
           </article>
         </main>
@@ -446,14 +477,21 @@ export function DocShell() {
         </aside>
       </div>
 
-      <AskDocs
-        open={askOpen}
-        onOpenChange={setAskOpen}
-        onNavigate={(id) => {
-          setAskOpen(false);
-          scrollTo(id);
-        }}
+      <SearchCommand
+        open={cmdOpen}
+        onOpenChange={setCmdOpen}
+        onNavigate={scrollTo}
       />
+
+      <button
+        type="button"
+        className="askDocsFab"
+        onClick={() => setCmdOpen(true)}
+        aria-label="Ask Docs"
+      >
+        <ForgeLogo size={22} />
+        Ask Docs
+      </button>
     </div>
   );
 }
