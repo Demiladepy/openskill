@@ -1390,9 +1390,105 @@ a {
   font-size: 11px;
 }
 
+.roadmapPanel {
+  margin: 24px 0;
+}
+
+.roadmapStack {
+  margin-top: 12px;
+}
+
+.roadmapHeader {
+  margin-bottom: 16px;
+}
+
+.roadmapFramework {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.roadmapEndpoint {
+  font-size: 12px;
+  margin: 4px 0;
+  word-break: break-all;
+}
+
+.roadmapGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.roadmapCard {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  background: var(--bg-subtle);
+}
+
+.roadmapCardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.roadmapLayerId {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.roadmapStatus {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.roadmapStatus-live {
+  background: rgba(5, 150, 105, 0.15);
+  color: var(--positive);
+}
+
+.roadmapStatus-demo {
+  background: rgba(247, 147, 26, 0.15);
+  color: var(--forge);
+}
+
+.roadmapStatus-roadmap {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.roadmapStandard {
+  font-size: 15px;
+  margin: 0 0 6px;
+  font-weight: 600;
+}
+
+.roadmapDesc {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 8px;
+  line-height: 1.45;
+}
+
+.roadmapVerify {
+  font-size: 11px;
+  margin: 0;
+}
+
 @media (max-width: 900px) {
   .integrationGrid,
-  .sponsorGrid {
+  .sponsorGrid,
+  .roadmapGrid {
     grid-template-columns: 1fr;
   }
 }

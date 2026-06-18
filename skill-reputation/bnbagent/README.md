@@ -17,7 +17,7 @@ cp bnbagent/.env.agent.example bnbagent/.env.agent
 npm run agent:register
 
 # 2. Start agent server (terminal A)
-npm run agent:run
+npm run agent:server
 
 # 3. Post a backtest job (terminal B)
 npm run marketplace:post -- --strategy momentum --from 2026-06-01 --to 2026-06-21 --reward 10
@@ -38,12 +38,16 @@ Set in `bnbagent/.env.agent`:
 python register_agent.py --live
 # → agent ID + https://testnet.bscscan.com/tx/0x...
 
-npm run agent:run
+npm run agent:server
 python marketplace_client.py --strategy momentum --asset BTC
 node verify_job.js
 ```
 
 One-command demo: `bash demo.sh`
+
+## Public deployment (Render)
+
+See [`RENDER_DEPLOY.md`](./RENDER_DEPLOY.md) for Render web service setup. Set `AGENT_PUBLIC_URL` to your Render URL, then `npm run agent:register` so ERC-8004 `agentURI` lists the live ERC-8183 endpoint.
 
 Optional stretch: `--onchain` job posting via ERC-8183Client (requires `CLIENT_PRIVATE_KEY`).
 

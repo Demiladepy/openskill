@@ -13,6 +13,14 @@ from dotenv import load_dotenv
 ROOT = Path(__file__).resolve().parent.parent
 STATE_PATH = Path(__file__).resolve().parent / "agent_state.json"
 
+DEFAULT_GITHUB = "https://github.com/Demiladepy/openskill"
+DEFAULT_SKILLS_URL = f"{DEFAULT_GITHUB}/tree/main/skill-reputation/skills"
+DEFAULT_FORGE_MCP_URL = f"{DEFAULT_GITHUB}/raw/main/skill-reputation/forge-mcp-config.json"
+DEFAULT_SKILL_INSTALL = (
+    "npx skills add https://github.com/Demiladepy/openskill/tree/main/skill-reputation/skills"
+)
+DEFAULT_REGISTRY = "0x8004A818BFB912233c491871b3d84c89A494BD9e"
+
 
 def load_env() -> None:
     for candidate in (
@@ -56,6 +64,77 @@ def wallet_provider():
     )
 
 
+def read_state() -> dict:
+    if not STATE_PATH.exists():
+        return {}
+    return json.loads(STATE_PATH.read_text(encoding="utf-8"))
+
+
+def resolve_endpoint_urls() -> dict:
+    primary = os.getenv(
+        "AGENT_PUBLIC_URL",
+        os.getenv("ERC8183_AGENT_URL", "http://localhost:8000/erc8183/status"),
+    )
+    fallback = os.getenv(
+        "AGENT_FALLBACK_URL",
+        "http://localhost:8000/erc8183/status",
+    )
+    return {
+        "primary": primary,
+        "fallback": fallback,
+        "erc8183_base": primary.replace("/status", "").rstrip("/"),
+        "docs": os.getenv("AGENT_DOCS_URL", ""),
+        "skills": os.getenv("AGENT_SKILLS_URL", DEFAULT_SKILLS_URL),
+        "forge_mcp": os.getenv("FORGE_MCP_CONFIG_URL", DEFAULT_FORGE_MCP_URL),
+        "attestation": os.getenv(
+            "ATTESTATION_EXPLORER_URL",
+            read_state().get("attestationExplorer") or read_state().get("attestation_tx") or "",
+        ),
+    }
+
+
+def build_agent_endpoints(urls: dict):
+    from bnbagent import AgentEndpoint
+
+    endpoints = [
+        AgentEndpoint(name="ERC-8183", endpoint=urls["erc8183_base"], version="1.0.0"),
+        AgentEndpoint(name="forge-mcp", endpoint=urls["forge_mcp"], version="1.0.0"),
+        AgentEndpoint(name="skills", endpoint=urls["skills"], version="1.0.0"),
+    ]
+    if urls.get("docs"):
+        endpoints.append(AgentEndpoint(name="docs", endpoint=urls["docs"], version="1.0.0"))
+    if urls.get("attestation"):
+        endpoints.append(AgentEndpoint(name="attestation", endpoint=urls["attestation"], version="1.0.0"))
+    return endpoints
+
+
+def build_registration_metadata() -> list:
+    return [
+        {"key": "capabilities", "value": "backtest,momentum,sentiment,regime"},
+        {"key": "platform", "value": "cmc-strategy-forge"},
+        {"key": "chain", "value": os.getenv("NETWORK", "bsc-testnet")},
+        {"key": "simulation_only", "value": "true"},
+        {"key": "erc8004_registry", "value": os.getenv("ERC8004_REGISTRY_ADDRESS", DEFAULT_REGISTRY)},
+        {"key": "mcp_forge", "value": "npm run mcp:forge"},
+        {"key": "skill_install", "value": os.getenv("SKILL_INSTALL_CMD", DEFAULT_SKILL_INSTALL)},
+        {"key": "roadmap_layer", "value": "BAP-692"},
+        {"key": "bap692_layers", "value": "identity,commerce,payments-roadmap,memory-roadmap"},
+    ]
+
+
+def endpoint_manifest(urls: dict) -> list:
+    manifest = [
+        {"name": "ERC-8183", "url": urls["erc8183_base"]},
+        {"name": "forge-mcp", "url": urls["forge_mcp"]},
+        {"name": "skills", "url": urls["skills"]},
+    ]
+    if urls.get("docs"):
+        manifest.append({"name": "docs", "url": urls["docs"]})
+    if urls.get("attestation"):
+        manifest.append({"name": "attestation", "url": urls["attestation"]})
+    return manifest
+
+
 def simulate_register() -> dict:
     import hashlib
 
@@ -63,6 +142,7 @@ def simulate_register() -> dict:
     wallet = os.getenv("AGENT_WALLET_ADDRESS", "0x" + hashlib.sha256(b"simulate-agent").hexdigest()[:40])
     agent_id = int(os.getenv("AGENT_ID", "9001"))
     tx_hash = "0x" + hashlib.sha256(b"simulate-register").hexdigest()
+    urls = resolve_endpoint_urls()
     payload = {
         "mode": "simulate",
         "agentId": agent_id,
@@ -72,13 +152,14 @@ def simulate_register() -> dict:
         "transactionHash": tx_hash,
         "registrationTxHash": tx_hash,
         "explorer": f"https://testnet.bscscan.com/tx/{tx_hash}",
-        "registry": os.getenv(
-            "ERC8004_REGISTRY_ADDRESS",
-            "0x8004A818BFB912233c491871b3d84c89A494BD9e",
-        ),
+        "registry": os.getenv("ERC8004_REGISTRY_ADDRESS", DEFAULT_REGISTRY),
         "network": os.getenv("NETWORK", "bsc-testnet"),
-        "endpoint": os.getenv("AGENT_PUBLIC_URL", "http://localhost:8000/erc8183/status"),
+        "endpoint": urls["primary"],
+        "endpoint_primary": urls["primary"],
+        "endpoint_fallback": urls["fallback"],
+        "endpoints": endpoint_manifest(urls),
         "capabilities": ["backtest", "momentum", "sentiment", "regime"],
+        "bap692_layers": ["identity", "commerce", "payments-roadmap", "memory-roadmap"],
     }
     save_state(payload)
     print(json.dumps(payload, indent=2))
@@ -113,16 +194,12 @@ def discover_sdk_api() -> int:
 
 
 def live_register() -> dict:
-    from bnbagent import AgentEndpoint, ERC8004Agent
+    from bnbagent import ERC8004Agent
 
     wallet = wallet_provider()
     network = os.getenv("NETWORK", "bsc-testnet")
     sdk = ERC8004Agent(network=network, wallet_provider=wallet)
-
-    endpoint_url = os.getenv(
-        "AGENT_PUBLIC_URL",
-        os.getenv("ERC8183_AGENT_URL", "http://localhost:8000/erc8183/status"),
-    )
+    urls = resolve_endpoint_urls()
 
     agent_uri = sdk.generate_agent_uri(
         name=os.getenv("AGENT_NAME", "CMC Strategy Forge"),
@@ -130,21 +207,10 @@ def live_register() -> dict:
             "AGENT_DESCRIPTION",
             "Backtestable quant strategy agent powered by CoinMarketCap data (simulation only).",
         ),
-        endpoints=[
-            AgentEndpoint(
-                name="ERC-8183",
-                endpoint=endpoint_url.replace("/status", ""),
-                version="1.0.0",
-            ),
-        ],
+        endpoints=build_agent_endpoints(urls),
     )
 
-    metadata = [
-        {"key": "capabilities", "value": "backtest,momentum,sentiment,regime"},
-        {"key": "platform", "value": "cmc-strategy-forge"},
-    ]
-
-    result = sdk.register_agent(agent_uri=agent_uri, metadata=metadata)
+    result = sdk.register_agent(agent_uri=agent_uri, metadata=build_registration_metadata())
     tx_hash = result.get("transactionHash")
     payload = {
         "mode": "live",
@@ -153,14 +219,18 @@ def live_register() -> dict:
         "transactionHash": tx_hash,
         "registrationTxHash": tx_hash,
         "wallet": wallet.address,
-        "registry": os.getenv(
-            "ERC8004_REGISTRY_ADDRESS",
-            "0x8004A818BFB912233c491871b3d84c89A494BD9e",
-        ),
+        "registry": os.getenv("ERC8004_REGISTRY_ADDRESS", DEFAULT_REGISTRY),
         "network": network,
-        "endpoint": endpoint_url,
+        "endpoint": urls["primary"],
+        "endpoint_primary": urls["primary"],
+        "endpoint_fallback": urls["fallback"],
+        "endpoints": endpoint_manifest(urls),
         "capabilities": ["backtest", "momentum", "sentiment", "regime"],
+        "bap692_layers": ["identity", "commerce", "payments-roadmap", "memory-roadmap"],
         "explorer": f"https://testnet.bscscan.com/tx/{tx_hash}" if tx_hash else None,
+        "scan_url": f"https://testnet.8004scan.io/agent/{result.get('agentId')}"
+        if result.get("agentId")
+        else None,
         "gasFree": True,
         "sdk": "bnbagent",
         "note": "ERC-8004 registration gas-free on BSC testnet via MegaFuel paymaster",

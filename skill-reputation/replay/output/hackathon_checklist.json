@@ -4,61 +4,61 @@
     {
       "name": "cmc_api_key",
       "ok": true,
-      "detail": "mock or missing key",
+      "detail": "valid",
       "severity": "required"
     },
     {
       "name": "backtest_momentum_BTC",
       "ok": true,
-      "detail": "2 trades, Sharpe 9.8865",
+      "detail": "4 trades, Sharpe -1.7543",
       "severity": "required"
     },
     {
       "name": "backtest_momentum_ETH",
       "ok": true,
-      "detail": "3 trades, Sharpe 5.9733",
+      "detail": "4 trades, Sharpe -25.9421",
       "severity": "required"
     },
     {
       "name": "backtest_momentum_BNB",
       "ok": true,
-      "detail": "4 trades, Sharpe 3.7137",
+      "detail": "3 trades, Sharpe -10.0516",
       "severity": "required"
     },
     {
       "name": "backtest_sentiment_BTC",
       "ok": true,
-      "detail": "1 trades, Sharpe -8.5475",
+      "detail": "1 trades, Sharpe -0.7109",
       "severity": "required"
     },
     {
       "name": "backtest_sentiment_ETH",
       "ok": true,
-      "detail": "1 trades, Sharpe -2.0027",
+      "detail": "1 trades, Sharpe -6.901",
       "severity": "required"
     },
     {
       "name": "backtest_sentiment_BNB",
       "ok": true,
-      "detail": "1 trades, Sharpe -6.8438",
+      "detail": "1 trades, Sharpe -8.2953",
       "severity": "required"
     },
     {
       "name": "backtest_regime_BTC",
       "ok": true,
-      "detail": "1 trades, Sharpe 11.6017",
+      "detail": "1 trades, Sharpe 2.1746",
       "severity": "required"
     },
     {
       "name": "backtest_regime_ETH",
-      "ok": true,
-      "detail": "1 trades, Sharpe 16.1329",
+      "ok": false,
+      "detail": "0 trades, Sharpe 0",
       "severity": "required"
     },
     {
       "name": "backtest_regime_BNB",
-      "ok": true,
-      "detail": "1 trades, Sharpe 15.7163",
+      "ok": false,
+      "detail": "0 trades, Sharpe 0",
       "severity": "required"
     },
     {
@@ -70,7 +70,7 @@
     {
       "name": "backtest_live_cmc_data",
       "ok": true,
-      "detail": "mock only — set CMC_API_KEY",
+      "detail": "live CMC detected",
       "severity": "recommended"
     },
     {
@@ -149,5 +149,5 @@
     "Record demo video per DEMO.md",
     "Push to GitHub and submit DoraHacks BUIDL"
   ],
-  "generated_at": "2026-06-17T23:44:09.311Z"
+  "generated_at": "2026-06-18T20:35:49.388Z"
 }

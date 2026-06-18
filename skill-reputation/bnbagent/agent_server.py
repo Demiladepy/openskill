@@ -12,7 +12,8 @@ from pathlib import Path
 from typing import Any
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 
 ROOT = Path(__file__).resolve().parent.parent
 STATE_PATH = Path(__file__).resolve().parent / "agent_state.json"
@@ -152,8 +153,24 @@ def health():
 
 
 @app.post("/api/jobs")
-async def accept_job(job: dict):
+async def accept_job(job: dict, request: Request):
     """HTTP job intake (demo + agent hub compatibility)."""
+    if os.getenv("X402_DEMO", "0") == "1":
+        price = os.getenv("X402_DEMO_PRICE", "1000000")
+        token = os.getenv("X402_DEMO_TOKEN", "U")
+        return JSONResponse(
+            status_code=402,
+            content={
+                "error": "payment_required",
+                "x402": "roadmap",
+                "message": "Backtest-as-a-service micropayment stub (BAP-692 payments layer).",
+                "price_wei": price,
+                "token": token,
+                "simulation_only": True,
+                "hint": "Set X402_DEMO=0 to run jobs without payment demo.",
+            },
+        )
+
     job_id = str(job.get("jobId") or job.get("job_id") or uuid.uuid4())
     try:
         params = parse_job_params(job)
@@ -194,5 +211,5 @@ if erc8183_app is not None:
 if __name__ == "__main__":
     import uvicorn
 
-    port = int(os.getenv("AGENT_PORT", "8000"))
+    port = int(os.getenv("PORT") or os.getenv("AGENT_PORT", "8000"))
     uvicorn.run(app, host="0.0.0.0", port=port)

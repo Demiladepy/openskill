@@ -10,6 +10,11 @@
 **Repo:** [github.com/Demiladepy/openskill](https://github.com/Demiladepy/openskill)  
 **Docs UI:** deploy `skill-reputation/demos/demo-ui` on Vercel (Root Directory setting)
 
+> **Judge quick path:** `git clone` → `npm install` → `npm run strategy:all` → `npm run verify`  
+> Best result: **Regime/BTC Sharpe 2.17** · Skills: `skills/cmc-strategy-*/` · MCP: `npm run mcp:forge`  
+> BAP-692 stack: ERC-8004 (`npm run agent:register`) + Forge MCP + ERC-8183 jobs (`npm run marketplace:post`)  
+> Links: [8004scan testnet](https://testnet.8004scan.io/) · [BNB AI Agent solutions](https://www.bnbchain.org/en/solutions/ai-agent)
+
 ---
 
 ## The problem
@@ -87,6 +92,8 @@ npm run attest           # strategy fingerprint on BscScan
 
 Registry: `0x8004A818BFB912233c491871b3d84c89A494BD9e`
 
+**BAP-692 alignment:** Identity (ERC-8004) + Skills/MCP (Forge, CMC, TWAK, `@bnb-chain/mcp`) + Commerce demo (ERC-8183 jobs) + Payments/Memory roadmap (x402 stub, Greenfield pin). See [`bnbagent/RENDER_DEPLOY.md`](./bnbagent/RENDER_DEPLOY.md).
+
 ---
 
 ## Backtest results (live CMC)
@@ -140,10 +147,10 @@ npm run mcp:forge   # stdio server — add to Cursor MCP settings
 | `forge_get_backtest` | Metrics for strategy × asset (e.g. regime/BTC) |
 | `forge_get_signals` | Live CMC snapshot (+ optional TWAK risk) |
 | `forge_verify_submission` | Runs `npm run verify` checklist |
+| `forge_agent_status` | ERC-8004 registration + endpoints |
+| `forge_bnb_stack` | BAP-692 four-layer map + contract addresses |
 
-Cursor config snippet → [`forge-mcp-config.json`](./forge-mcp-config.json) (set `cwd` to your absolute `skill-reputation` path).
-
-Aligns with BNB Chain’s **Agent Skills and MCPs** stack alongside `@bnb-chain/mcp` and ERC-8004 registration.
+Cursor config snippet → [`forge-mcp-config.json`](./forge-mcp-config.json) · Official BNB MCP → [`bnb-mcp-config.json`](./bnb-mcp-config.json)
 
 ---
 
@@ -182,7 +189,10 @@ CoinMarketCap REST (+ optional MCP)
 | `npm run attest` | BSC testnet attestation |
 | `npm run twak:check` | Verify TWAK CLI |
 | `npm run agent:register` | ERC-8004 agent (gas-free) |
-| `npm run mcp:forge` | Forge Skills MCP server (4 tools) |
+| `npm run mcp:forge` | Forge Skills MCP server (6 tools) |
+| `npm run marketplace:post` | Post ERC-8183 backtest job (HTTP demo) |
+| `npm run marketplace:verify` | Verify agent registration + jobs |
+| `npm run greenfield:pin` | Greenfield memory layer artifact manifest |
 | `npm run check:secrets` | Pre-push secret scan |
 
 ---
@@ -223,7 +233,20 @@ Copy `.env.example` → `.env` (never commit).
 
 **Do I need tBNB for ERC-8004?** No — bnbagent SDK uses MegaFuel paymaster on BSC testnet for gas-free registration.
 
+**Render agent server down?** Forge MCP + Vercel docs still work. See [`bnbagent/RENDER_DEPLOY.md`](./bnbagent/RENDER_DEPLOY.md) for dual Render/local deployment.
+
 **Simulation only?** Yes. No live orders. Backtests produce JSON metrics and equity curves for research.
+
+---
+
+## BAP-692 roadmap (post-hackathon)
+
+| Layer | Status | Next step |
+|-------|--------|-----------|
+| Identity (ERC-8004) | Live | Re-register when Render URL changes |
+| Commerce (ERC-8183) | HTTP demo | Full escrow via EvaluatorRouter |
+| Payments (x402) | Stub | `X402_DEMO=1` on agent server |
+| Memory (Greenfield) | Manifest | `npm run greenfield:pin` → upload via `@bnb-chain/mcp` |
 
 ---
 

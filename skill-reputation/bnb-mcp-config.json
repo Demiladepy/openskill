@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "bnb-chain": {
+      "command": "npx",
+      "args": ["-y", "@bnb-chain/mcp@latest"]
+    }
+  },
+  "_note": "Official BNB Chain MCP — ERC-8004 register/get, blocks, tokens, Greenfield. Add PRIVATE_KEY only in local Cursor config (never commit). Docs: https://docs.bnbchain.org/developer-kit/mcp/"
+}

@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: forge-skills-agent
+    runtime: python
+    rootDir: skill-reputation
+    buildCommand: pip install -r bnbagent/requirements.txt && npm install
+    startCommand: python bnbagent/agent_server.py
+    healthCheckPath: /health
+    envVars:
+      - key: NETWORK
+        value: bsc-testnet
+      - key: AGENT_SIMULATE
+        value: "0"
+      - key: CMC_USE_MOCK
+        value: "1"
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+    # Set in Render dashboard (secrets):
+    # AGENT_PRIVATE_KEY, CMC_API_KEY, AGENT_PUBLIC_URL, AGENT_DOCS_URL, WALLET_PASSWORD

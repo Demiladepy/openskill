@@ -29,7 +29,10 @@
     "agent:discover": "python bnbagent/register_agent.py --discover",
     "agent:register": "python bnbagent/register_agent.py --live",
     "agent:simulate": "python bnbagent/register_agent.py",
-    "agent:server": "python bnbagent/agent_server.py"
+    "agent:server": "python bnbagent/agent_server.py",
+    "marketplace:post": "python bnbagent/marketplace_client.py",
+    "marketplace:verify": "node bnbagent/verify_job.js",
+    "greenfield:pin": "node scripts/greenfieldPin.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",

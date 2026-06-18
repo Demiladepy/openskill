@@ -21,6 +21,7 @@ import { Dashboard } from "../ui/Dashboard";
 import { ExportPanel } from "../ui/ExportPanel";
 import { IntegrationStatus } from "../ui/IntegrationStatus";
 import { SponsorStack } from "../ui/SponsorStack";
+import { BnbRoadmapPanel } from "../ui/BnbRoadmapPanel";
 
 const SECTIONS = NAV.map((n) => n.id);
 
@@ -425,6 +426,7 @@ export function DocShell() {
                 attestation. Track 2 is simulation only; no live trade execution.
               </p>
               <SponsorStack />
+              <BnbRoadmapPanel />
               <IntegrationStatus />
             </section>
 

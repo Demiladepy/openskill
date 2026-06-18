@@ -4,6 +4,16 @@ version: 1.0.0
 description: Momentum-based crypto trading strategy using CMC RSI, MACD, and Fear & Greed signals
 author: CMC Strategy Forge
 tags: [crypto, momentum, trading-strategy, backtesting, coinmarketcap, quant]
+bnb:
+  chain: bsc-testnet
+  erc8004_registry: "0x8004A818BFB912233c491871b3d84c89A494BD9e"
+  simulation_only: true
+  bap692_layers: [identity, commerce, payments-roadmap, memory-roadmap]
+mcp:
+  forge: npm run mcp:forge
+  cmc: https://mcp.coinmarketcap.com/mcp
+  twak: twak serve
+  bnb_chain: npx @bnb-chain/mcp@latest
 ---
 
 # CMC Momentum Strategy Skill

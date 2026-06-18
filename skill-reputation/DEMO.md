@@ -73,6 +73,21 @@ node scripts/cmcSignalsCli.js BTC
 
 **Say:** "Point-in-time MCP technicals; backtest uses REST percent changes + Fear & Greed history."
 
+### 7. BNB BAP-692 stack (60s)
+
+```bash
+# Cursor: add forge-mcp-config.json → call forge_get_backtest regime/BTC
+npm run agent:register          # ERC-8004 — show testnet.8004scan.io
+npm run marketplace:post -- --strategy regime --asset BTC   # ERC-8183 job demo
+npm run mcp:forge               # Forge MCP (forge_bnb_stack, forge_agent_status)
+```
+
+**Say:** "Forge Skills maps onto BNB's four-layer agent stack — CMC Skills + Forge MCP for capability, ERC-8004 for identity, ERC-8183 for backtest jobs, x402 and Greenfield on the roadmap."
+
+Open docs UI **Sponsor stack** section → BAP-692 layer panel.
+
+**Render fallback:** If public agent server is down, show local `npm run agent:server` + Forge MCP (always works).
+
 ## Verify everything
 
 ```bash

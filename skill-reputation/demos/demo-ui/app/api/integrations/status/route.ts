@@ -81,7 +81,56 @@ export async function GET() {
     agentDiscover: "agent:discover" in scripts,
     strategyAll: "strategy:all" in scripts,
     attest: "attest" in scripts,
+    forgeMcp: "mcp:forge" in scripts,
+    marketplacePost: "marketplace:post" in scripts,
   };
+
+  const agentId = agentState?.agentId ?? agentState?.agent_id ?? null;
+  const endpointPrimary =
+    (agentState?.endpoint_primary as string) ?? (agentState?.endpoint as string) ?? null;
+  const endpointFallback = (agentState?.endpoint_fallback as string) ?? "http://localhost:8000/erc8183/status";
+  const explorer = (agentState?.explorer as string) ?? null;
+  const attestationUrl =
+    (agentState?.attestationExplorer as string) ?? (agentState?.attestation_tx as string) ?? null;
+
+  const bap692Layers = [
+    {
+      id: "identity",
+      standard: "ERC-8004",
+      status: agentState?.mode === "live" ? "live" : "demo",
+      description: "On-chain agent ID, registration, attestation",
+      verify: "npm run agent:register",
+      link: explorer,
+      ok: agentState?.mode === "live",
+    },
+    {
+      id: "commerce",
+      standard: "ERC-8183",
+      status: endpointPrimary && !endpointPrimary.includes("localhost") ? "demo" : "demo",
+      description: "Backtest jobs via agent server (HTTP + optional on-chain)",
+      verify: "npm run marketplace:post",
+      link: endpointPrimary,
+      ok: Boolean(endpointPrimary),
+    },
+    {
+      id: "payments",
+      standard: "x402 + MPP",
+      status: "roadmap",
+      description: "Micropayment stub — X402_DEMO=1 on agent server",
+      verify: "POST /api/jobs with X402_DEMO=1",
+      link: null,
+      ok: false,
+    },
+    {
+      id: "memory",
+      standard: "BNB Greenfield",
+      status: "roadmap",
+      description: "Pin backtest artifacts via @bnb-chain/mcp",
+      verify: "npm run greenfield:pin",
+      link: "https://docs.bnbchain.org/developer-kit/mcp/",
+      ok: false,
+    },
+  ];
 
   return NextResponse.json({
     ok: true,
@@ -100,11 +149,25 @@ export async function GET() {
     bnbAgent: {
       registered: agentState?.mode === "live",
       mode: agentState?.mode || "not configured",
-      agentId: agentState?.agentId ?? agentState?.agent_id ?? null,
-      explorer: agentState?.explorer ?? null,
+      agentId,
+      explorer,
+      scanUrl: agentId ? `https://testnet.8004scan.io/agent/${agentId}` : null,
       gasFree: agentState?.gasFree ?? true,
       registry: "0x8004A818BFB912233c491871b3d84c89A494BD9e",
       registerCmd: "npm run agent:register",
+      endpointPrimary,
+      endpointFallback,
+      attestationUrl,
+      endpoints: agentState?.endpoints ?? [],
+    },
+    bap692: {
+      framework: "BAP-692",
+      layers: bap692Layers,
+      agentEndpoint: endpointPrimary,
+      agentFallback: endpointFallback,
+      scanUrl: agentId ? `https://testnet.8004scan.io/agent/${agentId}` : null,
+      pitch:
+        "Track 2 research layer on BNB agent stack: Skills + MCP → ERC-8004 → ERC-8183 jobs → x402/Greenfield roadmap.",
     },
     cmc: {
       client: "src/cmcDataClient.js",

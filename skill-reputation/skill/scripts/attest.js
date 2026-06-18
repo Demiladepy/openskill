@@ -20,6 +20,23 @@ import { keccak256, stringToBytes } from "viem";
 
 loadProjectEnv();
 
+const AGENT_STATE = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../bnbagent/agent_state.json"
+);
+
+async function saveAttestationToAgentState(explorer, txHash) {
+  if (!explorer && !txHash) return;
+  try {
+    const existing = JSON.parse(await fs.readFile(AGENT_STATE, "utf8"));
+    existing.attestationExplorer = explorer || existing.attestationExplorer;
+    existing.attestation_tx = txHash || existing.attestation_tx;
+    await fs.writeFile(AGENT_STATE, JSON.stringify(existing, null, 2), "utf8");
+  } catch {
+    /* agent_state optional */
+  }
+}
+
 function parseArgs(argv) {
   let target;
   let score = 85;
@@ -147,6 +164,7 @@ export async function attest(params) {
 
   await fs.appendFile(logPath, JSON.stringify({ type: "attest", ts: new Date().toISOString(), ...result }) + "\n", "utf8");
   await appendTwakLog({ status: "attest_confirmed", txHash: attestation.txHash, explorer: attestation.explorer });
+  await saveAttestationToAgentState(attestation.explorer, attestation.txHash);
   return result;
 }
 

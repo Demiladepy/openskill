@@ -1,6 +1,8 @@
 /**
  * PositionSight-style strategy spec for judges and marketplace export.
  */
+import { loadBnbIntegration } from "./bnbStack.js";
+
 export function buildStrategySpec({ strategySlug, strategyInstance, market, result, attestation, opts = {} }) {
   const signals = result.signals || strategyInstance.lastBacktest?.signals || [];
   const replay = result.replay || [];
@@ -61,6 +63,7 @@ export function buildStrategySpec({ strategySlug, strategyInstance, market, resu
     entry_rules: strategyInstance.exportSpec?.()?.entry_rules || [],
     exit_rules: strategyInstance.exportSpec?.()?.exit_rules || [],
     attestation: attestation || null,
+    bnb_integration: loadBnbIntegration(attestation),
     equity_curve_tail: equityCurve.slice(-15),
     trade_log: trades.slice(0, 40),
     simulation_only: true,

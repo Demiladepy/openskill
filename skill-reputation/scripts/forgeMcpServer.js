@@ -14,6 +14,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { loadProjectEnv } from "../src/lib/loadEnv.js";
 import { scanStrategyRegistry } from "../src/skillRegistry.js";
 import { getSignals } from "../src/cmcSignals.js";
+import { BAP692_LAYERS, BNB_STACK, readAgentState, loadBnbIntegration } from "../src/lib/bnbStack.js";
 
 loadProjectEnv();
 
@@ -93,6 +94,7 @@ async function getBacktest(strategy, asset) {
     dataSource: result.dataSource || spec?.data_sources?.primary || "unknown",
     skillPath: `skills/cmc-strategy-${strat}/SKILL.md`,
     specSchema: spec?.schema || null,
+    bnb_integration: spec?.bnb_integration || loadBnbIntegration(result.attestation),
     highlight:
       strat === "regime" && sym === "BTC"
         ? "Best live result in submission window — Sharpe 2.17 (2026-03-01 → 2026-06-01)"
@@ -101,6 +103,48 @@ async function getBacktest(strategy, asset) {
       result: `backtest_results/${strat}_${sym}.json`,
       spec: spec ? `backtest_results/${strat}_${sym}_spec.json` : null,
     },
+  };
+}
+
+function agentStatus() {
+  const state = readAgentState();
+  return {
+    registered: state?.mode === "live",
+    mode: state?.mode || "not configured",
+    agentId: state?.agentId ?? state?.agent_id ?? null,
+    wallet: state?.wallet ?? null,
+    explorer: state?.explorer ?? null,
+    scan_url: state?.scan_url ?? (state?.agentId ? `${BNB_STACK.scan_testnet}agent/${state.agentId}` : null),
+    endpoint_primary: state?.endpoint_primary ?? state?.endpoint ?? null,
+    endpoint_fallback: state?.endpoint_fallback ?? "http://localhost:8000/erc8183/status",
+    endpoints: state?.endpoints ?? [],
+    bap692_layers: state?.bap692_layers ?? BAP692_LAYERS.map((l) => l.id),
+    gasFree: state?.gasFree ?? true,
+    register_cmd: "npm run agent:register",
+    note: "Re-register with AGENT_PUBLIC_URL when Render URL changes.",
+  };
+}
+
+function bnbStackInfo() {
+  return {
+    framework: "BAP-692",
+    solutions_url: BNB_STACK.solutions_url,
+    layers: BAP692_LAYERS,
+    contracts: {
+      erc8004_registry: BNB_STACK.registry,
+      erc8183_commerce: BNB_STACK.erc8183_commerce,
+      erc8183_router: BNB_STACK.erc8183_router,
+      erc8183_policy: BNB_STACK.erc8183_policy,
+    },
+    mcp_configs: {
+      forge: "forge-mcp-config.json",
+      twak: "twak-mcp-config.json",
+      bnb_chain: "bnb-mcp-config.json",
+    },
+    skills_install: BNB_STACK.skills_install,
+    agent_status: agentStatus(),
+    pitch:
+      "Track 2 research layer: CMC Skills + Forge MCP → ERC-8004 identity → ERC-8183 backtest jobs → x402/Greenfield roadmap.",
   };
 }
 
@@ -140,7 +184,7 @@ const server = new McpServer(
   },
   {
     instructions:
-      "CMC Strategy Forge MCP — list quant strategy skills, read backtest JSON, fetch live CMC signals, and run the hackathon submission checklist. Simulation only; no trade execution.",
+      "CMC Strategy Forge MCP — BNB Chain Agent Skills and MCPs stack (BAP-692). List skills, read backtests, fetch CMC signals, check ERC-8004 agent status, and run submission verify. Simulation only; no trade execution.",
   }
 );
 
@@ -188,6 +232,26 @@ server.registerTool(
     inputSchema: z.object({}),
   },
   async () => jsonResult(await verifySubmission())
+);
+
+server.registerTool(
+  "forge_agent_status",
+  {
+    description:
+      "Return ERC-8004 agent registration state (agentId, BscScan tx, primary/fallback endpoints, BAP-692 layers).",
+    inputSchema: z.object({}),
+  },
+  async () => jsonResult(agentStatus())
+);
+
+server.registerTool(
+  "forge_bnb_stack",
+  {
+    description:
+      "Return BAP-692 four-layer map (Identity, Commerce, Payments, Memory), contract addresses, and MCP config paths.",
+    inputSchema: z.object({}),
+  },
+  async () => jsonResult(bnbStackInfo())
 );
 
 const transport = new StdioServerTransport();
