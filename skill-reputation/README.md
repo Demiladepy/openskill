@@ -96,11 +96,12 @@ npm run strategy:all && npm run replay && npm run attest
 ### 4. On-chain (optional, for sponsor prizes)
 
 ```bash
-# Fund a throwaway BSC testnet wallet first:
-# https://testnet.bnbchain.org/faucet-smart
+# TWAK CLI (token risk + signing): npm install -g @trustwallet/cli && twak setup
+# ERC-8004 registration is GAS-FREE on BSC testnet (MegaFuel paymaster — no tBNB needed):
+npm run agent:register
 
+# Strategy attestation (needs AGENT_PRIVATE_KEY for BSC tx):
 npm run attest
-cd bnbagent && python register_agent.py --live
 ```
 
 Paste BscScan links into this README before submission.
@@ -186,10 +187,11 @@ npm run strategy:regime
 
 ### Signal layer (`src/cmcSignals.js`)
 
-Aggregates CMC pre-computed signals so strategies don’t reimplement indicators from scratch:
+Aggregates CMC pre-computed signals so strategies don’t reimplement indicators from scratch. When `TWAK_ENABLED=1` and `@trustwallet/cli` is installed, enriches with live TWAK price + token risk scoring (`src/twakCliClient.js`).
 
 ```bash
 npm run cmc:signals -- BTC
+npm run twak:check
 ```
 
 ### MCP (`src/cmcMcpClient.js`)
@@ -227,7 +229,7 @@ Meta-skill: `skill/SKILL.md` (suite overview).
 │  CoinMarketCap Data API  (+ optional MCP)                   │
 └───────────────────────────┬─────────────────────────────────┘
                             ▼
-                   src/cmcSignals.js
+                   src/cmcSignals.js  ← TWAK CLI (risk + price)
                             │
          ┌──────────────────┼──────────────────┐
          ▼                  ▼                  ▼
@@ -240,12 +242,15 @@ Meta-skill: `skill/SKILL.md` (suite overview).
               ┌─────────────┴─────────────┐
               ▼                           ▼
     backtest_results/*.json      skill/scripts/attest.js
-              │                           │
+              │                    (TWAK CLI sign → viem fallback)
               ▼                           ▼
     replay/pnlReplay.js            BSC testnet tx
               │
               ▼
     marketplace/exporter.js → examples/*.zip
+              │
+              ▼
+    bnbagent/register_agent.py → ERC-8004 (gas-free testnet)
 ```
 
 **Key files:**
@@ -261,24 +266,40 @@ Meta-skill: `skill/SKILL.md` (suite overview).
 
 ---
 
-## On-chain attestation (TWAK-compatible)
+## On-chain attestation (TWAK)
 
-We use **self-custody local signing** on BSC testnet (viem). Structured for drop-in `@trustwallet/agent-kit` when it ships.
+Forge Skills uses TWAK for Track 2-relevant purposes — **no trade execution**:
 
-1. Create a **throwaway** Trust Wallet or MetaMask wallet on **BSC Testnet**
-2. Fund via [testnet faucet](https://testnet.bnbchain.org/faucet-smart)
-3. Set `AGENT_PRIVATE_KEY` in `.env`
-4. Run `npm run attest`
+1. **Token risk scoring** — `twak price` / token risk checks enrich `cmcSignals` before strategy entry
+2. **Self-custody attestation signing** — strategy fingerprints signed via TWAK CLI (`twak wallet sign`) or viem fallback
 
-Each `backtest_results/*.json` includes an `attestation` block: `digest`, `signature`, `txHash`, `explorer`.
-
-**ERC-8004 agent registration:**
+**Install TWAK:**
 
 ```bash
-cd bnbagent
-pip install -r requirements.txt
-python register_agent.py --live
+npm install -g @trustwallet/cli
+# or: curl -fsSL https://agent-kit.trustwallet.com/install.sh | bash
+twak setup   # credentials: https://portal.trustwallet.com/dashboard/apps
 ```
+
+**Attest a strategy:**
+
+```bash
+npm run strategy:all
+npm run attest
+```
+
+Each `backtest_results/*.json` includes an `attestation` block: `digest`, `signature`, `signingMethod`, `txHash`, `explorer`.
+
+**MCP for agents:** see `twak-mcp-config.json` — `twak serve` exposes all TWAK tools to Cursor/Claude.
+
+**ERC-8004 agent registration (gas-free on BSC testnet):**
+
+```bash
+pip install "bnbagent[server]"
+npm run agent:register
+```
+
+MegaFuel paymaster sponsors registration — you do **not** need tBNB for ERC-8004.
 
 ---
 
@@ -287,8 +308,8 @@ python register_agent.py --live
 | Sponsor | Integration | Judge can verify |
 |---------|-------------|------------------|
 | **CoinMarketCap** | Data API + MCP + Skills format | `npm run strategy:all`, `skills/`, `npm run cmc:signals` |
-| **Trust Wallet** | TWAK-compatible attestation signing | BscScan tx from `npm run attest` |
-| **BNB Chain** | BSC testnet txs + ERC-8004 | `register_agent.py --live` tx |
+| **Trust Wallet** | TWAK CLI: token risk + attestation signing | `npm run twak:check`, BscScan tx from `npm run attest` |
+| **BNB Chain** | ERC-8004 (gas-free) + BSC attestation txs | `npm run agent:register`, BscScan links |
 
 ---
 
@@ -307,6 +328,11 @@ python register_agent.py --live
 | `npm run check:secrets` | Scan for leaked keys before push |
 | `npm run cmc:signals` | Live CMC signal snapshot |
 | `npm run cmc:mcp` | MCP tools CLI demo |
+| `npm run twak:check` | Verify TWAK CLI + sample prices |
+| `npm run twak:setup` | TWAK session / wallet setup |
+| `npm run agent:register` | ERC-8004 registration (gas-free testnet) |
+| `npm run agent:discover` | Print bnbagent SDK API |
+| `npm run agent:server` | ERC-8183 job server |
 
 ---
 

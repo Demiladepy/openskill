@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "twak": {
+      "command": "twak",
+      "args": ["serve"]
+    }
+  },
+  "_note": "Trust Wallet Agent Kit MCP — add to Cursor MCP settings or claude_desktop_config.json. Install: npm install -g @trustwallet/cli. Credentials: https://portal.trustwallet.com/dashboard/apps"
+}

@@ -63,8 +63,8 @@ All consume **CMC pre-computed signals** (REST + optional MCP). Details in the [
 | Sponsor | How we use it |
 |---------|----------------|
 | **CoinMarketCap** | Data API, MCP technicals, official Skills format |
-| **Trust Wallet** | TWAK-compatible self-custody attestation on BSC testnet |
-| **BNB Chain** | Strategy fingerprint txs + ERC-8004 agent registration |
+| **Trust Wallet** | TWAK CLI — token risk scoring + attestation signing (`npm run twak:check`) |
+| **BNB Chain** | ERC-8004 registration (gas-free testnet) + BSC attestation txs |
 
 ---
 

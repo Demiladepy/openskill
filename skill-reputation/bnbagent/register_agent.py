@@ -87,6 +87,31 @@ def simulate_register() -> dict:
     return payload
 
 
+def discover_sdk_api() -> int:
+    """Print bnbagent SDK surface for integration debugging."""
+    print("\n=== BNB Agent SDK API Discovery ===")
+    try:
+        import bnbagent
+
+        print(f"Version: {getattr(bnbagent, '__version__', 'unknown')}")
+        print(f"Top-level: {[x for x in dir(bnbagent) if not x.startswith('_')]}")
+    except ImportError:
+        print("bnbagent not installed. Run: pip install \"bnbagent[server]\"")
+        return 1
+
+    for name in ("ERC8004Agent", "EVMWalletProvider", "AgentEndpoint"):
+        try:
+            obj = getattr(__import__("bnbagent", fromlist=[name]), name, None)
+            if obj:
+                print(f"\n{name}: available")
+        except Exception as exc:  # noqa: BLE001
+            print(f"\n{name}: {exc}")
+
+    print("\nERC-8004 registration is GAS-FREE on BSC testnet via MegaFuel paymaster.")
+    print("Registry: 0x8004A818BFB912233c491871b3d84c89A494BD9e")
+    return 0
+
+
 def live_register() -> dict:
     from bnbagent import AgentEndpoint, ERC8004Agent
 
@@ -136,6 +161,9 @@ def live_register() -> dict:
         "endpoint": endpoint_url,
         "capabilities": ["backtest", "momentum", "sentiment", "regime"],
         "explorer": f"https://testnet.bscscan.com/tx/{tx_hash}" if tx_hash else None,
+        "gasFree": True,
+        "sdk": "bnbagent",
+        "note": "ERC-8004 registration gas-free on BSC testnet via MegaFuel paymaster",
     }
     save_state(payload)
     print(json.dumps(payload, indent=2))
@@ -150,7 +178,11 @@ def main() -> int:
     load_env()
     parser = argparse.ArgumentParser(description="Register CMC Strategy Forge on ERC-8004")
     parser.add_argument("--live", action="store_true", help="Require live BSC testnet registration")
+    parser.add_argument("--discover", action="store_true", help="Print bnbagent SDK API surface")
     args = parser.parse_args()
+
+    if args.discover:
+        return discover_sdk_api()
 
     simulate = os.getenv("AGENT_SIMULATE", "0") == "1"
     has_key = bool(os.getenv("AGENT_PRIVATE_KEY") or os.getenv("PRIVATE_KEY"))

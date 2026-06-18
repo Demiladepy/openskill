@@ -12,9 +12,30 @@ import {
   useMock,
 } from "./cmcDataClient.js";
 import { fetchCryptoTechnicals, mcpEnabled } from "./cmcMcpClient.js";
+import { getTwakCli } from "./twakCliClient.js";
 import { loadProjectEnv } from "./lib/loadEnv.js";
 
 loadProjectEnv();
+
+async function enrichWithTwak(symbol) {
+  const twak = getTwakCli();
+  if (!twak.available) return null;
+  try {
+    const [price, risk] = [twak.getPrice(symbol), twak.getTokenRisk(symbol)];
+    if (!price && !risk) return null;
+    return {
+      price,
+      risk,
+      riskScore: risk,
+      source: "twak-cli",
+      version: twak.version,
+      note: "Token risk scoring via Trust Wallet Agent Kit (Track 2 — no trade execution)",
+    };
+  } catch (err) {
+    console.warn("[cmcSignals] TWAK enrichment failed:", err instanceof Error ? err.message : err);
+    return null;
+  }
+}
 
 /**
  * Returns pre-computed CMC signals for a given asset (point-in-time snapshot).
@@ -46,8 +67,14 @@ export async function getSignals(symbol = "BTC", convert = "USDT") {
         ? spot.volume24h / marketCap
         : null;
 
+  const twak = await enrichWithTwak(symbol);
+  const dataSources = [source];
+  if (twak) dataSources.push("twak-cli");
+
   return {
     source,
+    _dataSources: dataSources,
+    _twakUsed: !!twak,
     symbol,
     convert,
     price: {
@@ -93,6 +120,7 @@ export async function getSignals(symbol = "BTC", convert = "USDT") {
           source: "cmc-mcp",
         }
       : null,
+    twak,
     fetched_at: new Date().toISOString(),
   };
 }
@@ -106,6 +134,12 @@ export async function enrichMarketBundle(bundle) {
   const convert = bundle.meta?.convert || "USDT";
 
   const cmcSignals = await buildSignalsFromBundle(bundle, symbol, convert);
+  const twakExtra = await enrichWithTwak(symbol);
+  if (twakExtra) {
+    cmcSignals.twak = twakExtra;
+    cmcSignals._twakUsed = true;
+    cmcSignals._dataSources = [...(cmcSignals._dataSources || [cmcSignals.source]), "twak-cli"];
+  }
 
   if (mcpEnabled() && !cmcSignals.technicals) {
     try {

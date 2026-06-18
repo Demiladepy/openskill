@@ -23,7 +23,12 @@
     "cmc:mcp": "node scripts/mcpToolsCli.js",
     "registry": "npm run strategy:all",
     "hackathon:verify": "npm run verify",
-    "twak:setup": "node skill/scripts/twakSetup.js"
+    "twak:setup": "node skill/scripts/twakSetup.js",
+    "twak:check": "node scripts/twakCheck.js",
+    "agent:discover": "python bnbagent/register_agent.py --discover",
+    "agent:register": "python bnbagent/register_agent.py --live",
+    "agent:simulate": "python bnbagent/register_agent.py",
+    "agent:server": "python bnbagent/agent_server.py"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",

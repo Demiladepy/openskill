@@ -425,9 +425,33 @@ export function DocShell() {
             <section id="attestations" className="docSection">
               <h2>BSC attestations</h2>
               <p>
-                Optional TWAK-compatible self-custody signing on BSC testnet. Set{" "}
-                <code>AGENT_PRIVATE_KEY</code>, fund your wallet, and run <code>npm run attest</code> to post a
-                verifiable strategy digest.
+                Every strategy spec can be fingerprinted (SHA-256 of backtest JSON) and attested on BSC
+                testnet — a trust anchor for Track 2 simulation, not live trading.
+              </p>
+              <h3>How it works</h3>
+              <ol className="docsList">
+                <li>
+                  <strong>Fingerprint</strong> — hash of metrics, trades, and parameters in{" "}
+                  <code>backtest_results/*.json</code>
+                </li>
+                <li>
+                  <strong>Sign</strong> — TWAK CLI (<code>twak wallet sign</code>) or viem self-custody fallback.
+                  Keys never leave your machine.
+                </li>
+                <li>
+                  <strong>Post</strong> — signed payload as BSC testnet tx (self-send with attestation data)
+                </li>
+                <li>
+                  <strong>Verify</strong> — decode payload on BscScan testnet
+                </li>
+              </ol>
+              <CopyBlock
+                code={`npm run strategy:all\nnpm run attest\nnpm run agent:register`}
+                label="Copy attestation commands"
+              />
+              <p className="muted">
+                ERC-8004 registration is gas-free on BSC testnet via MegaFuel paymaster. TWAK install:{" "}
+                <code>npm install -g @trustwallet/cli</code> · MCP config: <code>twak-mcp-config.json</code>
               </p>
               <Dashboard />
             </section>

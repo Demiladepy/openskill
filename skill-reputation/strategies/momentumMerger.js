@@ -75,10 +75,16 @@ export default class MomentumMerger extends BaseStrategy {
 
       if (buyScore >= this.params.minBuyScore && buyScore > sellScore) {
         sig = "buy";
-        confidence = Math.min(0.95, 0.5 + buyScore * 0.08);
+        confidence = this.applyTwakRiskAdjust(
+          Math.min(0.95, 0.5 + buyScore * 0.08),
+          marketData
+        );
       } else if (sellScore >= this.params.minSellScore && sellScore > buyScore) {
         sig = "sell";
-        confidence = Math.min(0.9, 0.5 + sellScore * 0.08);
+        confidence = this.applyTwakRiskAdjust(
+          Math.min(0.9, 0.5 + sellScore * 0.08),
+          marketData
+        );
       }
 
       signals.push({

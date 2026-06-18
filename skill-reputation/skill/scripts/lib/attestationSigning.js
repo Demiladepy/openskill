@@ -13,6 +13,7 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { bscTestnet } from "viem/chains";
+import { getTwakCli } from "../../../src/twakCliClient.js";
 import { initTwakAutonomous } from "./twakClient.js";
 
 /** Set true when @trustwallet/agent-kit is published and verified. */
@@ -55,14 +56,48 @@ export function digestToBytes32(digest) {
   return keccak256(stringToBytes(digest));
 }
 
+/** Try TWAK CLI wallet sign before viem fallback */
+export function tryTwakCliSign(message) {
+  const twak = getTwakCli();
+  if (!twak.available) return null;
+
+  for (const cmd of [
+    `wallet sign --message "${message.replace(/"/g, '\\"')}"`,
+    `sign --message "${message.replace(/"/g, '\\"')}"`,
+  ]) {
+    const result = twak.exec(cmd, 10000);
+    if (result && result.length > 10) {
+      return {
+        signature: result,
+        method: "twak-cli",
+        note: "Signed via Trust Wallet Agent Kit CLI (self-custody)",
+        twakVersion: twak.version,
+      };
+    }
+  }
+  return null;
+}
+
 /**
  * @param {string} strategyDigest
  */
 export async function signAttestation(strategyDigest) {
+  const twakCli = tryTwakCliSign(strategyDigest);
+  if (twakCli) {
+    const twak = await initTwakAutonomous();
+    return {
+      signature: twakCli.signature,
+      signer: twak.address || undefined,
+      method: twakCli.method,
+      provider: "twak-cli",
+      twakVersion: twakCli.twakVersion,
+      note: twakCli.note,
+      selfCustody: true,
+    };
+  }
+
   if (TWAK_SDK_AVAILABLE) {
-    // TWAK path — enable when @trustwallet/agent-kit ships
-    // const agent = new TrustWalletAgent(config);
-    // return agent.sign(strategyDigest);
+    // TWAK SDK path — enable when @trustwallet/agent-kit ships
   }
 
   const twak = await initTwakAutonomous();
@@ -164,10 +199,16 @@ export async function attestStrategyDigest(params) {
     signature: signed.signature,
     signer: signed.signer,
     method: signed.method,
+    signingMethod: signed.method,
+    provider: signed.provider,
+    twakVersion: signed.twakVersion || null,
+    twakAvailable: !!getTwakCli().available,
+    selfCustody: signed.selfCustody !== false,
     txHash: chain.txHash,
     blockNumber: chain.blockNumber,
     explorer: chain.explorer,
     postMethod: chain.method,
     mode: "live",
+    note: signed.note || "Strategy fingerprint signed and attested on BSC testnet",
   };
 }

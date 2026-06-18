@@ -74,7 +74,21 @@ INTENTS: list[dict[str, Any]] = [
         ),
     },
     {
-        "id": "attest",
+        "id": "twak",
+        "keywords": ["twak", "trust wallet", "agent kit", "risk", "token risk", "price", "wallet sign"],
+        "section": "attestations",
+        "title": "Trust Wallet Agent Kit (TWAK)",
+        "body": (
+            "**Install:** `npm install -g @trustwallet/cli` or "
+            "`curl -fsSL https://agent-kit.trustwallet.com/install.sh | bash`\n\n"
+            "**Setup:** `twak setup` — credentials from https://portal.trustwallet.com/dashboard/apps\n\n"
+            "Forge Skills uses TWAK for:\n"
+            "1. Token risk scoring in `src/cmcSignals.js` (`TWAK_ENABLED=1`)\n"
+            "2. Attestation signing via `twak wallet sign` (viem fallback)\n"
+            "3. MCP: `twak serve` — see `twak-mcp-config.json`\n\n"
+            "Verify: `npm run twak:check`"
+        ),
+    },
         "keywords": ["attest", "attestation", "bsc", "twak", "on-chain", "wallet", "tx", "bscscan"],
         "section": "attestations",
         "title": "BSC testnet attestation",

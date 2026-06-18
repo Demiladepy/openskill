@@ -1,6 +1,8 @@
 /**
  * Base interface for all CMC Strategy Forge strategies (Track 2 — simulation only).
  */
+import { twakConfidenceAdjust } from "../src/twakCliClient.js";
+
 export class BaseStrategy {
   /**
    * @param {{ name: string, version?: string, riskProfile?: string, params?: Record<string, unknown> }} config
@@ -37,6 +39,12 @@ export class BaseStrategy {
       throw new Error("positionSizePct must be between 0 and 100");
     }
     return true;
+  }
+
+  /** TWAK token risk guard — reduces confidence when TWAK flags high risk */
+  applyTwakRiskAdjust(confidence, marketData) {
+    const risk = marketData?.cmcSignals?.twak?.risk || marketData?.cmcSignals?.twak?.riskScore;
+    return twakConfidenceAdjust(confidence, risk);
   }
 
   /** @param {{ maxDrawdownPct?: number }} metrics */
