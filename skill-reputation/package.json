@@ -32,6 +32,7 @@
     "agent:server": "python bnbagent/agent_server.py",
     "marketplace:post": "python bnbagent/marketplace_client.py",
     "marketplace:verify": "node bnbagent/verify_job.js",
+    "wallet:address": "node scripts/walletAddress.js",
     "greenfield:pin": "node scripts/greenfieldPin.js"
   },
   "dependencies": {

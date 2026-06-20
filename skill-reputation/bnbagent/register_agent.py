@@ -17,9 +17,7 @@ DEFAULT_GITHUB = "https://github.com/Demiladepy/openskill"
 DEFAULT_SKILLS_URL = f"{DEFAULT_GITHUB}/tree/main/skill-reputation/skills"
 DEFAULT_FORGE_MCP_URL = f"{DEFAULT_GITHUB}/raw/main/skill-reputation/forge-mcp-config.json"
 DEFAULT_DOCS_URL = f"{DEFAULT_GITHUB}/tree/main/skill-reputation"
-DEFAULT_COMMERCE_DOCS_URL = (
-    f"{DEFAULT_GITHUB}/blob/main/skill-reputation/bnbagent/README.md#demo-flow-no-private-keys"
-)
+DEFAULT_COMMERCE_DOCS_URL = DEFAULT_GITHUB  # short URI for on-chain tx size
 DEFAULT_SKILL_INSTALL = (
     "npx skills add https://github.com/Demiladepy/openskill/tree/main/skill-reputation/skills"
 )
@@ -61,7 +59,23 @@ def wallet_provider():
 
     private_key = os.getenv("AGENT_PRIVATE_KEY") or os.getenv("PRIVATE_KEY")
     if not private_key:
-        raise ValueError("AGENT_PRIVATE_KEY required for live registration")
+        mnemonic = (os.getenv("AGENT_MNEMONIC") or os.getenv("TWAK_MNEMONIC") or "").strip()
+        if mnemonic and "your_" not in mnemonic:
+            try:
+                from eth_account import Account
+
+                Account.enable_unaudited_hdwallet_features()
+                acct = Account.from_mnemonic(mnemonic)
+                private_key = acct.key.hex()
+                if not private_key.startswith("0x"):
+                    private_key = "0x" + private_key
+            except Exception as exc:  # noqa: BLE001
+                raise ValueError(f"AGENT_MNEMONIC invalid: {exc}") from exc
+    if not private_key:
+        raise ValueError(
+            "AGENT_PRIVATE_KEY or AGENT_MNEMONIC required for live registration "
+            "(Trust Wallet: use recovery phrase in AGENT_MNEMONIC, or export BSC testnet private key)"
+        )
     return EVMWalletProvider(
         password=wallet_password(),
         private_key=private_key,
@@ -116,6 +130,14 @@ def resolve_endpoint_urls() -> dict:
 def build_agent_endpoints(urls: dict):
     from bnbagent import AgentEndpoint
 
+    compact = os.getenv("AGENT_URI_COMPACT", "1") != "0"
+    if compact:
+        return [
+            AgentEndpoint(name="github", endpoint=urls["github"], version="1.0"),
+            AgentEndpoint(name="skills", endpoint=urls["skills"], version="1.0"),
+            AgentEndpoint(name="forge-mcp", endpoint=urls["forge_mcp"], version="1.0"),
+        ]
+
     endpoints = [
         AgentEndpoint(name="github", endpoint=urls["github"], version="1.0.0"),
         AgentEndpoint(name="docs", endpoint=urls["docs"], version="1.0.0"),
@@ -129,6 +151,13 @@ def build_agent_endpoints(urls: dict):
 
 
 def build_registration_metadata() -> list:
+    compact = os.getenv("AGENT_URI_COMPACT", "1") != "0"
+    if compact:
+        return [
+            {"key": "platform", "value": "forge-skills"},
+            {"key": "chain", "value": os.getenv("NETWORK", "bsc-testnet")},
+            {"key": "simulation_only", "value": "true"},
+        ]
     return [
         {"key": "capabilities", "value": "backtest,momentum,sentiment,regime"},
         {"key": "platform", "value": "cmc-strategy-forge"},
@@ -229,7 +258,7 @@ def live_register() -> dict:
         name=os.getenv("AGENT_NAME", "CMC Strategy Forge"),
         description=os.getenv(
             "AGENT_DESCRIPTION",
-            "Backtestable quant strategy agent powered by CoinMarketCap data (simulation only).",
+            "CMC Strategy Forge — backtestable quant skills (simulation only).",
         ),
         endpoints=build_agent_endpoints(urls),
     )
@@ -281,7 +310,11 @@ def main() -> int:
         return discover_sdk_api()
 
     simulate = os.getenv("AGENT_SIMULATE", "0") == "1"
-    has_key = bool(os.getenv("AGENT_PRIVATE_KEY") or os.getenv("PRIVATE_KEY"))
+    has_key = bool(
+        os.getenv("AGENT_PRIVATE_KEY")
+        or os.getenv("PRIVATE_KEY")
+        or (os.getenv("AGENT_MNEMONIC") or os.getenv("TWAK_MNEMONIC") or "").strip()
+    )
     want_live = args.live or (not simulate and has_key)
 
     if want_live and has_key:

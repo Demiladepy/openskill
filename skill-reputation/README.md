@@ -15,6 +15,25 @@
 > BAP-692 stack: ERC-8004 (`npm run agent:register`) + Forge MCP + ERC-8183 jobs (`npm run marketplace:post`)  
 > Links: [8004scan testnet](https://testnet.8004scan.io/) · [BNB AI Agent solutions](https://www.bnbchain.org/en/solutions/ai-agent)
 
+### On-chain proofs (BSC testnet)
+
+| Proof | Link | Wallet |
+|-------|------|--------|
+| **ERC-8004 agent** | [BscScan registration](https://testnet.bscscan.com/tx/0x1544ee04b206db1c8a3e8e66d5d0eb393bc73aa0fd29181d83efdfc94000d413) · Agent ID **1460** | `0x6ADAEd26bB074580457A89553B674a332d03e1b8` |
+| **8004scan** | [testnet.8004scan.io/agent/1460](https://testnet.8004scan.io/agent/1460) | — |
+| **Strategy attestation** | [BscScan attestation](https://testnet.bscscan.com/tx/0xe8870d221a00532e9320bd69f10ac533911c752491ba4d183931ee6c03970753) | same wallet |
+
+Discovery mode: **GitHub-first** (`AGENT_DISCOVERY_MODE=github`) — skills + MCP URLs on-chain; no Render required for submission.
+
+Setup (Trust Wallet recovery phrase via `AGENT_MNEMONIC` in `.env` — **never commit**):
+
+```bash
+npm run wallet:address      # verify address
+npm run agent:register      # ERC-8004 — gas-free on testnet
+npm run attest              # strategy fingerprint tx
+npm run check:secrets       # before git push
+```
+
 ---
 
 ## The problem
