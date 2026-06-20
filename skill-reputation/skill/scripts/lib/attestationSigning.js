@@ -14,6 +14,7 @@ import {
 import { privateKeyToAccount } from "viem/accounts";
 import { bscTestnet } from "viem/chains";
 import { getTwakCli } from "../../../src/twakCliClient.js";
+import { resolvePrivateKeyFromEnv } from "../../../src/lib/walletFromEnv.js";
 import { initTwakAutonomous } from "./twakClient.js";
 
 /** Set true when @trustwallet/agent-kit is published and verified. */
@@ -34,12 +35,7 @@ const VAULT_ABI = [
 ];
 
 export function resolvePrivateKey() {
-  const raw =
-    process.env.TWAK_AGENT_PRIVATE_KEY ||
-    process.env.AGENT_PRIVATE_KEY ||
-    process.env.ATTESTOR_PRIVATE_KEY;
-  if (!raw) return null;
-  return raw.startsWith("0x") ? raw : `0x${raw}`;
+  return resolvePrivateKeyFromEnv();
 }
 
 export function computeStrategyDigest(payload) {

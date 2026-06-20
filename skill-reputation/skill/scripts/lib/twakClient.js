@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { keccak256, stringToBytes } from "viem";
+import { resolvePrivateKeyFromEnv } from "../../../src/lib/walletFromEnv.js";
 import { getBehaviorLogPath } from "../../../src/lib/logPath.js";
 
 /** @trustwallet/agent-kit is not published on npm yet (checked 2026-06). */
@@ -48,12 +49,7 @@ export function twakConfigFingerprint(session) {
 }
 
 export function resolveAttestPrivateKey() {
-  const raw =
-    process.env.TWAK_AGENT_PRIVATE_KEY ||
-    process.env.AGENT_PRIVATE_KEY ||
-    process.env.ATTESTOR_PRIVATE_KEY;
-  if (!raw) return null;
-  return raw.startsWith("0x") ? raw : `0x${raw}`;
+  return resolvePrivateKeyFromEnv();
 }
 
 export function getAttestMode() {
@@ -115,7 +111,7 @@ export async function initTwakAutonomous() {
       };
     }
     throw new Error(
-      "TWAK live mode requires AGENT_PRIVATE_KEY or TWAK_AGENT_PRIVATE_KEY. Run: npm run twak:setup"
+      "Live mode requires AGENT_MNEMONIC, AGENT_PRIVATE_KEY, or TWAK_AGENT_PRIVATE_KEY in skill-reputation/.env"
     );
   }
 

@@ -3,7 +3,7 @@
 **Quant strategy skills for AI agents — CoinMarketCap · Trust Wallet · BNB Chain**
 
 [![Track 2](https://img.shields.io/badge/BNB%20Hack-Strategy%20Skills-blue)](https://dorahacks.io/hackathon/bnbhack-twt-cmc/)
-[![Hackathon](https://img.shields.io/badge/DoraHacks-Submit%20BUIDL-orange)](https://dorahacks.io/hackathon/bnbhack-twt-cmc/)
+[![Hackathon](https://img.shields.io/badge/DoraHacks-Track%202-orange)](https://dorahacks.io/hackathon/bnbhack-twt-cmc/)
 
 > **Track 2 — Strategy Skills.** Installable CMC skill packages, live backtests, Forge MCP, ERC-8004 identity. **Simulation only** — research and metrics, not live trading.
 
@@ -88,29 +88,6 @@ npm run check:secrets       # run before every git push
 ```
 
 Trust Wallet users: set `AGENT_MNEMONIC` (recovery phrase) or `AGENT_PRIVATE_KEY` in `.env` — see [Environment](#environment).
-
----
-
-## DoraHacks — copy into your BUIDL
-
-**Track:** Strategy Skills (Track 2) · **Sponsors:** CoinMarketCap, Trust Wallet, BNB Chain
-
-**One-line pitch:** Forge Skills is the Track 2 research layer on BNB's agent stack — CMC Skills + Forge MCP → ERC-8004 identity → local ERC-8183 backtest jobs → simulation-only metrics judges can reproduce in three commands.
-
-**Project description (paste into BUIDL):**
-
-> Forge Skills ships installable quant strategy packages for AI agents on the BNB Hackathon Track 2 stack. Three strategies (momentum, sentiment, regime) pull live CoinMarketCap signals, backtest on BTC/ETH/BNB, and export official CMC Agent Hub skill zips. A Forge MCP server exposes six tools for agents and judges. On-chain trust is live on BSC testnet: ERC-8004 agent **1460**, strategy attestation, and GitHub-first discovery (no hosted server required). Commerce and payments layers are demonstrated locally via ERC-8183 job posting and x402/Greenfield roadmap stubs. **Simulation only** — backtest metrics and skill exports, not live trading. Clone, `npm run strategy:all && npm run verify`, and compare Regime/BTC Sharpe **2.17** against `backtest_results/regime_BTC.json`.
-
-**Links to paste:**
-
-| Field | Value |
-|-------|--------|
-| Repository | `https://github.com/Demiladepy/openskill` |
-| README | `https://github.com/Demiladepy/openskill#readme` |
-| 8004scan | `https://testnet.8004scan.io/agent/1460` |
-| Registration tx | `https://testnet.bscscan.com/tx/0x1544ee04b206db1c8a3e8e66d5d0eb393bc73aa0fd29181d83efdfc94000d413` |
-| Attestation tx | `https://testnet.bscscan.com/tx/0xe8870d221a00532e9320bd69f10ac533911c752491ba4d183931ee6c03970753` |
-| Demo video | Record using [`DEMO.md`](./skill-reputation/DEMO.md) — upload to YouTube/Loom and paste URL |
 
 ---
 
