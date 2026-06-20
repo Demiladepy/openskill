@@ -18,8 +18,8 @@ npm run verify
 - `skills/cmc-strategy-*/SKILL.md`
 - `examples/cmc-strategy-skills.zip`
 - `replay/output/replay_report.html`
-- BscScan attestation tx (after you run `npm run attest`)
-- ERC-8004: [testnet.8004scan.io](https://testnet.8004scan.io/) agent link after `npm run agent:register`
+- **Live attestation:** [BscScan](https://testnet.bscscan.com/tx/0xe8870d221a00532e9320bd69f10ac533911c752491ba4d183931ee6c03970753)
+- **Live ERC-8004:** Agent **1460** · [8004scan](https://testnet.8004scan.io/agent/1460) · [registration tx](https://testnet.bscscan.com/tx/0x1544ee04b206db1c8a3e8e66d5d0eb393bc73aa0fd29181d83efdfc94000d413)
 - **MCP:** `npm run mcp:forge` + `forge-mcp-config.json` + `bnb-mcp-config.json`
 
 ## BAP-692 layer checklist

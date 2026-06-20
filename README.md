@@ -4,8 +4,17 @@
 
 Quant research that AI agents can install, run, and verify. Live CoinMarketCap data, TWAK risk scoring, BNB Chain attestation — simulation only.
 
-**Start here:** [`skill-reputation/`](./skill-reputation/)  
-**Interactive docs:** deploy [`skill-reputation/demos/demo-ui/`](./skill-reputation/demos/demo-ui/) on Vercel
+**Start here:** [`skill-reputation/README.md`](./skill-reputation/README.md)  
+**Interactive docs:** optional — deploy [`skill-reputation/demos/demo-ui/`](./skill-reputation/demos/demo-ui/) on Vercel
+
+### On-chain proofs (BSC testnet — live)
+
+| Proof | Link |
+|-------|------|
+| ERC-8004 agent **1460** | [8004scan](https://testnet.8004scan.io/agent/1460) · [registration tx](https://testnet.bscscan.com/tx/0x1544ee04b206db1c8a3e8e66d5d0eb393bc73aa0fd29181d83efdfc94000d413) |
+| Strategy attestation | [attestation tx](https://testnet.bscscan.com/tx/0xe8870d221a00532e9320bd69f10ac533911c752491ba4d183931ee6c03970753) |
+
+**No Render required** for submission — GitHub clone + local `npm run verify`.
 
 ---
 
