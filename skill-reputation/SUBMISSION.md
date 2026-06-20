@@ -13,7 +13,7 @@ npm run verify
 
 ## Files to upload / link
 
-- GitHub: `https://github.com/Demiladepy/openskill`
+- GitHub: `https://github.com/Demiladepy/openskill` (README at repo root)
 - Demo video (see `DEMO.md`)
 - `skills/cmc-strategy-*/SKILL.md`
 - `examples/cmc-strategy-skills.zip`

@@ -126,6 +126,7 @@ async function main() {
     submission_files: [
       "README.md",
       "skill-reputation/DEMO.md",
+      "skill-reputation/SUBMISSION.md",
       "skill-reputation/backtest_results/*.json",
       "skill-reputation/skills/cmc-strategy-*/SKILL.md",
       "skill-reputation/examples/cmc-strategy-skills.zip",
@@ -133,8 +134,6 @@ async function main() {
     ],
     manual_steps_remaining: [
       "Set CMC_API_KEY and re-run strategy:all with live data",
-      "Set AGENT_PRIVATE_KEY, npm run attest, paste BscScan link in README",
-      "python bnbagent/register_agent.py --live for ERC-8004 tx",
       "Record demo video per DEMO.md",
       "Push to GitHub and submit DoraHacks BUIDL",
     ],

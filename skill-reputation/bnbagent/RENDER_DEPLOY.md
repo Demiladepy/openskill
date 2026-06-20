@@ -40,7 +40,7 @@ CMC_USE_MOCK=1
 AGENT_DISCOVERY_MODE=render
 AGENT_PUBLIC_URL=https://YOUR-SERVICE.onrender.com/erc8183/status
 AGENT_FALLBACK_URL=http://localhost:8000/erc8183/status
-AGENT_DOCS_URL=https://github.com/Demiladepy/openskill/tree/main/skill-reputation
+AGENT_DOCS_URL=https://github.com/Demiladepy/openskill
 ```
 
 The server reads `PORT` from Render automatically (`agent_server.py`).

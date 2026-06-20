@@ -8,4 +8,4 @@ When spawning Claude Code sessions for coding work in this repository, **load gs
 - Ship quality: **Load gstack. Run `/review`** before merging or releasing.
 - Web research: use **`/browse`** from gstack instead of ad-hoc browser automation tools.
 
-Attestations and keys live only in `.env` files (never commit). See [README.md](README.md).
+Attestations and keys live only in `.env` files (never commit). See [README.md](../README.md).

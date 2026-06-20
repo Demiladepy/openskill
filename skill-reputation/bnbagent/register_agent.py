@@ -16,7 +16,7 @@ STATE_PATH = Path(__file__).resolve().parent / "agent_state.json"
 DEFAULT_GITHUB = "https://github.com/Demiladepy/openskill"
 DEFAULT_SKILLS_URL = f"{DEFAULT_GITHUB}/tree/main/skill-reputation/skills"
 DEFAULT_FORGE_MCP_URL = f"{DEFAULT_GITHUB}/raw/main/skill-reputation/forge-mcp-config.json"
-DEFAULT_DOCS_URL = f"{DEFAULT_GITHUB}/tree/main/skill-reputation"
+DEFAULT_DOCS_URL = DEFAULT_GITHUB  # repo root README (GitHub homepage)
 DEFAULT_COMMERCE_DOCS_URL = DEFAULT_GITHUB  # short URI for on-chain tx size
 DEFAULT_SKILL_INSTALL = (
     "npx skills add https://github.com/Demiladepy/openskill/tree/main/skill-reputation/skills"
